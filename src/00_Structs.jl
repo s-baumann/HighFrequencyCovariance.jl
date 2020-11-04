@@ -152,31 +152,13 @@ function mean(vec::Vector{CovarianceMatrix})
     return running_cov
 end
 
-import StochasticIntegrals.to_dataframe
-
-"""
-Convert a CovarianceMatrix to a dataframe format.
-"""
-function to_dataframe(covar::CovarianceMatrix, othercols::Dict = Dict{Symbol,Any}(); delete_duplicate_correlations::Bool = true)
-    d = size(covar.correlation)[1]
-    corrs = DataFrame(asset1 = vcat(map(a -> repeat([a], d), covar.labels  )...),asset2 = Array{Union{Symbol,Missing}}(repeat(covar.labels, d)),value = vec(covar.correlation))
-    corrs[!,:variable] = repeat([:correlation], nrow(corrs))
-    if delete_duplicate_correlations corrs = corrs[findall(map(a -> findfirst(covar.labels .== a), corrs[:,:asset1]) .< map(a -> findfirst(covar.labels .== a), corrs[:,:asset2])),:] end
-    vols = DataFrame(asset1 = covar.labels, value = covar.volatility)
-    vols[!,:variable] = repeat([:volatility], nrow(vols))
-    vols[!,:asset2]   = repeat([missing], nrow(vols))
-    result = append!(corrs, vols)
-    for k in keys(othercols)
-        result[!,k] = repeat([othercols[k]], nrow(result))
-    end
-    return result
-end
-
 """
 Test if a CovarianceMatrix struct contains a valid correlation matrix.
 """
 function valid_correlation_matrix(covar::CovarianceMatrix)
-    A = minimum(eigen(covar.correlation).values) >= 0       # is it PSD
+    eig = eigen(covar.correlation).values
+    if length(eig) == 0 return false end # There is no eigenvalue decomposition.
+    A = minimum(eig) >= 0       # is it PSD
     B = all(abs.(diag(covar.correlation) .- 1) .< 10*eps()) # does it have a unit diagonal
     C = all(abs.(covar.correlation) .<= 1 + 10*eps())       # all all off diagonals less than one in absolute value
     return all([A,B,C])

@@ -65,7 +65,7 @@ A default spacing between returns to use.
 This comes from the equation at section 1.2.3 of Zhang, Mykland, Ait-Sahalia 2005.
 """
 function default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5, return_calc::Function = simple_differencing, T = duration(ts))
-    rough_vol_guess, rough_micro_guess  = two_scales_volatility(ts; grid_spacing = T/rough_guess_number_of_intervals, return_calc = return_calc)
+    rough_vol_guess, rough_micro_guess  = two_scales_volatility(ts; num_grids = rough_guess_number_of_intervals, return_calc = return_calc)
     n_guess = Dict{Symbol,eltype(ts.df[:,ts.value])}()
     for a in keys(rough_vol_guess)
         n_guess[a] = ( (T/(4* rough_micro_guess[a]^2)) * T * rough_vol_guess[a]^4 )^(1/3)

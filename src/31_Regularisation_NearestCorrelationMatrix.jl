@@ -156,6 +156,9 @@ function nearest_correlation_matrix(covariance_matrix::CovarianceMatrix, ts::Sor
     return CovarianceMatrix(regularised_correl, covariance_matrix.volatility, covariance_matrix.labels)
 end
 
+"""
+Map a Hermitian matrix to the nearest psd matrix.
+"""
 function nearest_psd_matrix(mat::Hermitian, ts::SortedDataFrame)
     W = Diagonal(Float64.(I(size(mat)[1])))
     W_root = sqrt_psd(W)

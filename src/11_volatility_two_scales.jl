@@ -7,12 +7,12 @@ function vol_given_values_and_times(vals::Vector, times::Vector, asset::Symbol, 
     return sqrt(sum(returns .^ 2)/duration)
 end
 
-function two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, grid_spacing::Real, return_calc::Function = simple_differencing)
+function two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_grids::Real, return_calc::Function = simple_differencing)
     dura  = maximum(times) - minimum(times)
     if (dura < eps()) | (length(vals) < 10)
         return NaN, NaN
     end
-    num_grids = Int(max(2, floor((grid_spacing/dura) * length(vals))))
+    num_grids = Int(max(2, floor(num_grids)))
     avg_vol   = mean(map(i ->  vol_given_values_and_times(vals[i:num_grids:end], times[i:num_grids:end], asset, return_calc), 1:num_grids ))
     all_vol   = vol_given_values_and_times(vals, times, asset, return_calc)
 
@@ -25,7 +25,7 @@ end
 Calculates volatility with the two scales method of Zhang, Mykland, Ait-Sahalia 2005. The amount of time for the grid spacing is by default this is a tenth of the total duration
 by default. If this doesn't make sense for your use of it then choose a spacing at which you expect the effect of microstructure noise will be small.
 """
-function two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); grid_spacing::Real = duration(ts)/10, return_calc::Function = simple_differencing)
+function two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); num_grids::Real = duration(ts)/10, return_calc::Function = simple_differencing)
     vols = Dict{Symbol,eltype(ts.df[:,ts.value])}()
     micro_noise_var = Dict{Symbol,eltype(ts.df[:,ts.value])}()
     for a in assets
@@ -35,7 +35,7 @@ function two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get
             vols[a] = NaN
             micro_noise_var[a] = NaN
         else
-            pure_vol, noise = two_scales_volatility(vals, times, a, grid_spacing, return_calc)
+            pure_vol, noise = two_scales_volatility(vals, times, a, num_grids, return_calc)
             vols[a] = pure_vol
             micro_noise_var[a] = max(0.0,noise)
         end

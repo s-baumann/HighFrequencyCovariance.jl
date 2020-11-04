@@ -4,4 +4,4 @@ using Test
 # Run tests
 
 println("TestHighFrequencyCovariance")
-@time @test include("tests.jl")
+@time @test include("main_tests.jl")
