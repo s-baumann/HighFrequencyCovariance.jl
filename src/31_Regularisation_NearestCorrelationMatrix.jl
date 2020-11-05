@@ -164,3 +164,9 @@ function nearest_psd_matrix(mat::Hermitian, ts::SortedDataFrame)
     W_root = sqrt_psd(W)
     return project_to_S(mat, W_root)
 end
+function nearest_psd_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame)
+    W = Diagonal(Float64.(I(size(covariance_matrix.correlation)[1])))
+    W_root = sqrt_psd(W)
+    newmat = project_to_S(covariance_matrix.correlation, W_root)
+    return CovarianceMatrix(newmat, covariance_matrix.volatility, covariance_matrix.labels)
+end

@@ -49,5 +49,5 @@ function eigenvalue_clean(mat::Hermitian, ts::SortedDataFrame)
     return regularised_mat
 end
 function eigenvalue_clean(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame)
-    return CovarianceMatrix(eigenvalue_clean(covariance_matrix.correlation, ts), covariance_matrix.volatility, covariance_matrix.labels)
+    return CovarianceMatrix(Hermitian(eigenvalue_clean(covariance_matrix.correlation, ts)), covariance_matrix.volatility, covariance_matrix.labels)
 end
