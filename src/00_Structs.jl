@@ -155,14 +155,15 @@ end
 """
 Test if a CovarianceMatrix struct contains a valid correlation matrix.
 """
-function valid_correlation_matrix(covar::CovarianceMatrix)
-    eig = eigen(covar.correlation).values
+function valid_correlation_matrix(mat::Hermitian)
+    eig = eigen(mat).values
     if length(eig) == 0 return false end # There is no eigenvalue decomposition.
     A = minimum(eig) >= 0       # is it PSD
-    B = all(abs.(diag(covar.correlation) .- 1) .< 10*eps()) # does it have a unit diagonal
-    C = all(abs.(covar.correlation) .<= 1 + 10*eps())       # all all off diagonals less than one in absolute value
+    B = all(abs.(diag(mat) .- 1) .< 10*eps()) # does it have a unit diagonal
+    C = all(abs.(mat) .<= 1 + 10*eps())       # all all off diagonals less than one in absolute value
     return all([A,B,C])
 end
+valid_correlation_matrix(covar::CovarianceMatrix) = valid_correlation_matrix(covar.correlation)
 
 """
 Count the number of observations for each asset.
