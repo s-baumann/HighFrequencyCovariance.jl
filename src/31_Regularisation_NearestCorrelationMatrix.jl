@@ -104,7 +104,7 @@ Do one iterate mapping the matrix Y to the S space and then the U space. Returni
 * A - An array that you want to project to a correlation matrix.
 * W - A weighting matrix representing what correlations are thought to be more credible. There are performance improvements if this is diagonal but can be psd Hermitian as well.
 * doDykstra - A bool. If False no Dykstra correction is done so the iterations have a bias but might be faster.
-* stop_at_first_psd - Should the iterates stop as soon as they reach a psd matrix.
+* stop_at_first_correlation_matrix - Should the iterates stop as soon as they reach a psd matrix.
 * max_iterates - The maximum number of iterates.
 ### Returns
 * An updated matrix
@@ -113,7 +113,7 @@ Do one iterate mapping the matrix Y to the S space and then the U space. Returni
 # References
 Higham, N. J. 2001.
 """
-function nearest_correlation_matrix(A::Union{Diagonal,Hermitian}, W::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(A)[1]))); doDykstra::Bool = true, stop_at_first_psd::Bool = true, max_iterates::Integer = 100)
+function nearest_correlation_matrix(A::Union{Diagonal,Hermitian}, W::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(A)[1]))); doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 100)
     @assert all(size(A) .== size(W))
     W_root = sqrt_psd(W)
     W_inv = inv(W)
@@ -126,9 +126,10 @@ function nearest_correlation_matrix(A::Union{Diagonal,Hermitian}, W::Union{Diago
     counter = 1
     while counter < max_iterates
         Y, Dykstra = doDykstra ? iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt) : iterate_higham(Y, ZeroDykstra, W_root, W_inv, W_inv_sqrt)
-        if stop_at_first_psd
-             spd = (minimum(eigen(Y).values) > 0)
-             if spd return Y, counter, :already_spd end
+        if stop_at_first_correlation_matrix
+             valid_correlation_matrix
+             spd = valid_correlation_matrix(Y)
+             if spd return Y, counter, :already_valid_correlation_matrix end
         end
         counter += 1
     end
@@ -143,7 +144,7 @@ Do one iterate mapping the matrix Y to the S space and then the U space. Returni
 * ts - A SortedDataFrame
 * weighting_matrix - A weighting matrix representing what correlations are thought to be more credible. There are performance improvements if this is diagonal but can be psd Hermitian as well.
 * doDykstra - A bool. If False no Dykstra correction is done so the iterations have a bias but might be faster.
-* stop_at_first_psd - Should the iterates stop as soon as they reach a psd matrix.
+* stop_at_first_correlation_matrix - Should the iterates stop as soon as they reach a psd matrix.
 * max_iterates - The maximum number of iterates.
 ### Returns
 * A CovarianceMatrix with a valid correlation matrix.
@@ -151,8 +152,8 @@ Do one iterate mapping the matrix Y to the S space and then the U space. Returni
 Higham, N. J. 2001.
 """
 function nearest_correlation_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; weighting_matrix = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
-                             doDykstra::Bool = true, stop_at_first_psd::Bool = true, max_iterates::Integer = 100)
-    regularised_correl, counter, convergence = nearest_correlation_matrix(covariance_matrix.correlation, weighting_matrix; doDykstra = doDykstra, stop_at_first_psd = stop_at_first_psd, max_iterates = max_iterates)
+                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 100)
+    regularised_correl, counter, convergence = nearest_correlation_matrix(covariance_matrix.correlation, weighting_matrix; doDykstra = doDykstra, stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
     return CovarianceMatrix(regularised_correl, covariance_matrix.volatility, covariance_matrix.labels)
 end
 
