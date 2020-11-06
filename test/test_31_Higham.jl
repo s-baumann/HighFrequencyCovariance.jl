@@ -1,4 +1,3 @@
-using Revise
 using LinearAlgebra
 using Distributions: InverseWishart
 using Random
