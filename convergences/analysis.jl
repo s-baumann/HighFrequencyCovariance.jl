@@ -3,6 +3,9 @@ using DataFrames
 using Statistics: std, var, mean, cov, median
 using CSV
 using Glob
+using Cairo
+using Fontconfig
+plot_folder = "C:/Dropbox/Stuart/Papers/high_frequency_covariance/plots/"
 
 fldr = "C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/"
 files = glob("*.csv",fldr)
@@ -26,8 +29,7 @@ aa = combine(groupby(dd2, [:dimensions, :with_noise, :syncronous, :number_of_pat
 
 
 
-using Cairo
-using Fontconfig
+
 
 aa = sort(aa, :dimensions)
 
@@ -35,7 +37,6 @@ aa[!,:dims] = map(x -> string(x, " assets"), aa[:,:dimensions])
 aa[!,:ticks_per_asset] = aa[:,:number_of_paths] ./ aa[:,:dimensions]
 aa[!,:estimation] = map(i -> string( Bool(aa[i,:syncronous]) ? "Syncronous updates" : "Asyncronous updates", "\n" ,  Bool(aa[i,:with_noise]) ? "with " : "without ", " noise"    ), 1:nrow(aa) )
 
-plot_folder = "C:/Dropbox/Stuart/Papers/high_frequency_covariance/plots/"
 
 
 #aa = aa[aa.method .!= "spectral_covariance",:]
@@ -62,7 +63,9 @@ plt = plot(bb, xgroup=:dims, ygroup=:estimation, Geom.subplot_grid(layer(x=:tick
 img = PDF(string(plot_folder, "volatility.pdf"), 30cm, 30cm)
 draw(img, plt)
 
-
+#########################################
+# Time and space complexity
+#############################
 
 
 fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/time_and_space_complexity_up_dimensions.csv")
@@ -72,14 +75,14 @@ aa = melt(aa, [:Method, :Dims, :ticks_per_dim])
 bb = aa[aa[:,:ticks_per_dim] .== maximum(aa[:,:ticks_per_dim]),  :]
 bb[!,:var] .=  "Seconds to estimate"
 bb[bb[:,:variable] .== "Bytes_mean",:var] .=  "Memory allocated (MiB)"
-
+bb = bb[bb[:,:var] .!= "Memory allocated (MiB)",:]
 
 
 plt = plot(bb, ygroup=:var, Geom.subplot_grid(layer( x = :Dims , y = :value, color=:Method, Geom.point),
            layer( x = :Dims , y = :value, color=:Method, Geom.line), free_y_axis =true),
            Scale.x_log10, Scale.y_log10, Guide.xlabel("Number of Assets"), Guide.ylabel(""), style(key_position = :bottom),
            Guide.ColorKey(title = ""), Guide.Title(" "))
-img = PDF(string(plot_folder, "complexity-dimensions.pdf"), 15cm, 30cm)
+img = PDF(string(plot_folder, "complexity-dimensions.pdf"), 15cm, 15cm)
 draw(img, plt)
 
 
@@ -91,10 +94,11 @@ aa = melt(aa, [:Method, :Dims, :ticks_per_dim])
 bb = aa[aa[:,:Dims] .== maximum(aa[:,:Dims]),  :]
 bb[!,:var] .=  "Seconds to estimate"
 bb[bb[:,:variable] .== "Bytes_mean",:var] .=  "Memory allocated (MiB)"
+bb = bb[bb[:,:var] .!= "Memory allocated (MiB)",:]
 
 plt = plot(bb, ygroup=:var, Geom.subplot_grid(layer( x = :ticks_per_dim , y = :value, color=:Method, Geom.point),
            layer( x = :ticks_per_dim , y = :value, color=:Method, Geom.line), free_y_axis =true),
            Scale.x_log10, Scale.y_log10, Guide.xlabel("Average price updates per asset"), Guide.ylabel(""), style(key_position = :bottom),
            Guide.ColorKey(title = ""), Guide.Title(" "))
-img = PDF(string(plot_folder, "complexity-obs.pdf"), 15cm, 30cm)
+img = PDF(string(plot_folder, "complexity-obs.pdf"), 15cm, 15cm)
 draw(img, plt)

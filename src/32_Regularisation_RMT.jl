@@ -10,9 +10,10 @@ Regularisation of the Hermitian matrix by cleaning out small eigenvalues.
 Laloux, L., Cizeau, P., Bouchaud J. , Potters, M. 2000. "Random matrix theory and financial correlations" International Journal of Theoretical Applied FInance, 3, 391-397.
 """
 function eigenvalue_clean(mat::Hermitian, obs::Real; eigenvalue_threshold::Union{Missing,R} = missing) where R<:Real
+    if sum(isnan.(mat)) > 0 return mat end # If someone inputs a matrix involving a NaN
     N = size(mat)[1]
     eigenvalues, eigenvectors = eigen(mat)
-    if length(eigenvalues) == 0 return mat end # If someone inputs a matrix involving a NaN
+    #if length(eigenvalues) == 0 return mat end # If someone inputs a matrix involving a NaN
     if ismissing(eigenvalue_threshold)
         if ismissing(obs) error("Neither obs nor a threshold input. Not possible to identify eigenvalue limit") end
         sigma2 = 1 - maximum(eigenvalues)/N
@@ -48,6 +49,12 @@ function eigenvalue_clean(mat::Hermitian, ts::SortedDataFrame)
     regularised_mat = eigenvalue_clean(mat, obs)
     return regularised_mat
 end
-function eigenvalue_clean(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame)
-    return CovarianceMatrix(Hermitian(eigenvalue_clean(covariance_matrix.correlation, ts)), covariance_matrix.volatility, covariance_matrix.labels)
+function eigenvalue_clean(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; apply_to_covariance::Bool = true)
+    if apply_to_covariance
+        regularised_covariance = eigenvalue_clean(duration(covariance_matrix,1), ts)
+        corr, vols = cov2cor_and_vol(mat, 1)
+        return CovarianceMatrix(corr, vols, covariance_matrix.labels)
+    else
+        return CovarianceMatrix(Hermitian(eigenvalue_clean(covariance_matrix.correlation, ts)), covariance_matrix.volatility, covariance_matrix.labels)
+    end
 end

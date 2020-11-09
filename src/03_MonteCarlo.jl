@@ -24,6 +24,7 @@ function generate_random_path(dimensions::Integer, ticks::Integer; syncronous::B
     ts = syncronous ? make_ito_process_syncronous_time_series(stock_processes, covar, mean(a-> update_rates[a].θ, assets),Int(ceil(ticks/dimensions)); ito_twister = twister) : make_ito_process_non_syncronous_time_series(stock_processes, covar, update_rates, ticks; timing_twister = twister, ito_twister = twister)
     ts = SortedDataFrame(ts)
     standard_normal_draws = rand(twister, Normal(), nrow(ts.df))
+
     normal_draws = standard_normal_draws .* map(a -> sqrt(microstructure_noise[a]), ts.df[:,ts.grouping])
     ts.df[:,ts.value] += normal_draws
     return ts, CovarianceMatrix(brownian_corr_matrix, vols, assets), microstructure_noise, update_rates

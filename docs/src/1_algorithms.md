@@ -1,0 +1,28 @@
+# Algorithms
+
+## Volatility
+
+There are two builtin algorithms that purely estimate volatility. These are:
+* **simple\_volatility** this estimates the volatility for each stock given a grid of sampling times. If a grid of sampling times is not input then one is estimated optimally (using a formula suggested by Zhang, Mykland & Aït-Sahalia 2005).
+* **two\_scales\_volatility** This estimates volatility over two different timescales. One short duration (so alot of the measured variation will be from microstructure noise) and one longer duration (so little of the measured variation is from microstructure noise). Then it combines the two estimates to get an estimate of volatility and also of microstructure noise.
+
+In addition it is generally possible to infer volatility from the covariance matrix estimates. Given a covariance matrix over some interval it is possible to extract the variance of each stock's price and then determine the volatility from that. In most cases when one of the following covariance estimation function is use it is this measure of volatility that is put into the CovarianceMatrix struct.
+
+## Covariance
+
+There are five algorithms for estimating covariances.
+* The **simple\_covariance** function estimates a covariance matrix in the [basic way](https://en.wikipedia.org/wiki/Sample_mean_and_covariance) using a given timegrid. Users can input their own timegrid, their own spacing that will be used to gather observations or choose to use refresh times (which will likely be biased and so is not recommended). If the user does not do this then by default the spacing will be the average (across assets) optimal spacing that is calculated in the **simple\_volatility** function.
+* The **preaveraged\_covariance** function. This first preaverages price updates over certain intervals and then estimates the correlations using the averaged series. As a result of averaging the microstructure noise is reduced and the correlations are more accurate as a result. As the volatilities of preaveraged returns are artificially low we use two scales volatility estimates for volatility in this case.
+* The **two\_scales\_covariance** function. This calculates volatilities using the two\_scales\_volatility estimator. It then calculated pairwise correlations by comparing the two scales volatility of different linear combinations of the two assets.
+* The **spectral\_covariance** function - The spectral local method of moments technique  (Bibinger, Hautsch, Malec, and Reiss 2014) starts by breaking the trading period into equally sized subintervals. Given each subinterval we  compute a spectral statistic matrix by using a weighted sum of the returns within that interval. We calculate these weights by means of an orthogonal sine function with some spectral frequency j. Then we gather many different spectral statistic matrices by doing this repeatedly with different spectral frequencies. Our estimate of the covariance matrix is then calculated as the average of these spectral statistics.
+* The **bnhls\_covariance** function - The multivariate realised kernel (Barndorff-Nielsen, Hansen, Lunde, and Shephard 2008 - sometimes called the BNHLS method after the authors) is an algorithm that is designed to provide consistent PSD covariance estimates despite settings where there is microstructure noise (that may not be independent of the underlying price process) and asyncronously traded assets. It is a refinement of an earlier algorithm, the univariate realised kernel estimator, which is faster converging but relies an assumption of independence between microstructure noise and the underlying price process.
+
+## Regularisation
+
+There are four inbuilt regularisation algorithms, identity\_regularisation, eigenvalue\_clean, nearest\_psd\_matrix and nearest\_correlation\_matrix. The first three of these can be applied to either the covariance matrix or to the correlation matrix while the fourth can only be applied to the correlation matrix. If input as a regularsation\_method to a covariance estimation function, these methods can regularise a covariance matrix before it is split into a correlation matrix and volatilities. It can also be applied purely to the resultant correlation matrix. These regularisation techniques can also be applied directly to a CovarianceMatrix struct either on the correlation matrix or covariance matrix (in which case a covariance matrix is constructed, regularised and then split into a correlation matrix and volatilities that are then placed in a CovarianceMatrix struct).
+
+The regularisation techniques are:
+* **identity\_regularisation** -  This regularises a covariance (or correlation) by averaging it with an identity matrix of the same dimensions.
+* **eigenvalue\_clean** - This splits a covariance (or correlation) matrix into its eigenvalue decomposition. Then the distribution of eigenvalues that would be expected if it were a random matrix is computed. Any eigenvalues that are sufficiently small that they could have resulted are averaged together which shrinks their impact while the covariance matrix is still psd.
+* **nearest\_psd\_matrix** - This maps an estimated matrix to the nearest psd matrix.
+* **nearest\_correlation\_matrix** - This maps an estimated correlation matrix to the nearest psd matrix. And then the nearest unit diagonal (with offdiagonals less than one in absolute value) matrix. Then the nearest psd matrix and so on until it converges. The result is the nearest valid correlation matrix.

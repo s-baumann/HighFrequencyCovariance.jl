@@ -56,21 +56,19 @@ Combines the correlation matrix with the identity matrix to regularise it.
 # References
 Higham, N. J. 2001.
 """
-function identity_regularisation(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; identity_weight::Union{Missing,<:Real} = missing, spacing::Union{Missing,<:Real} = missing, return_calc::Function = simple_differencing)
-    if ismissing(identity_weight)
-        at_times = ismissing(spacing) ? get_all_refresh_times(ts, covariance_matrix.labels) : collect(0:spacing:maximum(ts.df[:,ts.time]))
-        dd_compiled = latest_value(ts, at_times; assets = covariance_matrix.labels)
-        asset_returns = get_returns(dd_compiled; rescale_for_duration = true, return_calc = return_calc)
-        regularised_correl = identity_regularisation(covariance_matrix.correlation,  asset_returns)
-    else
-        regularised_correl = identity_regularisation(covariance_matrix.correlation,  identity_weight)
-    end
-    return CovarianceMatrix(regularised_correl, covariance_matrix.volatility, covariance_matrix.labels)
-end
-
 function identity_regularisation(mat::Hermitian, ts::SortedDataFrame; identity_weight::Union{Missing,<:Real} = missing, spacing::Union{Missing,<:Real} = missing, return_calc::Function = simple_differencing)
     at_times = ismissing(spacing) ? get_all_refresh_times(ts, covariance_matrix.labels) : collect(0:spacing:maximum(ts.df[:,ts.time]))
     dd_compiled = latest_value(ts, at_times; assets = covariance_matrix.labels)
     asset_returns = get_returns(dd_compiled; rescale_for_duration = true, return_calc = return_calc)
     return identity_regularisation(mat, asset_returns)
+end
+function identity_regularisation(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; identity_weight::Union{Missing,<:Real} = missing,
+                                 spacing::Union{Missing,<:Real} = missing, return_calc::Function = simple_differencing, apply_to_covariance::Bool = true)
+     if apply_to_covariance
+         regularised_covariance = identity_regularisation(covariance(covariance_matrix,1), ts; identity_weight = identity_weight, spacing = spacing, return_calc = return_calc)
+         corr, vols = cov2cor_and_vol(mat, 1)
+         return CovarianceMatrix(corr, vols, covariance_matrix.labels)
+     else
+         return CovarianceMatrix(Hermitian(identity_regularisation(covariance_matrix.correlation, ts; identity_weight = identity_weight, spacing = spacing, return_calc = return_calc)), covariance_matrix.volatility, covariance_matrix.labels)
+     end
 end
