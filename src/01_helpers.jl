@@ -13,11 +13,10 @@ end
 Converts a matrix (representing a covariance matrix) into a Hermitian correlation
 matrix and a vector of volatilities.
 """
-function cov2cor_and_vol(mat,duration = 1)
+function cov2cor_and_vol(mat, duration = 1)
     cor, sdevs = cov2cor(mat)
     return Hermitian(cor), sdevs/sqrt(duration)
 end
-
 
 """
 Converts a correlation matrix and some standard deviations into a Hermitian covariance matrix.
@@ -25,6 +24,13 @@ Converts a correlation matrix and some standard deviations into a Hermitian cova
 function cor2cov(cor,sdevs)
     mat = cor .* (sdevs * transpose(sdevs))
     return Hermitian(mat)
+end
+"""
+This makes a Hermitian matrix for the covariance matrix over some duration.
+"""
+function covariance(cm::CovarianceMatrix, duration::Real)
+    sds = sqrt.((cm.volatility.^2) .* duration)
+    return cor2cov(cm.correlation, sds)
 end
 
 """

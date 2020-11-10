@@ -48,9 +48,23 @@ valid_correlation_matrix(spectral_estimate2)
 # two scales Convergence
 two_scales_estimate1 = two_scales_covariance(ts1, assets)
 two_scales_estimate2 = two_scales_covariance(ts2, assets)
-iscloser(calculate_mean_abs_distance(two_scales_estimate2, true_covar), calculate_mean_abs_distance(two_scales_estimate1, true_covar))
 valid_correlation_matrix(two_scales_estimate1)
 valid_correlation_matrix(two_scales_estimate2)
+
+
+#############################
+# Conversion to a covariance function
+dura = 1.0
+covarr = covariance(two_scales_estimate2, dura)
+corr, vols =  cov2cor_and_vol(covarr,dura)
+all(corr .< two_scales_estimate2.correlation) .< 10*eps()
+all(vols .< two_scales_estimate2.volatility) .< 10*eps()
+
+dura = 12.3
+covarr = covariance(two_scales_estimate2, dura)
+corr, vols =  cov2cor_and_vol(covarr,dura)
+all(corr .< two_scales_estimate2.correlation) .< 10*eps()
+all(vols .< two_scales_estimate2.volatility) .< 10*eps()
 
 #############################
  # Serialisation and deserialisation
@@ -73,17 +87,29 @@ reg1 = identity_regularisation(psd_mat, ts2)
 calculate_mean_abs_distance(psd_mat, reg1).Correlation_error .> 10*eps()
 calculate_mean_abs_distance(psd_mat, reg1).Volatility_error .< 10*eps()
 
+reg1_corr = identity_regularisation(psd_mat, ts2; apply_to_covariance = false)
+calculate_mean_abs_distance(psd_mat, reg1_corr).Correlation_error .> 10*eps()
+calculate_mean_abs_distance(psd_mat, reg1_corr).Volatility_error .< 10*eps()
+
 reg2 = nearest_correlation_matrix(psd_mat, ts2)
 calculate_mean_abs_distance(psd_mat, reg2).Correlation_error .< 10*eps() # No change as we are already psd
 calculate_mean_abs_distance(psd_mat, reg2).Volatility_error .< 10*eps()
 
 reg3 = nearest_psd_matrix(psd_mat, ts2)
 calculate_mean_abs_distance(psd_mat, reg3).Correlation_error .< 10*eps() # No change as we are already psd
-calculate_mean_abs_distance(psd_mat, reg3).Volatility_error .< 10*eps()
+calculate_mean_abs_distance(psd_mat, reg3).Volatility_error .< 1000*eps()
+
+reg3_corr = nearest_psd_matrix(psd_mat, ts2; apply_to_covariance = false)
+calculate_mean_abs_distance(psd_mat, reg3_corr).Correlation_error .< 10*eps() # No change as we are already psd
+calculate_mean_abs_distance(psd_mat, reg3_corr).Volatility_error .< 10*eps()
 
 reg4 = eigenvalue_clean(psd_mat, ts2)
 calculate_mean_abs_distance(psd_mat, reg4).Correlation_error .> 2*eps()
-calculate_mean_abs_distance(psd_mat, reg4).Volatility_error .< 10*eps()
+calculate_mean_abs_distance(psd_mat, reg4).Volatility_error .> 10*eps()
+
+reg4_cov = eigenvalue_clean(psd_mat, ts2; apply_to_covariance = false)
+calculate_mean_abs_distance(psd_mat, reg4_cov).Correlation_error .> 2*eps()
+calculate_mean_abs_distance(psd_mat, reg4_cov).Volatility_error .< 10*eps()
 
 # Testing blocking and regularisation.
 blocking_dd = put_assets_into_blocks_by_trading_frequency(ts2, 1.1, spectral_covariance)

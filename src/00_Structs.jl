@@ -83,13 +83,7 @@ mutable struct CovarianceMatrix{R<:Real}
     labels::Array{Symbol,1}
 end
 
-"""
-This makes a Hermitian matrix for the covariance matrix over some duration.
-"""
-function covariance(cm::CovarianceMatrix, duration::Real)
-    sds = sqrt.(cm.volatility .* duration)
-    return cor2cov(cm.correlation, sds)
-end
+
 
 """
 This makes an empty CovarianceMatrix struct with all volatilities and correlations being NaNs

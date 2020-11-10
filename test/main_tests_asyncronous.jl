@@ -69,9 +69,15 @@ two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = e
 # Running regularistation on a CovarianceMatrix's correlation matrix.
 psd_mat = two_scales_covariance(ts2, assets; regularisation = nearest_correlation_matrix)
 valid_correlation_matrix(psd_mat)
+
+
 reg1 = identity_regularisation(psd_mat, ts2)
 calculate_mean_abs_distance(psd_mat, reg1).Correlation_error .> 10*eps()
-calculate_mean_abs_distance(psd_mat, reg1).Volatility_error .< 10*eps()
+calculate_mean_abs_distance(psd_mat, reg1).Volatility_error .> 10*eps()
+
+reg1_corr = identity_regularisation(psd_mat, ts2; apply_to_covariance = false)
+calculate_mean_abs_distance(psd_mat, reg1_corr).Correlation_error .> 10*eps()
+calculate_mean_abs_distance(psd_mat, reg1_corr).Volatility_error .< 10*eps()
 
 reg2 = nearest_correlation_matrix(psd_mat, ts2)
 calculate_mean_abs_distance(psd_mat, reg2).Correlation_error .< 10*eps() # No change as we are already psd
@@ -79,11 +85,19 @@ calculate_mean_abs_distance(psd_mat, reg2).Volatility_error .< 10*eps()
 
 reg3 = nearest_psd_matrix(psd_mat, ts2)
 calculate_mean_abs_distance(psd_mat, reg3).Correlation_error .< 10*eps() # No change as we are already psd
-calculate_mean_abs_distance(psd_mat, reg3).Volatility_error .< 10*eps()
+calculate_mean_abs_distance(psd_mat, reg3).Volatility_error .< 1000*eps()
+
+reg3_corr = nearest_psd_matrix(psd_mat, ts2; apply_to_covariance = false)
+calculate_mean_abs_distance(psd_mat, reg3_corr).Correlation_error .< 10*eps() # No change as we are already psd
+calculate_mean_abs_distance(psd_mat, reg3_corr).Volatility_error .< 10*eps()
 
 reg4 = eigenvalue_clean(psd_mat, ts2)
-calculate_mean_abs_distance(psd_mat, reg4).Correlation_error .> 10*eps()
-calculate_mean_abs_distance(psd_mat, reg4).Volatility_error .< 10*eps()
+calculate_mean_abs_distance(psd_mat, reg4).Correlation_error .> 2*eps()
+calculate_mean_abs_distance(psd_mat, reg4).Volatility_error .> 10*eps()
+
+reg4_cov = eigenvalue_clean(psd_mat, ts2; apply_to_covariance = false)
+calculate_mean_abs_distance(psd_mat, reg4_cov).Correlation_error .> 2*eps()
+calculate_mean_abs_distance(psd_mat, reg4_cov).Volatility_error .< 10*eps()
 
 # Testing blocking and regularisation.
 blocking_dd = put_assets_into_blocks_by_trading_frequency(ts2, 1.1, spectral_covariance)

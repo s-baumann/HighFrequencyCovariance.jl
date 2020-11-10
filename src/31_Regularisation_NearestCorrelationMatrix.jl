@@ -168,7 +168,7 @@ end
 function nearest_psd_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; apply_to_covariance::Bool = true)
     if apply_to_covariance
         regularised_covariance = nearest_psd_matrix(covariance(covariance_matrix,1), ts)
-        corr, vols = cov2cor_and_vol(mat, 1)
+        corr, vols = cov2cor_and_vol(regularised_covariance, 1)
         return CovarianceMatrix(corr, vols, covariance_matrix.labels)
     else
         return CovarianceMatrix(Hermitian(nearest_psd_matrix(covariance_matrix.correlation, ts)), covariance_matrix.volatility, covariance_matrix.labels)

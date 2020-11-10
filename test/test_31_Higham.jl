@@ -139,9 +139,9 @@ all(abs.(Y .- A) .< 100*eps())
 N = 3
 A = Hermitian([1.02 0.5 0.9; 0.5 0.98 0.9; 0.9 0.9 1.01])
 W = Hermitian(abs.(cov2cor(Hermitian(rand(twister, IW_dist(N)  )))[1]))
-updated_matrix, counter, convergence = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_psd = true, max_iterates = 1000)
-updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_psd = false, max_iterates = 10000)
-updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(A, W; doDykstra = false, stop_at_first_psd = true, max_iterates = 10000)
+updated_matrix, counter, convergence = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
+updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = false, max_iterates = 10000)
+updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(A, W; doDykstra = false, stop_at_first_correlation_matrix = true, max_iterates = 10000)
 all(abs.(updated_matrix .- updated_matrix2) .< 100*eps()) # These should be the same as once it is psd the matrix stops updating.
 any(abs.(updated_matrix .- updated_matrix3) .> 0.0001) # These should be different as without Dykstra one is biased
 # Testing convergences.
@@ -154,9 +154,9 @@ minimum(eigen(updated_matrix3).values) > -10*eps()
 N = 3
 A = Hermitian([1.02 0.5 0.9; 0.5 0.98 0.9; 0.9 0.9 1.01])
 W = Diagonal(rand(twister,N))
-updated_matrix, counter, convergence = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_psd = true, max_iterates = 1000)
-updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_psd = false, max_iterates = 10000)
-updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(A, W; doDykstra = false, stop_at_first_psd = true, max_iterates = 10000)
+updated_matrix, counter, convergence = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
+updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = false, max_iterates = 10000)
+updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(A, W; doDykstra = false, stop_at_first_correlation_matrix = true, max_iterates = 10000)
 all(abs.(updated_matrix .- updated_matrix2) .< 100*eps()) # These should be the same as once it is psd the matrix stops updating.
 any(abs.(updated_matrix .- updated_matrix3) .> 0.0001) # These should be different as without Dykstra one is biased
 # Testing convergences.
@@ -167,9 +167,9 @@ minimum(eigen(updated_matrix3).values) > -10*eps()
 # A really non psd case
 A = Hermitian([1.02 0.5 0.9; 0.5 0.98 -0.9; 0.9 -0.9 1.01])
 W = Hermitian(abs.(cov2cor(Hermitian(rand(twister, IW_dist(N)  )))[1]))
-updated_matrix, counter, convergence = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_psd = true, max_iterates = 100000)
-updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_psd = false, max_iterates = 10000)
-updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(A, W; doDykstra = false, stop_at_first_psd = true, max_iterates = 10000)
+updated_matrix, counter, convergence = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 100000)
+updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = false, max_iterates = 10000)
+updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(A, W; doDykstra = false, stop_at_first_correlation_matrix = true, max_iterates = 10000)
 all(abs.(updated_matrix .- updated_matrix2) .< 1000*eps()) # These should be the same as once it is psd the matrix stops updating.
 any(abs.(updated_matrix .- updated_matrix3) .> 0.0001) # These should be different as without Dykstra one is biased
 # Testing convergences.

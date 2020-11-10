@@ -9,7 +9,7 @@ using UnivariateFunctions, StochasticIntegrals # These are only used for the mon
 
 # Preliminary functions
 include("00_Structs.jl")
-export SortedDataFrame, CovarianceMatrix, covariance, +, -, mean
+export SortedDataFrame, CovarianceMatrix, +, -, mean
 export get_correlation, get_volatility
 export make_nan_covariance_matrix, duration
 export subset_to_tick, subset_to_time, calculate_mean_abs_distance
@@ -18,7 +18,8 @@ export ticks_per_asset, get_assets
 include("01_helpers.jl")
 export simple_differencing
 include("02_subsample_ticks.jl")
-export cov2cor, cor2cov, cov2cor_and_vol, construct_matrix_from_eigen, get_returns, combine_covariance_matrices, rearrange, covariance
+export cov2cor, cor2cov, cov2cor_and_vol, covariance, construct_matrix_from_eigen, get_returns
+export combine_covariance_matrices, rearrange
 export squared_frobenius, squared_frobenius_distance
 export next_tick, get_all_refresh_times, latest_value, time_between_refreshes, random_value_in_interval
 include("03_MonteCarlo.jl")
