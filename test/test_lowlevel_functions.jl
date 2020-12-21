@@ -28,6 +28,5 @@ duration(tss)  ~ 8-1
 
 # ticks per asset
 ticks_per_asset(tss, assets) == Dict([:A, :B] .=> [5, 4])
-
 # Refresh times
 refresh = get_all_refresh_times(tss, assets) == [2,5,7]

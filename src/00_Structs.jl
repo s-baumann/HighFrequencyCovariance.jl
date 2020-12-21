@@ -60,8 +60,8 @@ end
 This subsets a SortedDataFrame to only the first observations up until some time.
 """
 function subset_to_time(ts::SortedDataFrame, totime::Real)
-    ind = searchsortedfirst(ts.df[:,ts.time], totime)
-    if ind > nrow(ts.df) return ts end
+    ind = searchsortedfirst(ts.df[:,ts.time], totime) - 1
+    if ind >= nrow(ts.df) return ts end
     return subset_to_tick(ts, ind)
 end
 
