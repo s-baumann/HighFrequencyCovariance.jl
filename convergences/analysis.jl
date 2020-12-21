@@ -12,7 +12,8 @@ files = glob("*.csv",fldr)
 
 dd = CSV.read(files[1])
 for i in 2:length(files)
-    global dd = vcat(dd, CSV.read(files[i]))
+    newdd = CSV.read(files[i])
+    global dd = vcat(dd, newdd)
 end
 
 how_many_nans(x) = mean(isnan.(x))
@@ -35,7 +36,10 @@ aa = sort(aa, :dimensions)
 
 aa[!,:dims] = map(x -> string(x, " assets"), aa[:,:dimensions])
 aa[!,:ticks_per_asset] = aa[:,:number_of_paths] ./ aa[:,:dimensions]
-aa[!,:estimation] = map(i -> string( Bool(aa[i,:syncronous]) ? "Syncronous updates" : "Asyncronous updates", "\n" ,  Bool(aa[i,:with_noise]) ? "with " : "without ", " noise"    ), 1:nrow(aa) )
+aa[!,:nois] .= "with AR1 noise"
+aa[aa[:,:with_noise] .== 1,:nois] .= "with iid noise"
+aa[aa[:,:with_noise] .== 0,:nois] .= "without noise"
+aa[!,:estimation] = map(i -> string( Bool(aa[i,:syncronous]) ? "Syncronous updates" : "Asyncronous updates", "\n" ,  aa[i,:nois]), 1:nrow(aa) )
 
 
 
@@ -60,8 +64,29 @@ plt = plot(bb, xgroup=:dims, ygroup=:estimation, Geom.subplot_grid(layer(x=:tick
            layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.line)),
            Scale.x_log10, Scale.y_log10, Guide.xlabel("Average number of updates per asset"), Guide.ylabel("Mean Absolute Error in estimated volatilities"), style(key_position = :bottom),
            Guide.ColorKey(""), Guide.Title("Accuracy in estimating volatilities"))
-img = PDF(string(plot_folder, "volatility.pdf"), 30cm, 30cm)
+img = PDF(string(plot_folder, "volatility_imprecision.pdf"), 30cm, 30cm)
 draw(img, plt)
+
+yvar = :MAE_mean_ex_nans_mean_ex_nans
+bb = combine(groupby(aa, [:ticks_per_asset, :method, :variable]), :MAE_mean_ex_nans => mean_ex_nans)
+plt = plot(bb, xgroup=:variable, Geom.subplot_grid(layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.point),
+           layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.line)),
+           Scale.x_log10, Scale.y_log10, Guide.xlabel("Average number of updates per asset"), Guide.ylabel("Mean Absolute Error in estimated volatilities"), style(key_position = :bottom),
+           Guide.ColorKey(""))
+img = PDF(string(plot_folder, "both_imprecision.pdf"), 30cm, 15cm)
+draw(img, plt)
+
+
+yvar = :MAE_mean_ex_nans_mean_ex_nans
+bb = combine(groupby(aa, [:ticks_per_asset, :method, :with_noise, :estimation, :variable]), :MAE_mean_ex_nans => mean_ex_nans)
+bb = bb[(bb.with_noise .!= "AR1") ,: ]
+plt = plot(bb, ygroup=:variable, xgroup=:estimation, Geom.subplot_grid(layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.point),
+           layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.line), free_y_axis =true),
+           Scale.x_log10, Scale.y_log10, Guide.xlabel("Average number of updates per asset"), Guide.ylabel("Mean Absolute Error in estimated volatilities"), style(key_position = :right),
+           Guide.ColorKey(""))
+img = PDF(string(plot_folder, "both_imprecision23.pdf"), 30cm, 15cm)
+draw(img, plt)
+
 
 #########################################
 # Time and space complexity
