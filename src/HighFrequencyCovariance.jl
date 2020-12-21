@@ -5,7 +5,9 @@ using LinearAlgebra
 using Distributions
 using Random
 using Statistics
-using UnivariateFunctions, StochasticIntegrals # These are only used for the monte carlo estimations.
+
+# These are only used for the monte carlo estimations.
+using UnivariateFunctions, StochasticIntegrals
 
 # Preliminary functions
 include("00_Structs.jl")
