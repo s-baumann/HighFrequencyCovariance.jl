@@ -99,9 +99,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[Distributions]]
 deps = ["FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "StaticArrays", "Statistics", "StatsBase", "StatsFuns"]
-git-tree-sha1 = "501c11d708917ca09ce357bed163dbaf0f30229f"
+git-tree-sha1 = "2cce211af0abaa01354904e2af2232a4431d8b14"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.23.12"
+version = "0.24.8"
 
 [[EarCut_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -123,15 +123,15 @@ version = "4.3.1+4"
 
 [[FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays"]
-git-tree-sha1 = "502b3de6039d5b78c76118423858d981349f3823"
+git-tree-sha1 = "ff537e5a3cba92fb48f30fec46723510450f2c0e"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "0.9.7"
+version = "0.10.2"
 
 [[FixedPointAcceleration]]
 deps = ["Dates", "GLM", "LinearAlgebra", "Test"]
-git-tree-sha1 = "98eff498aa4c883307f1c2220a42af30dc4a210e"
+git-tree-sha1 = "85ab17513b46a647bf2b7c93c224e5839ad6a8a9"
 uuid = "817d07cb-a79a-5c30-9a31-890123675176"
-version = "0.1.1"
+version = "0.3.0"
 
 [[FixedPointNumbers]]
 deps = ["Statistics"]
@@ -514,10 +514,10 @@ uuid = "3eaba693-59b7-5ba5-a881-562e759f1c8d"
 version = "0.6.16"
 
 [[StochasticIntegrals]]
-deps = ["DataFrames", "Dates", "Distributions", "FixedPointAcceleration", "LinearAlgebra", "Random", "Sobol", "Statistics", "Test", "UnivariateFunctions"]
-git-tree-sha1 = "18c3ac16b92523bd2d5e7d017af6c8164fc946b4"
+deps = ["DataFrames", "DataStructures", "Dates", "Distributions", "FixedPointAcceleration", "LinearAlgebra", "Random", "Sobol", "Statistics", "Test", "UnivariateFunctions"]
+git-tree-sha1 = "72a621c9fc62ee560793fb7c4e209501789dc2a9"
 uuid = "b15139f2-feda-5ba7-9a2a-3fc816fb5551"
-version = "0.3.0"
+version = "0.4.0"
 
 [[StructArrays]]
 deps = ["Adapt", "DataAPI", "Tables"]
