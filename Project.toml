@@ -17,5 +17,5 @@ UnivariateFunctions = "368b7869-440d-5a68-a3d1-bbc86b0a93b0"
 
 [compat]
 Documenter = "0.26"
-julia = "1.4"
 StochasticIntegrals = "0.4"
+julia = "1.4"
