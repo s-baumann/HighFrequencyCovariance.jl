@@ -49,7 +49,7 @@ function simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_ass
             n_grid = default_spacing(ts; rough_guess_number_of_intervals = rough_guess_number_of_intervals, return_calc = return_calc)
             dura = duration(ts)
             for a in assets
-                if n_grid[a] > length(ts.df[ts.groupingrows[a],:])
+                if n_grid[a] > length(ts.df[ts.groupingrows[a],ts.time])
                     time_grid[a] = ts.df[ts.groupingrows[a],ts.time]
                 else
                     time_grid[a] = dura / n_grid[a]

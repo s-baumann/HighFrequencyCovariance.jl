@@ -17,6 +17,9 @@ ts2, true_covar, micro_noise, update_rates = generate_random_path(4, 50000; brow
 
 iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error + b.Volatility_error)
 
+# Simple Volatility
+simple_vol = simple_volatility(ts1)
+
 # Preav Convergence
 preav_estimate1 = preaveraged_covariance(ts1, assets)
 preav_estimate2 = preaveraged_covariance(ts2, assets)
