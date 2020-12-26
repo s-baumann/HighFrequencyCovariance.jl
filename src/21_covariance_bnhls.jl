@@ -61,65 +61,6 @@ function realised_autocovariance(returns::Array{R,2}, h::Integer) where R<:Real
     return summed
 end
 
-function realised_autocovariance2(returns::Array{R,2}, h::Integer) where R<:Real
-    d = size(returns)[2]
-    h = abs(h)
-    start = h+1
-    end_ = size(returns)[1]
-    summed = zeros(d,d)
-    for j in start:end_
-        summed += AtB_plus_BtA(returns[j,:], returns[j-h,:])
-    end
-    return summed
-end
-
-
-# Defining the following we have
-# J = returns[j,:]
-# M = returns[j-h,:]
-# H = returns[j+h,:]
-# Now in cases where for J we have a j-H and a j+H, we need to add up
-# Jt(M) + Ht(J) + t(Jt(M) + Ht(J))
-# Which simplifies down to
-# X = H + M
-# Jt(X) + Xt(J)
-# t(Xt(J)) + Xt(J)
-# In cases where we only have a minus (where we are above end1 in below notation) we want
-# Jt(M) + t(Jt(M))
-function realised_autocovariance_plus_its_transpose(returns::Array{R,2}, h::Integer) where R<:Real
-    d = size(returns)[2]
-    h = abs(h)
-    start0 = h+1
-    end0 = size(returns)[1]
-    end1 = end0 - h
-    gap = end1 - start0
-    summed = Hermitian(zeros(d,d))
-    intervals = Int.(ceil((end1 - start0)/h))
-    twosideds = reduce(vcat, map(i -> collect( (start0 + i*h):(start0 + (i+1)*h-1)  )   , 0:2:(intervals-1)))
-    l1 = length(twosideds)
-    twosideds = twosideds[twosideds .< end1+1]
-    l2 = length(twosideds)
-    for j in twosideds
-        X       = returns[j-h,:] + returns[j+h,:]
-        summed += AtB_plus_BtA(X, returns[j,:])
-    end
-    #onesideds = end1:(end0-gap+1)
-    #if gap < 0 onesideds = start0:end0 end
-    onesideds = (maximum(twosideds)+h+1):end0
-    for j in onesideds
-        summed += AtB_plus_BtA(returns[j,:], returns[j-h,:])
-    end
-    onesideds = (maximum(twosideds)+1):min((minimum(twosideds)+h-1), end0)
-    for j in onesideds
-        summed += AtB_plus_BtA(returns[j,:], returns[j-h,:])
-    end
-    onesideds = (maximum(twosideds)+1):(maximum(twosideds) + l1 - l2)
-    for j in onesideds
-        summed += AtB_plus_BtA(returns[j,:], returns[j-h,:])
-    end
-    return summed
-end
-
 """
 This averages the first few and last few returns. We do this to returns rather than
 prices (as suggested in BNHLS 2011).
