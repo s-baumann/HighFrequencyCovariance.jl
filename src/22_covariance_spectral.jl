@@ -1,51 +1,10 @@
 apply_weights(A::Array, W::Array) = sum(A .* W)
 apply_weights(A::Array, W::Missing) = sum(A .* (1/length(A)))
 
-function estimate_spectral_weights(H_kn::Array, uncorrected_covar_matrices::Array, block_width::Real, numAssets::Integer, num_blocks::Integer, numJ::Integer, R::Type)
-    weight_array  = Array{Array{Array{R,2},1},1}(undef,num_blocks)
-    for block_num in 1:num_blocks
-        wghts = Array{Array{R,2},1}(undef, numJ)
-        I_jks = Array{Array{R,2},1}(undef, numJ)
-        Ik_block = zeros(numAssets, numAssets)
-        for j in 1:numJ
-            block_H = Diagonal(H_kn[block_num,:])
-            adjustments = ((pi *  j)/block_width)^2
-            A = uncorrected_covar_matrices[block_num][j] + adjustments * block_H
-            invAA =  0.5 * inversion(Hermitian(A .* A))
-
-            I_jks[j] = invAA
-            Ik_block += invAA
-        end
-        # weight calculation.
-        inv_IK = inversion(Hermitian(Ik_block))
-
-        for j in 1:numJ
-            wghts[j] = inv_IK * I_jks[j]
-        end
-        weight_array[block_num] = wghts
-    end
-    return weight_array
-end
-
 @inline function orthogonal_sine(t::Real, j::Real, block_num::Integer, block_width::Real)
     # Note for simplicity and speed I am going to assume that we will never call this after (k+1)h_n. This is due to the way it will be calculated in the loop.
     start_of_block = block_num*block_width
     return  t > start_of_block ? ((sqrt(2 * block_width))/(j*pi)) *sin((j * pi * (t-start_of_block))/block_width) : 0.0
-end
-
-
-function inversion(A; times_regularised::Integer = 0)
-    invAA = try
-        inv(A)
-    catch
-        if times_regularised > 0
-            mapped_A = identity_regularisation(A, 0.01)
-            return inversion(mapped_A; times_regularised = times_regularised + 1)
-        end
-        mapped_A = project_to_S(A, Diagonal(eltype(A).(I(size(A)[1]))))
-        return inversion(mapped_A; times_regularised = times_regularised + 1)
-    end
-    return invAA
 end
 
 function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = eigenvalue_clean,
