@@ -59,23 +59,6 @@ function random_value_in_interval(ts::SortedDataFrame, at_times::Vector{R}; asse
     return dd
 end
 
-
-
-# For refresh time sampling.
-"""
-Get refresh time after some time when all assets have an updated price.
-"""
-function next_tick_from_time(ts::SortedDataFrame, from_time::R; assets::Vector{Symbol} = get_assets(ts) ) where R<:Real
-    ref_times = Array{R,1}()
-    for a in assets
-        asset_rows = ts.groupingrows[a]
-        dff = ts.df[asset_rows,:]
-        i = searchsortedfirst(dff[:,ts.time], from_time)
-        if i >=  length(asset_rows) return missing end
-        push!(ref_times,dff[i+1,ts.time])
-    end
-    return maximum(ref_times)
-end
 function next_tick(ts::SortedDataFrame, from_index::I; assets::Vector{Symbol} = get_assets(ts)) where R<:Real where I<:Integer
     inds = Array{I,1}()
     for a in assets
