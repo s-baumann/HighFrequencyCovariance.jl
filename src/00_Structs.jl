@@ -150,15 +150,3 @@ function ticks_per_asset(ts::SortedDataFrame, assets = get_assets(ts))
     ticks_per_asset = map(a -> length(ts.groupingrows[a]), assets)
     return Dict{Symbol,eltype(ticks_per_asset)}(assets .=> ticks_per_asset)
 end
-
-
-## Linear algebra extensions
-import Base.+, Base.-
-function +(A::Hermitian, B::Diagonal)
-      return Hermitian(A .+ B)
-end
-+(B::Diagonal,A::Hermitian) = +(A, B)
-function -(A::Hermitian, B::Diagonal)
-      return Hermitian(A .- B)
-end
--(B::Diagonal,A::Hermitian) = -1*(-(A, B))
