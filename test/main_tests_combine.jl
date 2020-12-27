@@ -16,7 +16,7 @@ twister = MersenneTwister(1)
 
 ts1, true_covar, micro_noise, update_rates = generate_random_path(4, 2000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister), syncronous = true)
 ts2, true_covar, micro_noise, update_rates = generate_random_path(4, 2000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister), syncronous = true)
-ts3, true_covar, micro_noise, update_rates = generate_random_path(4, 2000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister), syncronous = true)
+ts3, true_covar, micro_noise, update_rates = generate_random_path(4, 2000; assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister), syncronous = true)
 
 
 iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error + b.Volatility_error)
