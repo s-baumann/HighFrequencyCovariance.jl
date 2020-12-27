@@ -31,3 +31,7 @@ duration(tss)  ~ 8-1
 ticks_per_asset(tss, assets) == Dict([:A, :B] .=> [5, 4])
 # Refresh times
 refresh = get_all_refresh_times(tss, assets) == [2,5,7]
+
+# Testing two scales covariance when there is not much data.
+tsc = two_scales_covariance(tss)
+length(tsc.volatility) == 0
