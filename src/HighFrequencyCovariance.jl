@@ -11,7 +11,7 @@ using UnivariateFunctions, StochasticIntegrals
 
 # Preliminary functions
 include("00_Structs.jl")
-export SortedDataFrame, CovarianceMatrix, +, -, mean
+export SortedDataFrame, CovarianceMatrix, +, -
 export get_correlation, get_volatility
 export make_nan_covariance_matrix, duration
 export subset_to_tick, subset_to_time, calculate_mean_abs_distance

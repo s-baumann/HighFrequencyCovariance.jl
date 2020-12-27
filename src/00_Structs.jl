@@ -130,22 +130,6 @@ function get_volatility(covar::CovarianceMatrix, asset1::Symbol)
     return covar.volatility[index1]
 end
 
-import Statistics.mean
-
-"""
-Combine a vector of CovarianceMatrixs with equal weight on each.
-"""
-function mean(vec::Vector{CovarianceMatrix})
-    len = length(vec)
-    if len == 1 return vec[1] end
-    running_cov = combine_covariance_matrices(vec[1], vec[2], 0.5, 0.5)
-    if len == 2 return running_cov end
-    for i in 3:len
-        running_cov = combine_covariance_matrices(vec[1], vec[2], (i-1)/i, (i-1)/i)
-    end
-    return running_cov
-end
-
 """
 Test if a CovarianceMatrix struct contains a valid correlation matrix.
 """
