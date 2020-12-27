@@ -10,7 +10,7 @@ end
 """
 Calculates volatility with the simple method with a specified time grid.
 """
-function simple_volatility_with_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Dict{Symbol,<:Real}; return_calc::Function = simple_differencing)
+function simple_volatility_with_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid; return_calc::Function = simple_differencing)
     voldict = Dict{Symbol, eltype(ts.df[:,ts.value])}(assets .=> repeat([0.0], length(assets)))
     for a in assets
         at_times = time_grid[a]
@@ -30,7 +30,7 @@ function simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_ass
                            time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
                            use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
     if ismissing(time_grid)
-        time_grid = Dict{Symbol,eltype(ts.df[:,ts.time])}()
+        time_grid = Dict{Symbol,Vector{eltype(ts.df[:,ts.time])}}()
         if use_all_obs
             for a in assets
                 time_grid[a] = ts.df[ts.groupingrows[a],ts.time]
@@ -47,13 +47,8 @@ function simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_ass
             end
         else
             n_grid = default_spacing(ts; rough_guess_number_of_intervals = rough_guess_number_of_intervals, return_calc = return_calc)
-            dura = duration(ts)
             for a in assets
-                if n_grid[a] > length(ts.df[ts.groupingrows[a],ts.time])
-                    time_grid[a] = ts.df[ts.groupingrows[a],ts.time]
-                else
-                    time_grid[a] = dura / n_grid[a]
-                end
+                time_grid[a] = collect(minimum(ts.df[:,ts.time]):n_grid[a]:maximum(ts.df[:,ts.time]))
             end
         end
     end

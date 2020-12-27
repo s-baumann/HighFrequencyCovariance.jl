@@ -19,6 +19,7 @@ iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error 
 
 # Simple Volatility
 simple_vol = simple_volatility(ts1)
+all(values(simple_vol) .< 0.1)
 
 # Preav Convergence
 preav_estimate1 = preaveraged_covariance(ts1, assets)
