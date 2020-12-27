@@ -159,17 +159,3 @@ function time_between_refreshes(ts::SortedDataFrame; assets::Vector{Symbol} = ge
     sort!(dd, :time_between_ticks)
     return dd
 end
-
-
-# This is much fast than code that
-#    A * transpose(B) + B * transpose(A)
-function AtB_plus_BtA(A::Vector,B::Vector)
-    len = length(A)
-    mat = Array{eltype(A),2}(undef, length(A), length(B))
-    for i in 1:len
-        for j in i:len
-            mat[i,j] = i==j ? 2*A[i]*B[i]  : A[i]*B[j] + A[j]*B[i]
-        end
-    end
-    return Hermitian(mat)
-end
