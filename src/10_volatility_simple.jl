@@ -1,10 +1,5 @@
-
-
 function simple_volatility_given_returns(returns::Array{R,1}) where R<:Real
     sqrt(mean(returns .^ 2))
-end
-function simple_volatility_given_returns(returns::Array{R,2}) where R<:Real
-    sqrt.(mean(returns .^ 2, dims=1))
 end
 
 """
