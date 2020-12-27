@@ -10,6 +10,7 @@ end
 function two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_grids::Real, return_calc::Function = simple_differencing)
     dura  = maximum(times) - minimum(times)
     if (dura < eps()) | (length(vals) < 10)
+        @warn "There was not enough data to use the two_scales_volatility method. Returning NaN."
         return NaN, NaN
     end
     num_grids = Int(max(2, floor(num_grids)))
@@ -32,6 +33,7 @@ function two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get
         vals = ts.df[ts.groupingrows[a],ts.value]
         times = ts.df[ts.groupingrows[a],ts.time]
         if length(vals) < 10
+            @warn "There was not enough data to use the two_scales_volatility method. Returning NaN."
             vols[a] = NaN
             micro_noise_var[a] = NaN
         else
