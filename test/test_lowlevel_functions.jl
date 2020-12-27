@@ -7,6 +7,7 @@ using Random
 ts = DataFrame(:lab => [:A,:B,:A,:A,:A,:B,:A,:B,:B], :tiempo => [1,2,3,4,5,5,6,7,8],
                :value => [1.01,2.0,1.011,1.02,1.011,2.2,1.0001,2.2,2.3])
 tss = SortedDataFrame(ts, :tiempo, :lab, :value)
+tss = SortedDataFrame(tss, :tiempo, :lab, :value) # Testing the constructor that takes a SortedDataFrame.
 assets = get_assets(tss, 0)
 
 function ~(A, B)
