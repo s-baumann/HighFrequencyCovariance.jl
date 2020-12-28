@@ -77,13 +77,7 @@ function weighted_mean(x::Vector, w::Vector)
     return sum(x .* w) / sum(w)
 end
 
-function is_missing_nan_inf(x)
-    if ismissing(x) return true end
-    if isnan(x) return true end
-    if isinf(x) return true end
-    return false
-end
-
+is_missing_nan_inf(x) = (ismissing(x) | isnan(x)) | isinf(x)
 
 """
     combine_covariance_matrices(vect::Vector{CovarianceMatrix{R}}, cor_weights::Vector{<:Real} = repeat([1.0], length(vect)), vol_weights::Vector{<:Real} = cor_weights)
