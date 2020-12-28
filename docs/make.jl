@@ -11,5 +11,6 @@ deploydocs(
     repo   = "github.com/s-baumann/HighFrequencyCovariance.jl.git",
     target = "build",
     deps   = nothing,
-    make   = nothing
+    make   = nothing,
+    devbranch = "main"
 )
