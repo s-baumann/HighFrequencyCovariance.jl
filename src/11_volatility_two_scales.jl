@@ -9,10 +9,7 @@ end
 
 function two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_grids::Real, return_calc::Function = simple_differencing)
     dura  = maximum(times) - minimum(times)
-    if (dura < eps()) | (length(vals) < 10)
-        @warn "There was not enough data to use the two_scales_volatility method. Returning NaN."
-        return NaN, NaN
-    end
+    if (dura < eps()) | (length(vals) < 10) return NaN, NaN end
     num_grids = Int(max(2, floor(num_grids)))
     avg_vol   = mean(map(i ->  vol_given_values_and_times(vals[i:num_grids:end], times[i:num_grids:end], asset, return_calc), 1:num_grids ))
     all_vol   = vol_given_values_and_times(vals, times, asset, return_calc)
