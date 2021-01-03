@@ -28,17 +28,13 @@ function identity_regularisation(mat::Hermitian, identity_weight::Real)
     mat_prime = (identity_weight .* II) + (1 - identity_weight) .* mat
     return Hermitian(mat_prime)
 end
-function identity_regularisation(mat::Hermitian, asset_returns::DataFrame; identity_weight::Union{Missing,R} = missing) where R<:Real
-    if ismissing(identity_weight)
-        II   = I(size(mat)[1])
-        m    = squared_frobenius_distance(mat, II) # Lemma 3.2
-        d    = sqrt(squared_frobenius_distance(mat, m*II))      # Lemma 3.3
-        bbar = b_bar(asset_returns, mat)
-        b    = min(bbar, d)
-        return identity_regularisation(mat, b/d)
-    else
-        return identity_regularisation(mat, identity_weight)
-    end
+function identity_regularisation(mat::Hermitian, asset_returns::DataFrame) where R<:Real
+    II   = I(size(mat)[1])
+    m    = squared_frobenius_distance(mat, II) # Lemma 3.2
+    d    = sqrt(squared_frobenius_distance(mat, m*II))      # Lemma 3.3
+    bbar = b_bar(asset_returns, mat)
+    b    = min(bbar, d)
+    return identity_regularisation(mat, b/d)
 end
 
 
