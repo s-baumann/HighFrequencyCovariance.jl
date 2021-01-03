@@ -44,7 +44,7 @@ function dataframe_to_covariancematrix(dd::DataFrame)
                     mat[i,j] = c1[1,:value]
                 else
                     c2 = cor_dd[cor_dd[:,:asset2] .== asseti,:]
-                    c2 = c1[c1[:,:asset1] .== assetj,:]
+                    c2 = c2[c2[:,:asset1] .== assetj,:]
                     if nrow(c2) == 0 error("The correlation between ", asseti, " and ", assetj, " is not in this dataframe.") end
                     mat[i,j] = c2[1,:value]
                 end

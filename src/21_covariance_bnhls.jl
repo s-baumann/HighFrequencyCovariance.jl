@@ -134,7 +134,7 @@ function bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_asse
     dd = get_returns(dd_compiled; return_calc = return_calc)
 
     if m >= nrow(dd)/2
-       println("Cannot estimate the correlation matrix with ", nrow(ts.df), " ticks as some variances are negative.")
+       @warn string("Cannot estimate the correlation matrix with the bnhls method with only ", nrow(ts.df), " ticks.")
        return make_nan_covariance_matrix(assets)
    end
 

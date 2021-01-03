@@ -48,7 +48,7 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
 
   lens = findall(map(i -> ismissing(prev_prices[i][1]), 1:length(prev_prices)))
   if length(lens) > 0
-     println("Cannot estimate the correlation matrix with ", number_of_ticks, " ticks. There are insufficient ticks for ", assets[lens])
+     @warn string("Cannot estimate the correlation matrix with ", number_of_ticks, " ticks. There are insufficient ticks for ", assets[lens])
      return make_nan_covariance_matrix(assets)
   end
 

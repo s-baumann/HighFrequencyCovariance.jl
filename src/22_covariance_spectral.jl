@@ -1,4 +1,4 @@
-apply_weights(A::Array, W::Array) = sum(A .* W)
+#apply_weights(A::Array, W::Array) = sum(A .* W)
 apply_weights(A::Array, W::Missing) = sum(A .* (1/length(A)))
 
 @inline function orthogonal_sine(t::Real, j::Real, block_num::Integer, block_width::Real)
@@ -55,12 +55,8 @@ function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_as
 
     # The efficient weights (see page 1324 of Bibinger, Hautsch, Malec & Reiss 2014) are not implemented here. It is highly error proone as
     # many inversions are required which is 1) computationally intensive and 2) can cause singularity errors as there is no guarantee of psd.
-    # So going to fall back to equal weighting when this doesnt work.
-    weights = repeat([missing],num_blocks) #: estimate_spectral_weights(H_kn, uncorrected_covar_matrices, block_width, numAssets, num_blocks, numJ, R)
-    #if ismissing(weights)
-    #    println("Due to inability to invert the fisher information matrix we are reverting back to equally weighting spectral frequencies.")
-    #    weights = repeat([missing],num_blocks)
-    #end
+    # So going to fall back to equal weighting.
+    weights = repeat([missing],num_blocks)
 
     corrected_matrices = Array{CovarianceMatrix{R},1}(undef,num_blocks)
     for block_num in 1:num_blocks
