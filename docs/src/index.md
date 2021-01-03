@@ -3,7 +3,7 @@
 This package estimates covariance matrix using high frequency data.
 
 This task is more complicated than normal covariance estimation due to several features of high frequency financial data:
-* Assets are traded nonsyncronously. For instance we get an updated GOOG price at 14:28:00 and then get an updated price for MSFT only at 14:28:04. Ignoring the asynchronisity with which we get price updates can downwards bias correlations.
+* Assets are traded nonsyncronously. For instance we get an updated GOOG price at 14:28:00 and then get an updated price for MSFT only at 14:28:04. Ignoring the asynchronisity with which we get price updates can downwards bias correlations (Eps 1979).
 * Assets may be traded over different intervals. For instance in calculating the correlation between JP Morgan and Credit Suisse we might have some days where Credit Suisse does  trade in Zurich but due to thanksgiving JP Morgan is not being traded in New York. So we might need to assemble a covariance matrix where the pairwise covariances/correlations come from slightly different intervals.
 * Price updates typically contain some "microstructure noise" which reflects frictions in the market rather than the longterm correlations between assets.
 * The microstruture noise can often not be iid but can exhibit serial correlation.

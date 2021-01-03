@@ -98,7 +98,7 @@ ticks_per_asset(ts_data)
 #  :asset_2 => 2630
 #  :asset_1 => 3934
 ```
-While we have 6848 price updates for asset\_4 we only have 2630 for asset\_2. Potentially we could improve the bnhls estimate if we use a blocking and regularisation technique.
+While we have 6848 price updates for asset\_4 we only have 2630 for asset\_2. Potentially we could improve the bnhls estimate if we use a blocking and regularisation technique (Hautsch, Kyj and Oomen  2012).
 
 We can start this by first making a dataframe detailing what assets should be in what block.
 We will generate a new block if the minimum number of ticks of a new block has 20% more ticks than the minimum of the previous:
