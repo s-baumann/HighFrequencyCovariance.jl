@@ -69,8 +69,8 @@ function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_as
         mat = Hermitian(apply_weights(corrected_mats, weights_for_block))
 
         # Regularisation
-        dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && (minimum(eigen(mat)[1]) < 0))
-        mat = dont_regulise ? mat : regularisation(mat, ts)
+        dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(mat))
+        mat = dont_regulise ? mat : regularisation(mat, ts, assets)
 
         # In some cases we get negative terms on the diagonal with this algorithm.
         negative_diagonals = findall(diag(mat) .< eps())
@@ -87,6 +87,7 @@ end
 
 """
 Estimation of a CovarianceMatrix using the spectral covariance method.
+Bibinger M, Hautsch N, Malec P, Reiss M (2014). “Estimating the quadratic covariation matrix from noisy observations: Local method of moments and efficiency.” The Annals of Statistics, 42(4), 1312–1346. doi:10.1214/14-AOS1224.
 """
 function spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = eigenvalue_clean,
                              only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks,

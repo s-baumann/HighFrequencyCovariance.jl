@@ -1,6 +1,7 @@
 
 """
 Estimation of the covariance matrix in the standard simple way given returns.
+https://en.wikipedia.org/wiki/Sample_mean_and_covariance
 """
 function simple_covariance_given_returns(returns::Array{R,2}) where R<:Real
     N = size(returns)[2]
@@ -19,6 +20,7 @@ end
 
 """
 Estimation of the covariance matrix in the standard simple way given a time grid.
+https://en.wikipedia.org/wiki/Sample_mean_and_covariance
 """
 function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Vector; regularisation::Union{Missing,Function} = eigenvalue_clean,
                                            only_regulise_if_not_PSD::Bool = false, return_calc::Function = simple_differencing)
@@ -31,8 +33,8 @@ function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{S
     covariance = simple_covariance_given_returns(returns)
 
     # Regularisation
-    dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && (minimum(eigen(covariance)[1]) < 0))
-    covariance = dont_regulise ? covariance : regularisation(covariance, ts)
+    dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(covariance))
+    covariance = dont_regulise ? covariance : regularisation(covariance, ts, assets)
 
     # Packing into a CovarianceMatrix and returning.
     cor, vols = cov2cor_and_vol(covariance, duration(ts))
@@ -43,6 +45,7 @@ end
 
 """
 Estimation of the covariance matrix in the standard simple way.
+https://en.wikipedia.org/wiki/Sample_mean_and_covariance
 """
 function simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = eigenvalue_clean, only_regulise_if_not_PSD::Bool = false,
                            return_calc::Function = simple_differencing, time_grid::Union{Missing,Vector} = missing,

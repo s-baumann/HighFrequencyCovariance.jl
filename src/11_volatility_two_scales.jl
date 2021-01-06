@@ -1,5 +1,4 @@
 
-
 function vol_given_values_and_times(vals::Vector, times::Vector, asset::Symbol, return_calc::Function)
     duration = maximum(times) - minimum(times)
     time_diffs = Array(times[2:end] .- times[1:(end-1)])

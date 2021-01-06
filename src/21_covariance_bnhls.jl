@@ -1,7 +1,3 @@
-################################################################################
-#####                   BNHLS Covariance Estimation                        #####
-################################################################################
-
 """
 A kernel used in the bnhls covariance method.
 """
@@ -64,12 +60,6 @@ end
 """
 This averages the first few and last few returns. We do this to returns rather than
 prices (as suggested in BNHLS 2011).
-### Takes
-* returns - An array of returns
-* m - Number of rows to average on each end.
-### Returns
-* An array of returns with ends averaged.
-# References
 Barndorff-Nielsen, O., Hansen, P.R., Lunde, A., Shephard, N. 2011. - Section 2.2.
 """
 function preaveraging_end_returns(returns::Array{R,2}, m::Integer) where R<:Real
@@ -91,7 +81,7 @@ function preaveraging_end_returns(returns::Array{R,2}, m::Integer) where R<:Real
 end
 
 """
-This calculates covariance with the Multivariate realised kernel of BNHLS(2011). Given an arry of returns.
+This calculates covariance with the multivariate realised kernel of BNHLS(2011).
 """
 function bnhls_covariance_estimate_given_returns(returns::Array{R,2}; kernel::HFC_Kernel{T}, H::Real, m::Integer) where R<:Real where T<:Real
     returns_end_averaged  = preaveraging_end_returns(returns, m)
@@ -102,28 +92,12 @@ function bnhls_covariance_estimate_given_returns(returns::Array{R,2}; kernel::HF
         kern = kernel.f(h/H)
         a1 = realised_autocovariance(returns,h)
         summed  += kern .* (a1 + transpose(a1)) # We are doing the negative h values at the same time as positives here.
-        #autocov  = realised_autocovariance_plus_its_transpose(returns,h)
-        #summed  += kern .* autocov # We are doing the negative h values at the same time as positives here.
-        #a1 = realised_autocovariance2(returns,h)
-        #summed  += kern .* a1
     end
     return Hermitian(summed)
 end
 
 """
 This calculates covariance with the Multivariate realised kernel oof BNHLS(2011)
-### Takes
-* ts - A SortedDataFrame containing the asset prices.
-* assets - A vector with the asset names that we are interested in.
-* regularisation - A regularisation function (or missing if not regularisation is to be done).
-* only_regulise_if_not_PSD - Should regularisation only be done if the matrix is not PSD.
-* kernel - A HFC_Kernel object. Parzen by default.
-* H - The level of autocovariance to be estimated. By default this is kernel.c_star * N^0.6 where N is the average number of asset prices. (following the suggestion of BNHLS pag 154 but ignoring the noise term for simplicity)
-* m - The number of start/end periods to average. This is 2 by default as recommened by BNHLS
-* return_calc - The function used to calculate returns.
-### Returns
-* A CovarianceMatrix.
-# References
 Barndorff-Nielsen, O., Hansen, P.R., Lunde, A., Shephard, N. 2011. - The whole paper but particularly 2.2, 2.3 here. Kernels are in table 1. choices of H are discussed in section 3.4 of the paper.
 """
 function bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = eigenvalue_clean,
@@ -142,8 +116,8 @@ function bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_asse
     covariance = bnhls_covariance_estimate_given_returns(returns; kernel = kernel, H = H, m = m)
 
     # Regularisation
-    dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && (minimum(eigen(covariance)[1]) < 0))
-    covariance = dont_regulise ? covariance : regularisation(covariance, ts)
+    dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(covariance))
+    covariance = dont_regulise ? covariance : regularisation(covariance, ts, assets)
 
     # In some cases we get negative terms on the diagonal with this algorithm.
     negative_diagonals = findall(diag(covariance) .< eps())

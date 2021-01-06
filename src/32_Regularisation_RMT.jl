@@ -1,12 +1,5 @@
 """
 Regularisation of the Hermitian matrix by cleaning out small eigenvalues.
-### Takes
-* mat - A Hermitian matrix.
-* obs - How many observations were used in calculating the covariance matrix.
-* eigenvalue_threshold - What threshold for deleting eigenvalues.
-### Returns
-* A Hermitian correlation matrix
-### References
 Laloux, L., Cizeau, P., Bouchaud J. , Potters, M. 2000. "Random matrix theory and financial correlations" International Journal of Theoretical Applied FInance, 3, 391-397.
 """
 function eigenvalue_clean(mat::Hermitian, obs::Real; eigenvalue_threshold::Union{Missing,R} = missing) where R<:Real
@@ -35,19 +28,13 @@ end
 
 """
 Regularisation of a Hermitian matrix by cleaning out small eigenvalues.
-### Takes
-* covariance_matrix - A CovarianceMatrix.
-* ts - A SortedDataFrame
-### Returns
-* A CovarianceMatrix with a cleaned correlation matrix.
-### References
 Laloux, L., Cizeau, P., Bouchaud J. , Potters, M. 2000. "Random matrix theory and financial correlations" International Journal of Theoretical Applied FInance, 3, 391-397.
 """
-function eigenvalue_clean(mat::Hermitian, ts::SortedDataFrame)
+function eigenvalue_clean(mat::Hermitian, ts::SortedDataFrame, mat_labels = missing)
     dims = size(mat)[1]
     obs = nrow(ts.df)/dims
     regularised_mat = eigenvalue_clean(mat, obs)
-    return regularised_mat
+    return Hermitian(regularised_mat)
 end
 function eigenvalue_clean(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; apply_to_covariance::Bool = true)
     if apply_to_covariance

@@ -51,7 +51,7 @@ function simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_ass
 end
 
 """
-A default spacing between returns to use.
+Calculates a default spacing between returns to use.
 This comes from the equation at section 1.2.3 of Zhang, Mykland, Ait-Sahalia 2005.
 """
 function default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5, return_calc::Function = simple_differencing, T = duration(ts))

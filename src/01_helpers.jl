@@ -25,6 +25,7 @@ function cor2cov(cor,sdevs)
     mat = cor .* (sdevs * transpose(sdevs))
     return Hermitian(mat)
 end
+
 """
 This makes a Hermitian matrix for the covariance matrix over some duration.
 """
@@ -34,7 +35,7 @@ function covariance(cm::CovarianceMatrix, duration::Real)
 end
 
 """
-Constructs a matrix form its eigenvalue decomposition.
+Constructs a matrix from its eigenvalue decomposition.
 """
 function construct_matrix_from_eigen(eigenvalues::Array{R,1}, eigenvectors::Array{R,2}) where R<:Real
     value_matrix = zeros(length(eigenvalues), length(eigenvalues))
@@ -48,16 +49,14 @@ simple_differencing(new::Vector,old::Vector, durations::Vector, asset::Symbol) =
 
 
 """
-    get_returns(dd; rescale_for_duration::Bool = false)
 Converts stochastic processes into a dataframe of returns.
 ### Takes
 * dd - A dataframe with a column called :Time and all other columns being asset prices in each period.
 * rescale_for_duration - Should returns be rescaled.
 * return_calc -  A function that takes in a vector of new values and a vector of old values and a symbol for what asset it is. It returns a vector of the returns for that asset.
-       by default this function is simply
-           simple_differencing(new::Vector,old::Vector,asset::Symbol) =  (new .- old)
+       by default this function is simply simple_differencing(new::Vector,old::Vector,asset::Symbol) =  (new .- old)
 ### Returns
-* A dataframe of returns.
+* A DataFrame of returns.
 """
 function get_returns(dd; rescale_for_duration::Bool = false, return_calc::Function = simple_differencing)
     N = nrow(dd)
@@ -80,14 +79,11 @@ end
 is_missing_nan_inf(x) = (ismissing(x) | isnan(x)) | isinf(x)
 
 """
-    combine_covariance_matrices(vect::Vector{CovarianceMatrix{R}}, cor_weights::Vector{<:Real} = repeat([1.0], length(vect)), vol_weights::Vector{<:Real} = cor_weights)
 Combines a vector of CovarianceMatrix structs into one CovarianceMatrix struct.
 ### Takes
-* A - The first matrix
-* A_labels - The labels of A
-* B - The second matrix
-* B_labels - The labels of B
-* A_mixture - The mixture parameter defines how much to weight A when the same label is in both matrices. It must be between 0 and 1.
+* vect - A vector of CovarianceMatrices
+# cor_weights - A vector for how much to weight the correlations from each covariance matrix (by default they will be equalweighted).
+# vol_weights - A vector for how much to weight the volatilities from each covariance matrix (by default they will be equalweighted).
 ### Returns
 * A matrix (Array{Union{Missing,R},1} where R<:Real) and a vector of labels for each row/column of the matrix.
 """

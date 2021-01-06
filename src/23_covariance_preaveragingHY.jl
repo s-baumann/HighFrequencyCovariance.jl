@@ -37,6 +37,7 @@ g = (f = x-> min(x, 1-x), psi = 0.25)
 
 """
 Estimation of the CovarianceMatrix using preaveraging method.
+Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for multivariate continuous Itô semimartingales with noise in non-synchronous observation schemes.” Journal of Multivariate Analysis, 120, 59–84. doi:10.1016/j.jmva.2013.05.002.
 """
 function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = eigenvalue_clean,
                              only_regulise_if_not_PSD::Bool = false, theta::Real = 0.15, g::NamedTuple = g, return_calc::Function = simple_differencing)
@@ -68,8 +69,8 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
    end
    HYn = Hermitian(HYn)
    # Regularisation
-   dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && (minimum(eigen(HYn)[1]) < 0))
-   HYn = dont_regulise ? HYn : regularisation(HYn, ts)
+   dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(HYn))
+   HYn = dont_regulise ? HYn : regularisation(HYn, ts, assets)
 
    # In some cases we get negative terms on the diagonal with this algorithm.
    negative_diagonals = findall(diag(HYn) .< eps())

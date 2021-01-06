@@ -38,14 +38,6 @@ end
 
 """
 This makes a dataframe that describes how to estimate the covariance matrix blockwise.
-### Takes
-* ts - A dataframe with data ticks (prices for each asset).
-* obs_multiple_for_new_block - This chooses when to seperate assets into seperate blocks. For instance if this is 0.2 then a new block will be made when an asset has 20% more ticks than the least tick asset in the previous block.
-* func - A function to estimate each block. This should take a timeseries dataframe as the only required argument. Any optional arguments can also be taken by the function.
-* optional_parameters - Options that will be input to func.
-### Returns
-* A dataframe describing what estimations to perform.
-### References
 Hautsch, N., Kyj, L.M. and Oomen, R.C.A. (2012), A blocking and regularization approach to high‐dimensional realized covariance estimation. J. Appl. Econ., 27: 625-645
 """
 function put_assets_into_blocks_by_trading_frequency(ts::SortedDataFrame, obs_multiple_for_new_block::Real, func::Function, optional_parameters::NamedTuple = NamedTuple())

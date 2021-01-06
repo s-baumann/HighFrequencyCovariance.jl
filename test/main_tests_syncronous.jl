@@ -102,9 +102,15 @@ calculate_mean_abs_distance(true_covar, reconstituted_df).Volatility_error .< 10
 
 # Other regularisation algos:
 two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = identity_regularisation)
-two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = nearest_correlation_matrix)
-two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = nearest_psd_matrix)
-two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = eigenvalue_clean)
+two_scales_estimate_nearest_corr = two_scales_covariance(ts2, assets; regularisation = nearest_correlation_matrix)
+two_scales_estimate_nearest_psd = two_scales_covariance(ts2, assets; regularisation = nearest_psd_matrix)
+two_scales_estimate_eigen = two_scales_covariance(ts2, assets; regularisation = eigenvalue_clean)
+# Testing that these are different (due to different regularisation)
+dist = calculate_mean_abs_distance(two_scales_estimate_iden, two_scales_estimate_nearest_corr)
+dist.Correlation_error .> 1000*eps()
+dist = calculate_mean_abs_distance(two_scales_estimate_iden, two_scales_estimate_eigen)
+dist.Correlation_error .> 1000*eps()
+
 
 # Running regularistation on a CovarianceMatrix's correlation matrix.
 psd_mat = two_scales_covariance(ts2, assets; regularisation = nearest_correlation_matrix)

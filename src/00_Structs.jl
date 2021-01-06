@@ -31,8 +31,8 @@ struct SortedDataFrame
 end
 
 """
-This returns a vector of all of the assets in the SortedDataFrame with at least some number
-of observations (10 by default).
+This returns a vector of all of the assets in the SortedDataFrame with at least
+some number of observations (10 by default).
 """
 function get_assets(ts::SortedDataFrame, obs_to_include::Integer = 10)
     all_assets = unique(ts.df[:,ts.grouping])
@@ -69,7 +69,7 @@ end
 The time between the first and the last tick in a SortedDataFrame.
 """
 function duration(ts::SortedDataFrame)
-    return maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])
+    return ts.df[nrow(ts.df),ts.time] - ts.df[1,ts.time]
 end
 
 """
@@ -122,7 +122,7 @@ function get_correlation(covar::CovarianceMatrix, asset1::Symbol, asset2::Symbol
 end
 
 """
-Get the voltility for a stock from a CovarianceMatrix
+Get the volatility for a stock from a CovarianceMatrix
 """
 function get_volatility(covar::CovarianceMatrix, asset1::Symbol)
     index1 = findfirst(asset1 .== covar.labels)
@@ -131,12 +131,19 @@ function get_volatility(covar::CovarianceMatrix, asset1::Symbol)
 end
 
 """
-Test if a CovarianceMatrix struct contains a valid correlation matrix.
+Test if a Hermitian matrix is psd.
 """
-function valid_correlation_matrix(mat::Hermitian)
+function is_psd_matrix(mat::Hermitian)
     eig = eigen(mat).values
     if length(eig) == 0 return false end # There is no eigenvalue decomposition.
-    A = minimum(eig) >= 0       # is it PSD
+    return minimum(eig) >= 0 # is it PSD
+end
+
+"""
+Test if a Hermitian matrix is a valid correlation matrix.
+"""
+function valid_correlation_matrix(mat::Hermitian)
+    A = is_psd_matrix(mat)
     B = all(abs.(diag(mat) .- 1) .< 10*eps()) # does it have a unit diagonal
     C = all(abs.(mat) .<= 1 + 10*eps())       # all all off diagonals less than one in absolute value
     return all([A,B,C])

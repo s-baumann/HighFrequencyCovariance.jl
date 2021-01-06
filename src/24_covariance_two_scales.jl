@@ -39,12 +39,13 @@ function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get
         end
     end
     mat = Hermitian(mat)
-    vols = map(a -> two_scales_vol[a], assets)
-    covmat = CovarianceMatrix(Hermitian(mat), vols, assets)
 
-    # Regularisation
-    dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && (minimum(eigen(mat)[1]) < 0))
-    covmat = dont_regulise ? mat : regularisation(covmat, ts)
+    # Regularisation - It is done on the correlation matrix for this algo rather than the covariance matrix.
+    dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(mat))
+    covmat = dont_regulise ? mat : regularisation(mat, ts, assets)
+
+    vols = map(a -> two_scales_vol[a], assets)
+    covmat = CovarianceMatrix(covmat, vols, assets)
 
     return covmat
 end
