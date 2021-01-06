@@ -15,7 +15,7 @@ export SortedDataFrame, CovarianceMatrix, +, -
 export get_correlation, get_volatility
 export make_nan_covariance_matrix, duration
 export subset_to_tick, subset_to_time, calculate_mean_abs_distance
-export to_dataframe, valid_correlation_matrix
+export to_dataframe, valid_correlation_matrix, is_psd_matrix
 export ticks_per_asset, get_assets
 include("01_helpers.jl")
 export simple_differencing
