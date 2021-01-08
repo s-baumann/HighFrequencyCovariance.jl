@@ -89,7 +89,7 @@ calculate_mean_abs_distance(true_covar, two_scales_estimate)
 ```
 We can see that in this particular case the correlation matrix calculated with preaveraging performed the best.
 
-Now examining the data we can see that we have one asset that trades much more frequently than the others.
+Now examining the data we can see that we have some assets that trade more frequently than the others.
 ```
 ticks_per_asset(ts_data)
 # Dict{Symbol,Int64} with 4 entries:
@@ -112,7 +112,6 @@ in each estimation. The second column contains the function that will be used in
 Every covariance estimation has a function signature with two common arguments before the semicolon (For a SortedDataFrame and a vector of symbols representing what assets to use). There can also be a number of named optional arguments which can be sourced from a NamedTuple.
 The **blockwise\_estimation** function then estimates a block with the line
 ```
-i = 1
 blocking_frame[i,:f](ts_data, collect(blocking_frame[i,:assets]);
                      blocking_frame[i,:optional_parameters]... )
 ```
@@ -122,8 +121,8 @@ The fourth, fifth and sixth columns contains the number of assets in the block, 
 These do not do anything in the subsequent **blockwise\_estimation** function but can be used to alter the dataframe.
 Now in the current case we may decide to estimate the block containing all assets using the **spectral\_covariance** method.
 ```
-one_asset_rows = findall(blocking_frame[:,:number_of_assets] .== 4)
-blocking_frame[one_asset_rows, :f] = spectral_covariance
+one_asset_row = findall(blocking_frame[:,:number_of_assets] .== 4)
+blocking_frame[one_asset_row, :f] = spectral_covariance
 ```
 
 We can now estimate the blockwise estimated CovarianceMatrix as:
