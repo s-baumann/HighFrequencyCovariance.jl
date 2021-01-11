@@ -10,9 +10,9 @@ plot_folder = "C:/Dropbox/Stuart/Papers/high_frequency_covariance/plots/"
 fldr = "C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/"
 files = glob("*.csv",fldr)
 
-dd = CSV.read(files[1])
+dd = CSV.read(files[1], DataFrame)
 for i in 2:length(files)
-    newdd = CSV.read(files[i])
+    newdd = CSV.read(files[i], DataFrame)
     global dd = vcat(dd, newdd)
 end
 
@@ -27,7 +27,6 @@ dd2 = combine(groupby(dd, [:dimensions, :with_noise, :syncronous, :number_of_pat
 rename!(dd2, :abserror_mean_ex_nans  => :MAE)
 
 aa = combine(groupby(dd2, [:dimensions, :with_noise, :syncronous, :number_of_paths, :method, :variable]), :MAE => mean_ex_nans, :MAE => how_many_nans)
-
 
 
 
@@ -94,9 +93,9 @@ draw(img, plt)
 
 
 fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/time_and_space_complexity_up_dimensions.csv")
-aa = CSV.read(fname)
+aa = CSV.read(fname, DataFrame)
 aa[:,:Bytes_mean] .= (aa[:,:Bytes_mean] ./ (1024*1024))
-aa = melt(aa, [:Method, :Dims, :ticks_per_dim])
+aa = DataFrames.stack(aa, [:Time_mean, :Bytes_mean]  )# [:Method, :Dims, :ticks_per_dim])
 bb = aa[aa[:,:ticks_per_dim] .== maximum(aa[:,:ticks_per_dim]),  :]
 bb[!,:var] .=  "Seconds to estimate"
 bb[bb[:,:variable] .== "Bytes_mean",:var] .=  "Memory allocated (MiB)"
@@ -113,9 +112,9 @@ draw(img, plt)
 
 
 fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/time_and_space_complexity_up_obs.csv")
-aa = CSV.read(fname)
+aa = CSV.read(fname, DataFrame)
 aa[:,:Bytes_mean] .= (aa[:,:Bytes_mean] ./ (1024*1024))
-aa = melt(aa, [:Method, :Dims, :ticks_per_dim])
+aa = DataFrames.stack(aa, [:Time_mean, :Bytes_mean]  )# [:Method, :Dims, :ticks_per_dim])
 bb = aa[aa[:,:Dims] .== maximum(aa[:,:Dims]),  :]
 bb[!,:var] .=  "Seconds to estimate"
 bb[bb[:,:variable] .== "Bytes_mean",:var] .=  "Memory allocated (MiB)"
