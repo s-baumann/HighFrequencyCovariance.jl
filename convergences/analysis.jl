@@ -40,11 +40,6 @@ aa[aa[:,:with_noise] .== 1,:nois] .= "with iid noise"
 aa[aa[:,:with_noise] .== 0,:nois] .= "without noise"
 aa[!,:estimation] = map(i -> string( Bool(aa[i,:syncronous]) ? "Syncronous updates" : "Asyncronous updates", "\n" ,  aa[i,:nois]), 1:nrow(aa) )
 
-
-
-#aa = aa[aa.method .!= "spectral_covariance",:]
-
-
 yvar = :MAE_mean_ex_nans
 bb = aa[aa.variable .== "correlation",:]
 plt = plot(bb, xgroup=:dims, ygroup=:estimation, Geom.subplot_grid(layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.point),

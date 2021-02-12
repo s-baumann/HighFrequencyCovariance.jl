@@ -12,6 +12,8 @@ using Distributions
 using Random
 using Distributed
 
+fpath = "C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/"
+
 num_cores = 8
 addprocs(num_cores)
 @everywhere using HighFrequencyCovariance, Random, DataFrames, Dates, Distributions
@@ -77,7 +79,7 @@ end
 @everywhere syncronous = false
 @everywhere with_noise = true
 @everywhere grd = Int.(floor.(10 .^ (3.0:(1/4):5.0)))
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
@@ -90,7 +92,7 @@ end
 @everywhere syncronous = false
 @everywhere with_noise = true
 @everywhere grd = Int.( (dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))  ) )
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
@@ -108,7 +110,7 @@ end
 @everywhere syncronous = true
 @everywhere with_noise = true
 @everywhere grd = Int.((dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))))
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
@@ -121,7 +123,7 @@ end
 @everywhere syncronous = true
 @everywhere with_noise = true
 @everywhere grd = Int.((dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))))
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
@@ -138,7 +140,7 @@ end
 @everywhere syncronous = false
 @everywhere with_noise = false
 @everywhere grd = Int.((dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))))
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
@@ -151,7 +153,7 @@ end
 @everywhere syncronous = false
 @everywhere with_noise = false
 @everywhere grd = Int.((dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))))
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
@@ -166,7 +168,7 @@ end
 @everywhere syncronous = true
 @everywhere with_noise = false
 @everywhere grd = Int.((dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))))
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
@@ -180,7 +182,7 @@ end
 @everywhere syncronous = true
 @everywhere with_noise = false
 @everywhere grd = Int.((dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))))
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
@@ -194,7 +196,7 @@ end
 @everywhere syncronous = false
 @everywhere with_noise = :AR1
 @everywhere grd = Int.( (dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))  ) )
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
@@ -208,7 +210,7 @@ end
 @everywhere syncronous = true
 @everywhere with_noise = :AR1
 @everywhere grd = Int.( (dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))  ) )
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
@@ -222,7 +224,7 @@ end
 @everywhere syncronous = false
 @everywhere with_noise = :AR1
 @everywhere grd = Int.( (dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))  ) )
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
@@ -235,7 +237,7 @@ end
 @everywhere syncronous = true
 @everywhere with_noise = :AR1
 @everywhere grd = Int.( (dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))  ) )
-fname = string("C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/",  dimensions,"-",syncronous,"-",with_noise,".csv")
+fname = string(fpath,  dimensions,"-",syncronous,"-",with_noise,".csv")
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
