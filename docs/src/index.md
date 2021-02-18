@@ -11,5 +11,5 @@ This task is more complicated than normal covariance estimation due to several f
 
 HighFrequencyCovariance contains 2 volatility estimators, 5 covariance estimators, 4 regularisation techniques and a number of convenience functions that are intended to overcome these issues and produce reliable correlation, volatility and covariance estimates given high frequency financial data.
 
-A paper briefly outlining each technique is accessible. This paper also contains references to the original econometrics papers for users that seek a more detailed understanding.  The paper also contains a Monte Carlo analysis of the accuracy and time complexity of each algorithm.
+A [paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3786912) (Baumann & Klymak 2021) briefly outlining each technique is accessible. This paper also contains references to the original econometrics papers for users that seek a more detailed understanding.  The paper also contains a Monte Carlo analysis of the accuracy and time complexity of each algorithm.
 This documentation will not replicate all of that content and will instead focus on the practical details on how to write code to use this package.
