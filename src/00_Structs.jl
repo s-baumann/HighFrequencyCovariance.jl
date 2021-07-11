@@ -17,8 +17,8 @@ struct SortedDataFrame
        df2 = sort(df, time)
        I = Int64
        dic = Dict{Symbol,Array{I,1}}()
-       for g in unique(df[:,grouping])
-          dic[g] = findall(df[:,grouping] .== g)
+       for g in unique(df2[:,grouping])
+          dic[g] = findall(df2[:,grouping] .== g)
        end
        return new(df2, time, grouping, value, dic)
     end
@@ -38,7 +38,9 @@ function get_assets(ts::SortedDataFrame, obs_to_include::Integer = 10)
     all_assets = unique(ts.df[:,ts.grouping])
     assets = Array{Symbol,1}(undef,0)
     for a in all_assets
-        if length(ts.groupingrows[a]) >= obs_to_include push!(assets, a) end
+        cond1 = length(ts.groupingrows[a]) >= obs_to_include
+        cond2 = (maximum(ts.df[ts.groupingrows[a], ts.value] ) - minimum(ts.df[ts.groupingrows[a], ts.value] ) > 1000*eps())
+        if (cond1 & cond2) push!(assets, a) end
     end
     return assets
 end

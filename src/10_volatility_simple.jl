@@ -59,6 +59,9 @@ function default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::I
     n_guess = Dict{Symbol,eltype(ts.df[:,ts.value])}()
     for a in keys(rough_vol_guess)
         n_guess[a] = ( (T/(4* rough_micro_guess[a]^2)) * T * rough_vol_guess[a]^4 )^(1/3)
+        if (rough_micro_guess[a] < 0.0000001)
+            n_guess[a] = duration(ts)/20
+        end
     end
     return n_guess
 end

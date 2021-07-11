@@ -81,7 +81,7 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
     end
    # We can use this to get the correlation matrix but the variances are too low - as a result of preveraging.
    # We will instead use the two scales vol of Zhang, mykland, Ait-Sahalia 2005.
-   voldict = two_scales_volatility(ts, assets)[1]
+   voldict = two_scales_volatility(ts, assets; return_calc = return_calc)[1]
    vols = map(a -> voldict[a], assets)
    covar.volatility = vols
    return covar

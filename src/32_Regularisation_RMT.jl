@@ -2,7 +2,7 @@
 Regularisation of the Hermitian matrix by cleaning out small eigenvalues.
 Laloux, L., Cizeau, P., Bouchaud J. , Potters, M. 2000. "Random matrix theory and financial correlations" International Journal of Theoretical Applied FInance, 3, 391-397.
 """
-function eigenvalue_clean(mat::Hermitian, obs::Real; eigenvalue_threshold::Union{Missing,R} = missing) where R<:Real
+function eigenvalue_clean(mat::Hermitian, obs::Union{Missing,Real} = missing; eigenvalue_threshold::Union{Missing,R} = missing) where R<:Real
     if sum(isnan.(mat)) > 0 return mat end # If someone inputs a matrix involving a NaN
     N = size(mat)[1]
     eigenvalues, eigenvectors = eigen(mat)

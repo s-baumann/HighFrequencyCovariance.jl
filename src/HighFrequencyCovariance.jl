@@ -18,14 +18,14 @@ export subset_to_tick, subset_to_time, calculate_mean_abs_distance
 export to_dataframe, valid_correlation_matrix, is_psd_matrix
 export ticks_per_asset, get_assets
 include("01_helpers.jl")
-export simple_differencing
+export simple_differencing, log_returns
 include("02_subsample_ticks.jl")
 export cov2cor, cor2cov, cov2cor_and_vol, covariance, construct_matrix_from_eigen, get_returns
 export combine_covariance_matrices, rearrange
 export squared_frobenius, squared_frobenius_distance
 export next_tick, get_all_refresh_times, latest_value, time_between_refreshes, random_value_in_interval
 include("03_MonteCarlo.jl")
-export generate_random_path
+export generate_random_path, ItoSet
 include("04_Serialisation.jl")
 export to_dataframe, dataframe_to_covariancematrix
 
@@ -37,7 +37,7 @@ export two_scales_volatility
 
 # Covariance Estimation techniques
 include("20_covariance_simple.jl")
-export simple_volatility, simple_covariance
+export simple_covariance, simple_covariance_given_returns
 include("21_covariance_bnhls.jl")
 export HFC_Kernel, parzen, quadratic_spectral, fejer, tukey_hanning, bnhls_2008
 export bnhls_covariance, preaveraging_end_returns
@@ -59,5 +59,10 @@ export eigenvalue_clean
 # Blocking and regularisation.
 include("40_Blocking.jl")
 export blockwise_estimation, put_assets_into_blocks_by_trading_frequency
+
+# Convenience Wrappers
+include("50_ConvenienceFunctions.jl")
+export estimate_volatility, estimate_covariance
+
 
 end

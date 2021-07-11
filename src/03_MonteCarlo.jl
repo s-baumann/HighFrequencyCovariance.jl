@@ -29,3 +29,19 @@ function generate_random_path(dimensions::Integer, ticks::Integer; syncronous::B
     ts.df[:,ts.value] += normal_draws
     return ts, CovarianceMatrix(brownian_corr_matrix, vols, assets), microstructure_noise, update_rates
 end
+
+import StochasticIntegrals.ItoSet
+"""
+Convert a CovarianceMatrix into an ItoSet from the StochasticIntegrals package.
+This package can then be used to do things like generate draws from the Multivariate
+Gaussian corresponding to the covariance matrix and other things.
+"""
+function ItoSet(covariance_matrix::CovarianceMatrix{R}) where R<:Real
+    itos = Dict{Symbol,ItoIntegral}()
+    for i in 1:length(covariance_matrix.labels)
+        lab = covariance_matrix.labels[i]
+        voll = covariance_matrix.volatility[i]
+        itos[lab] =  ItoIntegral(lab, voll)
+    end
+    ito_set_ = ItoSet(covariance_matrix.correlation , covariance_matrix.labels, itos)
+end

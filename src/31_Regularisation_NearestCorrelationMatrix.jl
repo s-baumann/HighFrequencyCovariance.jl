@@ -66,7 +66,7 @@ end
 Do one iterate mapping the matrix Y to the S space and then the U space. Returning the updated matrix and the next iterate's Dykstra correction.
 Higham, N. J. 2001.
 """
-function nearest_correlation_matrix(A::Union{Diagonal,Hermitian}, W::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(A)[1]))); doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 100)
+function nearest_correlation_matrix(A::Union{Diagonal,Hermitian}, W::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(A)[1]))); doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
     @assert all(size(A) .== size(W))
     W_root = sqrt_psd(W)
     W_inv = inv(W)
@@ -93,18 +93,28 @@ end
 Do one iterate mapping the matrix Y to the S space and then the U space. Returning the updated matrix and the next iterate's Dykstra correction.
 Higham, N. J. 2001.
 """
-function nearest_correlation_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; weighting_matrix = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
-                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 100)
+function nearest_correlation_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
+                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
+    return nearest_correlation_matrix(covariance_matrix; weighting_matrix = weighting_matrix,
+                                 doDykstra = doDykstra, stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
+end
+function nearest_correlation_matrix(covariance_matrix::CovarianceMatrix; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
+                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
     regularised_correl, counter, convergence = nearest_correlation_matrix(covariance_matrix.correlation, weighting_matrix; doDykstra = doDykstra, stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
     return CovarianceMatrix(regularised_correl, covariance_matrix.volatility, covariance_matrix.labels)
 end
+
+
 function nearest_correlation_matrix(mat::Hermitian, ts::SortedDataFrame, mat_labels = missing; weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
-                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 100)
+                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
+    return nearest_correlation_matrix(mat, mat_labels; weighting_matrix = weighting_matrix,
+                                 doDykstra = doDykstra, stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
+end
+function nearest_correlation_matrix(mat::Hermitian, mat_labels::Vector = missing; weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
+                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
     regularised_correl, counter, convergence = nearest_correlation_matrix(mat, weighting_matrix; doDykstra = doDykstra, stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
     return Hermitian(regularised_correl)
 end
-
-
 
 
 """

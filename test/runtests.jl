@@ -3,9 +3,6 @@ using Test
 
 # Run tests
 
-println("Test various lowlevel functions")
-@time @test include("test_lowlevel_functions.jl")
-
 println("Test combining of covariance matrices")
 @time @test include("main_tests_combine.jl")
 

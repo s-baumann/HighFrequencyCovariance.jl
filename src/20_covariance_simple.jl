@@ -59,7 +59,7 @@ function simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_ass
        else
            n_grid = default_spacing(ts; rough_guess_number_of_intervals = rough_guess_number_of_intervals, return_calc = return_calc)
            vals = collect(values(n_grid))
-           spacing = mean(vals[isnan.(vals) .== false])
+           spacing = mean(vals[(isnan.(vals) .== false) .& (isinf.(vals) .== false)])
            spacing = isnan(spacing) ? duration(ts)/20 : spacing
            time_grid = collect(minimum(ts.df[:,ts.time]):spacing:maximum(ts.df[:,ts.time]))
        end

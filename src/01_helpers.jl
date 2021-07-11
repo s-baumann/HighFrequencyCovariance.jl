@@ -46,7 +46,7 @@ end
 
 
 simple_differencing(new::Vector,old::Vector, durations::Vector, asset::Symbol) =  (new .- old)
-
+log_returns(new::Vector,old::Vector, durations::Vector, asset::Symbol) =  log.(new ./ old)
 
 """
 Converts stochastic processes into a dataframe of returns.
