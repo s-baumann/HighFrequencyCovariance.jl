@@ -100,7 +100,7 @@ end
 This calculates covariance with the Multivariate realised kernel oof BNHLS(2011)
 Barndorff-Nielsen, O., Hansen, P.R., Lunde, A., Shephard, N. 2011. - The whole paper but particularly 2.2, 2.3 here. Kernels are in table 1. choices of H are discussed in section 3.4 of the paper.
 """
-function bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = eigenvalue_clean,
+function bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix,
                           only_regulise_if_not_PSD::Bool = false, kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6,
                           m::Integer = 2, return_calc::Function = simple_differencing)
     at_times = get_all_refresh_times(ts, assets)

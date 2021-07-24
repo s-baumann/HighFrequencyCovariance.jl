@@ -121,16 +121,22 @@ end
 Map a Hermitian matrix to the nearest psd matrix.
 """
 function nearest_psd_matrix(mat::Hermitian, ts::SortedDataFrame, mat_labels = missing)
+    return nearest_psd_matrix(mat)
+end
+function nearest_psd_matrix(mat::Hermitian)
     W = Diagonal(Float64.(I(size(mat)[1])))
     W_root = sqrt_psd(W)
     return project_to_S(mat, W_root)
 end
-function nearest_psd_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; apply_to_covariance::Bool = true)
+function nearest_psd_matrix(covariance_matrix::CovarianceMatrix; apply_to_covariance::Bool = true)
     if apply_to_covariance
-        regularised_covariance = nearest_psd_matrix(covariance(covariance_matrix,1), ts)
+        regularised_covariance = nearest_psd_matrix(covariance(covariance_matrix,1))
         corr, vols = cov2cor_and_vol(regularised_covariance, 1)
         return CovarianceMatrix(corr, vols, covariance_matrix.labels)
     else
-        return CovarianceMatrix(Hermitian(nearest_psd_matrix(covariance_matrix.correlation, ts)), covariance_matrix.volatility, covariance_matrix.labels)
+        return CovarianceMatrix(Hermitian(nearest_psd_matrix(covariance_matrix.correlation)), covariance_matrix.volatility, covariance_matrix.labels)
     end
+end
+function nearest_psd_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; apply_to_covariance::Bool = true)
+    return nearest_psd_matrix(covariance_matrix; apply_to_covariance = apply_to_covariance)
 end

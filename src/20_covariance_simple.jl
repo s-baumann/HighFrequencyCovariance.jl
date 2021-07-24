@@ -22,7 +22,7 @@ end
 Estimation of the covariance matrix in the standard simple way given a time grid.
 https://en.wikipedia.org/wiki/Sample_mean_and_covariance
 """
-function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Vector; regularisation::Union{Missing,Function} = eigenvalue_clean,
+function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Vector; regularisation::Union{Missing,Function} = nearest_correlation_matrix,
                                            only_regulise_if_not_PSD::Bool = false, return_calc::Function = simple_differencing)
     dd_compiled = latest_value(ts, time_grid; assets = assets)
     dd = get_returns(dd_compiled; rescale_for_duration = false, return_calc = return_calc)
@@ -47,7 +47,7 @@ end
 Estimation of the covariance matrix in the standard simple way.
 https://en.wikipedia.org/wiki/Sample_mean_and_covariance
 """
-function simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = eigenvalue_clean, only_regulise_if_not_PSD::Bool = false,
+function simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix, only_regulise_if_not_PSD::Bool = false,
                            return_calc::Function = simple_differencing, time_grid::Union{Missing,Vector} = missing,
                            fixed_spacing::Union{Missing,<:Real} = missing, refresh_times::Bool = false, rough_guess_number_of_intervals::Integer = 5)
    if ismissing(time_grid)

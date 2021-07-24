@@ -33,7 +33,7 @@ export to_dataframe, dataframe_to_covariancematrix
 include("10_volatility_simple.jl")
 export simple_volatility
 include("11_volatility_two_scales.jl")
-export two_scales_volatility
+export two_scales_volatility, default_num_grids
 
 # Covariance Estimation techniques
 include("20_covariance_simple.jl")
@@ -62,7 +62,6 @@ export blockwise_estimation, put_assets_into_blocks_by_trading_frequency
 
 # Convenience Wrappers
 include("50_ConvenienceFunctions.jl")
-export estimate_volatility, estimate_covariance
-
+export estimate_volatility, estimate_covariance, regularise
 
 end

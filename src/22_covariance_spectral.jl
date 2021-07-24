@@ -7,7 +7,7 @@ apply_weights(A::Array, W::Missing) = sum(A .* (1/length(A)))
     return  t > start_of_block ? ((sqrt(2 * block_width))/(j*pi)) *sin((j * pi * (t-start_of_block))/block_width) : 0.0
 end
 
-function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = eigenvalue_clean,
+function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix,
                           only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time])) / num_blocks,
                           microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], return_calc::Function = simple_differencing)
     numAssets = length(assets)
@@ -89,7 +89,7 @@ end
 Estimation of a CovarianceMatrix using the spectral covariance method.
 Bibinger M, Hautsch N, Malec P, Reiss M (2014). “Estimating the quadratic covariation matrix from noisy observations: Local method of moments and efficiency.” The Annals of Statistics, 42(4), 1312–1346. doi:10.1214/14-AOS1224.
 """
-function spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = eigenvalue_clean,
+function spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix,
                              only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks,
                              microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], return_calc::Function = simple_differencing)
     corrected_matrices = spectral_lmm_array(ts, assets; regularisation = regularisation, only_regulise_if_not_PSD = only_regulise_if_not_PSD, numJ = numJ, num_blocks = num_blocks,

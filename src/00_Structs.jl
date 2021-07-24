@@ -112,6 +112,19 @@ function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMat
     vol_error = mean(abs.(cov11.volatility  .- cov2.volatility))
     return (Correlation_error = cor_error, Volatility_error = vol_error)
 end
+function calculate_mean_abs_distance(d1::Dict{Symbol,<:Real}, d2::Dict{Symbol,<:Real})
+    dist = 0.0
+    common_labels = intersect(collect(keys(d1)), collect(keys(d2)))
+    for label in common_labels
+        dist += abs(d1[label] - d2[label])
+    end
+    return dist / length(common_labels)
+end
+function calculate_mean_abs_distance(d1::Tuple{Dict{Symbol,<:Real},Dict{Symbol,<:Real}}, d2::Tuple{Dict{Symbol,<:Real},Dict{Symbol,<:Real}})
+    return calculate_mean_abs_distance(d1[1], d2[1]), calculate_mean_abs_distance(d1[2], d2[2])
+end
+
+
 
 """
 Extract the correlation between two assets stored in a CovarianceMatrix
