@@ -32,7 +32,7 @@ all(values(simple_vol) .< 0.1)
 # Preav Convergence
 @test_logs (:warn,"Cannot estimate the correlation matrix with 4 ticks. There are insufficient ticks for [:BARC, :HSBC, :VODL, :RYAL]") preaveraged_covariance(ts0, assets) # This will not work due to insufficient data.
 preav_estimate1 = preaveraged_covariance(ts1, assets)
-preav_estimate2 = preaveraged_covariance(ts2, assets)
+preav_estimate2 = preaveraged_covariance(ts2, assets; regularisation = missing)
 iscloser(calculate_mean_abs_distance(preav_estimate2, true_covar), calculate_mean_abs_distance(preav_estimate1, true_covar))
 valid_correlation_matrix(preav_estimate1)
 valid_correlation_matrix(preav_estimate2)
@@ -101,10 +101,10 @@ calculate_mean_abs_distance(true_covar, reconstituted_df).Volatility_error .< 10
 
 
 # Other regularisation algos:
-two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = identity_regularisation)
-two_scales_estimate_nearest_corr = two_scales_covariance(ts2, assets; regularisation = nearest_correlation_matrix)
-two_scales_estimate_nearest_psd = two_scales_covariance(ts2, assets; regularisation = nearest_psd_matrix)
-two_scales_estimate_eigen = two_scales_covariance(ts2, assets; regularisation = eigenvalue_clean)
+two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = :Identity)
+two_scales_estimate_nearest_corr = two_scales_covariance(ts2, assets; regularisation = :NearestCorrelation)
+two_scales_estimate_nearest_psd = two_scales_covariance(ts2, assets; regularisation = :NearestPSD)
+two_scales_estimate_eigen = two_scales_covariance(ts2, assets; regularisation = :EigenClean)
 # Testing that these are different (due to different regularisation)
 dist = calculate_mean_abs_distance(two_scales_estimate_iden, two_scales_estimate_nearest_corr)
 dist.Correlation_error .> 1000*eps()
@@ -113,10 +113,9 @@ dist.Correlation_error .> 1000*eps()
 
 
 # Running regularistation on a CovarianceMatrix's correlation matrix.
-psd_mat = two_scales_covariance(ts2, assets; regularisation = nearest_correlation_matrix)
+psd_mat = two_scales_covariance(ts2, assets; regularisation = :NearestCorrelation)
 valid_correlation_matrix(psd_mat)
-reg1 = identity_regularisation(psd_mat, ts2)
-reg1 = identity_regularisation(psd_mat, ts2; identity_weight =  0.5) # Inputting a weight explicitly.
+reg1 = identity_regularisation(psd_mat, ts2; identity_weight =  0.5, apply_to_covariance = false) # Inputting a weight explicitly.
 calculate_mean_abs_distance(psd_mat, reg1).Correlation_error .> 10*eps()
 calculate_mean_abs_distance(psd_mat, reg1).Volatility_error .< 10*eps()
 
@@ -143,9 +142,3 @@ calculate_mean_abs_distance(psd_mat, reg4).Volatility_error .> 10*eps()
 reg4_cov = eigenvalue_clean(psd_mat, ts2; apply_to_covariance = false)
 calculate_mean_abs_distance(psd_mat, reg4_cov).Correlation_error .> 2*eps()
 calculate_mean_abs_distance(psd_mat, reg4_cov).Volatility_error .< 10*eps()
-
-# Testing blocking and regularisation.
-blocking_dd = put_assets_into_blocks_by_trading_frequency(ts2, 1.1, spectral_covariance)
-block_estimate = blockwise_estimation(ts2, blocking_dd)
-block_estimate = nearest_correlation_matrix(block_estimate, ts2)
-iscloser(calculate_mean_abs_distance(block_estimate, true_covar), calculate_mean_abs_distance(spectral_estimate2, true_covar))

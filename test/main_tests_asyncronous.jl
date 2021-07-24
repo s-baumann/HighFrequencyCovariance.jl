@@ -86,14 +86,13 @@ calculate_mean_abs_distance(true_covar, reconstituted_df).Correlation_error .< 1
 calculate_mean_abs_distance(true_covar, reconstituted_df).Volatility_error .< 10*eps()
 
 # Other regularisation algos:
-two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = identity_regularisation)
-two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = nearest_correlation_matrix)
-two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = nearest_psd_matrix)
-two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = eigenvalue_clean)
+two_scales_estimate_iden = two_scales_covariance(ts2, assets; regularisation = :Identity)
+two_scales_estimate_nearest_corr = two_scales_covariance(ts2, assets; regularisation = :NearestCorrelation)
+two_scales_estimate_nearest_psd = two_scales_covariance(ts2, assets; regularisation = :NearestPSD)
+two_scales_estimate_eigen = two_scales_covariance(ts2, assets; regularisation = :EigenClean)
 
 # Running regularistation on a CovarianceMatrix's correlation matrix.
-psd_mat = two_scales_covariance(ts2, assets; regularisation = nearest_correlation_matrix)
-valid_correlation_matrix(psd_mat)
+valid_correlation_matrix(two_scales_estimate_nearest_corr)
 
 
 reg1 = identity_regularisation(psd_mat, ts2)
@@ -125,7 +124,7 @@ calculate_mean_abs_distance(psd_mat, reg4_cov).Correlation_error .> 2*eps()
 calculate_mean_abs_distance(psd_mat, reg4_cov).Volatility_error .< 10*eps()
 
 # Testing blocking and regularisation.
-blocking_dd = put_assets_into_blocks_by_trading_frequency(ts2, 1.1, spectral_covariance)
+blocking_dd = put_assets_into_blocks_by_trading_frequency(ts2, 1.3, spectral_covariance)
 block_estimate = blockwise_estimation(ts2, blocking_dd)
-block_estimate = nearest_correlation_matrix(block_estimate, ts2)
+block_estimate = identity_regularisation(block_estimate, ts2)
 iscloser(calculate_mean_abs_distance(block_estimate, true_covar), calculate_mean_abs_distance(spectral_estimate2, true_covar))

@@ -14,3 +14,6 @@ println("Test on syncronous observations")
 
 println("Test on asyncronous observations")
 @time @test include("main_tests_asyncronous.jl")
+
+println("Test on Convenience Functions")
+@time @test include("main_tests_convenienceFunctions.jl")

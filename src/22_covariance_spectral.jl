@@ -7,7 +7,7 @@ apply_weights(A::Array, W::Missing) = sum(A .* (1/length(A)))
     return  t > start_of_block ? ((sqrt(2 * block_width))/(j*pi)) *sin((j * pi * (t-start_of_block))/block_width) : 0.0
 end
 
-function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix,
+function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
                           only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time])) / num_blocks,
                           microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], return_calc::Function = simple_differencing)
     numAssets = length(assets)
@@ -70,7 +70,7 @@ function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_as
 
         # Regularisation
         dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(mat))
-        mat = dont_regulise ? mat : regularisation(mat, ts, assets)
+        mat = dont_regulise ? mat : regularise(mat, ts, assets, regularisation; regularisation_params... )
 
         # In some cases we get negative terms on the diagonal with this algorithm.
         negative_diagonals = findall(diag(mat) .< eps())
@@ -89,10 +89,10 @@ end
 Estimation of a CovarianceMatrix using the spectral covariance method.
 Bibinger M, Hautsch N, Malec P, Reiss M (2014). “Estimating the quadratic covariation matrix from noisy observations: Local method of moments and efficiency.” The Annals of Statistics, 42(4), 1312–1346. doi:10.1214/14-AOS1224.
 """
-function spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix,
+function spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
                              only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks,
                              microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], return_calc::Function = simple_differencing)
-    corrected_matrices = spectral_lmm_array(ts, assets; regularisation = regularisation, only_regulise_if_not_PSD = only_regulise_if_not_PSD, numJ = numJ, num_blocks = num_blocks,
+    corrected_matrices = spectral_lmm_array(ts, assets; regularisation = regularisation, regularisation_params = regularisation_params, only_regulise_if_not_PSD = only_regulise_if_not_PSD, numJ = numJ, num_blocks = num_blocks,
                                             block_width = block_width, microstructure_noise_var = microstructure_noise_var, return_calc = return_calc)
     cor_weights = repeat([1.0], length(corrected_matrices))
     spectral_estimate = combine_covariance_matrices(corrected_matrices, cor_weights)

@@ -20,7 +20,7 @@ end
 """
 Estimation of a CovarianceMatrix using the two scale covariance method.
 """
-function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix,
+function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :CorrelationDefault, regularisation_params::Dict = Dict(),
                              only_regulise_if_not_PSD::Bool = false, equalweight::Bool = false, num_grids::Real = default_num_grids(ts), return_calc::Function = simple_differencing)
 
     two_scales_vol, micro_noise = two_scales_volatility(ts, assets; num_grids = num_grids, return_calc = return_calc)
@@ -49,7 +49,7 @@ function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get
 
     # Regularisation - It is done on the correlation matrix for this algo rather than the covariance matrix.
     dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(mat))
-    covmat = dont_regulise ? mat : regularisation(mat, ts, assets)
+    covmat = dont_regulise ? mat : regularise(mat, ts, assets, regularisation; regularisation_params... )
 
     vols = map(a -> two_scales_vol[a], assets)
     covmat = CovarianceMatrix(covmat, vols, assets)

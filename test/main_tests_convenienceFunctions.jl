@@ -51,7 +51,7 @@ settings1 = Dict([:kernel , :num_grids] .=>
                  [fejer   , 15])
 test_covariance(settings1)
 settings2 = Dict([:theta , :num_grids, :only_regulise_if_not_PSD  , :regularisation, :equalweight] .=>
-                 [0.5   , 20        , true                       , identity_regularisation, true])
+                 [0.5   , 20        , true                       , :Identity, true])
 test_covariance(settings2)
 settings3 = Dict{Symbol,Any}([:numJ , :num_blocks, :block_width  ] .=>
                  [Int(110)   , 30        ,  20           ])

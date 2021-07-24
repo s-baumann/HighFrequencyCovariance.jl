@@ -40,41 +40,46 @@ This is a convenience wrapper for the two volatility estimation techniques inclu
 The method can be :Simple or :TwoScales in which case the simple or two scales volatilty methods will be called.
 """
 function estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts), method::Symbol = :Preaveraging;
-                             regularisation::Union{Missing,Function} = nearest_correlation_matrix, only_regulise_if_not_PSD::Bool = false,
+                             regularisation::Union{Missing,Symbol} = :Default, regularisation_params::Dict = Dict(),
+                             only_regulise_if_not_PSD::Bool = false,
                              return_calc::Function = simple_differencing, time_grid::Union{Missing,Vector} = missing,
                              fixed_spacing::Union{Missing,<:Real} = missing, refresh_times::Bool = false, rough_guess_number_of_intervals::Integer = 5, # General Inputs
                              kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6, m::Integer = 2, # BNHLS parameters
                              numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks, microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], # Spectral Covariance parameters
                              theta::Real = 0.15, g::NamedTuple = g, # Preaveraging
                              equalweight::Bool = false, num_grids::Real = default_num_grids(ts)) # Two Scales parameters
+    if regularisation == :Default
+        regularisation = (method == :TwoScales) ? :CorrelationDefault : :CovarianceDefault
+    end
+
     if method == :Simple
-        # simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix, only_regulise_if_not_PSD::Bool = false,
-        #                           return_calc::Function = simple_differencing, time_grid::Union{Missing,Vector} = missing,
+        # simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
+        #                           only_regulise_if_not_PSD::Bool = false, return_calc::Function = simple_differencing, time_grid::Union{Missing,Vector} = missing,
         #                           fixed_spacing::Union{Missing,<:Real} = missing, refresh_times::Bool = false, rough_guess_number_of_intervals::Integer = 5)
         return simple_covariance(ts, assets; regularisation = regularisation, only_regulise_if_not_PSD = only_regulise_if_not_PSD,
                                    return_calc = return_calc, time_grid = time_grid,
                                    fixed_spacing = fixed_spacing, refresh_times = refresh_times, rough_guess_number_of_intervals = rough_guess_number_of_intervals)
     elseif method == :BNHLS
-        # bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix,
+        # bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
         #                          only_regulise_if_not_PSD::Bool = false, kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6,
         #                          m::Integer = 2, return_calc::Function = simple_differencing)
         return bnhls_covariance(ts, assets; regularisation = regularisation,
                                   only_regulise_if_not_PSD = only_regulise_if_not_PSD, kernel = kernel, H = H,
                                   m = m, return_calc = return_calc)
     elseif method == :Spectral
-        # spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix,
+        # spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
         #                             only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks,
         #                             microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], return_calc::Function = simple_differencing)
         return spectral_covariance(ts, assets; regularisation = regularisation,
                                      only_regulise_if_not_PSD = only_regulise_if_not_PSD, numJ = numJ, num_blocks = num_blocks, block_width = block_width,
                                      microstructure_noise_var = microstructure_noise_var, return_calc = return_calc)
     elseif method == :Preaveraging
-        # preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix,
+        # preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
         #                             only_regulise_if_not_PSD::Bool = false, theta::Real = 0.15, g::NamedTuple = g, return_calc::Function = simple_differencing)
         return preaveraged_covariance(ts, assets; regularisation = regularisation,
                                      only_regulise_if_not_PSD = only_regulise_if_not_PSD, theta = theta, g = g, return_calc = return_calc)
     elseif method == :TwoScales
-        # two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Function} = nearest_correlation_matrix,
+        # two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CorrelationDefault, regularisation_params::Dict = Dict(),
         #                             only_regulise_if_not_PSD::Bool = false, equalweight::Bool = false, num_grids::Real = default_num_grids(ts), return_calc::Function = simple_differencing)
         return two_scales_covariance(ts, assets; regularisation = regularisation, only_regulise_if_not_PSD = only_regulise_if_not_PSD,
                                     equalweight = equalweight, num_grids = num_grids, return_calc = return_calc)
@@ -88,6 +93,12 @@ function regularise(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector, me
                     identity_weight::Union{Missing,<:Real} = missing, spacing::Union{Missing,<:Real} = missing,
                     return_calc::Function = simple_differencing, weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
                     doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
+    if method == :CovarianceDefault
+        method = :NearestPSD
+    elseif method == :CorrelationDefault
+        method = :NearestCorrelation
+    end
+
     if method == :Identity
         # identity_regularisation(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector; identity_weight::Union{Missing,<:Real} = missing, spacing::Union{Missing,<:Real} = missing, return_calc::Function = simple_differencing)
         return identity_regularisation(mat, ts,  mat_labels; identity_weight = identity_weight, spacing = spacing, return_calc = return_calc)
@@ -103,7 +114,7 @@ function regularise(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector, me
         # nearest_psd_matrix(mat::Hermitian)
         return nearest_psd_matrix(mat)
     else
-        error("The covariance method chosen must be :Identity, :EigenClean, :NearestCorrelation or :NearestPSD")
+        error("The covariance method chosen must be :Identity, :EigenClean, :NearestCorrelation or :NearestPSD. You can also choose :CovarianceDefault (which is :NearestPSD) or  :CorrelationDefault (which is :NearestCorrelation).")
     end
 end
 
@@ -114,6 +125,12 @@ function regularise(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame, me
                     return_calc::Function = simple_differencing, apply_to_covariance::Bool = true,
                     weighting_matrix = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
                     doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
+    if method == :CovarianceDefault
+        method = :NearestPSD
+    elseif method == :CorrelationDefault
+        method = :NearestCorrelation
+    end
+
     if method == :Identity
         # identity_regularisation(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; identity_weight::Union{Missing,<:Real} = missing,
         #                         spacing::Union{Missing,<:Real} = missing, return_calc::Function = simple_differencing, apply_to_covariance::Bool = true)
@@ -130,6 +147,6 @@ function regularise(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame, me
         # nearest_psd_matrix(covariance_matrix::CovarianceMatrix; apply_to_covariance::Bool = true)
         return nearest_psd_matrix(covariance_matrix; apply_to_covariance = apply_to_covariance)
     else
-        error("The covariance method chosen must be :Identity, :EigenClean, :NearestCorrelation or :NearestPSD")
+        error("The covariance method chosen must be :Identity, :EigenClean, :NearestCorrelation or :NearestPSD. You can also choose :CovarianceDefault (which is :NearestPSD) or  :CorrelationDefault (which is :NearestCorrelation).")
     end
 end
