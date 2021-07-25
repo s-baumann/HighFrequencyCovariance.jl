@@ -21,61 +21,38 @@ iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error 
 # Preav Convergence
 preav_estimate1 = preaveraged_covariance(ts1, assets)
 preav_estimate2 = preaveraged_covariance(ts2, assets)
-preav_estimate3 = preaveraged_covariance(ts3, assets; return_calc = HighFrequencyCovariance.log_returns)
 iscloser(calculate_mean_abs_distance(preav_estimate2, true_covar), calculate_mean_abs_distance(preav_estimate1, true_covar))
-calculate_mean_abs_distance(preav_estimate2, preav_estimate3).Correlation_error .< 10*eps()
-calculate_mean_abs_distance(preav_estimate2, preav_estimate3).Volatility_error .< 10*eps()
 valid_correlation_matrix(preav_estimate1)
 valid_correlation_matrix(preav_estimate2)
 
 # simple Convergence
 simple_estimate1 = simple_covariance(ts1, assets)
 simple_estimate2 = simple_covariance(ts2, assets)
-simple_estimate3 = simple_covariance(ts3, assets; return_calc = HighFrequencyCovariance.log_returns)
 iscloser(calculate_mean_abs_distance(simple_estimate2, true_covar), calculate_mean_abs_distance(simple_estimate1, true_covar))
-calculate_mean_abs_distance(simple_estimate2, simple_estimate3).Correlation_error .< 10*eps()
-calculate_mean_abs_distance(simple_estimate2, simple_estimate3).Volatility_error .< 10*eps()
 valid_correlation_matrix(simple_estimate1)
 valid_correlation_matrix(simple_estimate2)
 
 # bnhls Convergence
 bnhls_estimate1 = bnhls_covariance(ts1, assets)
 bnhls_estimate2 = bnhls_covariance(ts2, assets)
-bnhls_estimate3 = bnhls_covariance(ts3, assets; return_calc = HighFrequencyCovariance.log_returns)
 iscloser(calculate_mean_abs_distance(bnhls_estimate2, true_covar), calculate_mean_abs_distance(bnhls_estimate1, true_covar))
-calculate_mean_abs_distance(bnhls_estimate2, bnhls_estimate3).Correlation_error .< 100*eps()
-calculate_mean_abs_distance(bnhls_estimate2, bnhls_estimate3).Volatility_error .< 10*eps()
 valid_correlation_matrix(bnhls_estimate1)
 valid_correlation_matrix(bnhls_estimate2)
 
 # Preav Convergence
 spectral_estimate1 = spectral_covariance(ts1, assets; num_blocks = 1) # not many observations so need to reduce the number of blocks here
 spectral_estimate2 = spectral_covariance(ts2, assets)
-spectral_estimate3 = spectral_covariance(ts3, assets; return_calc = HighFrequencyCovariance.log_returns)
 iscloser(calculate_mean_abs_distance(spectral_estimate2, true_covar), calculate_mean_abs_distance(spectral_estimate1, true_covar))
-calculate_mean_abs_distance(spectral_estimate2, spectral_estimate3).Correlation_error .< 10*eps()
-calculate_mean_abs_distance(spectral_estimate2, spectral_estimate3).Volatility_error .< 10*eps()
 valid_correlation_matrix(spectral_estimate1)
 valid_correlation_matrix(spectral_estimate2)
 
 # two scales Convergence
 two_scales_estimate1 = two_scales_covariance(ts1, assets)
 two_scales_estimate2 = two_scales_covariance(ts2, assets)
-two_scales_estimate3 = two_scales_covariance(ts3, assets; return_calc = HighFrequencyCovariance.log_returns)
 iscloser(calculate_mean_abs_distance(two_scales_estimate2, true_covar), calculate_mean_abs_distance(two_scales_estimate1, true_covar))
-calculate_mean_abs_distance(two_scales_estimate2, two_scales_estimate3).Correlation_error .< 10*eps()
-calculate_mean_abs_distance(two_scales_estimate2, two_scales_estimate3).Volatility_error .< 10*eps()
 valid_correlation_matrix(two_scales_estimate1)
 valid_correlation_matrix(two_scales_estimate2)
 
-
-
-two_scales_volatility(ts3, assets; return_calc = HighFrequencyCovariance.log_returns)
-
-
-
-
-two_scales_volatility(ts3, assets)
 
 #############################
  # Serialisation and deserialisation

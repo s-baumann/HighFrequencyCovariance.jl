@@ -102,10 +102,10 @@ Barndorff-Nielsen, O., Hansen, P.R., Lunde, A., Shephard, N. 2011. - The whole p
 """
 function bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
                           only_regulise_if_not_PSD::Bool = false, kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6,
-                          m::Integer = 2, return_calc::Function = simple_differencing)
+                          m::Integer = 2)
     at_times = get_all_refresh_times(ts, assets)
     dd_compiled = latest_value(ts, at_times; assets = assets)
-    dd = get_returns(dd_compiled; return_calc = return_calc)
+    dd = get_returns(dd_compiled)
 
     if m >= nrow(dd)/2
        @warn string("Cannot estimate the correlation matrix with the bnhls method with only ", nrow(ts.df), " ticks.")

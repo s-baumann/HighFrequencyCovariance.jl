@@ -9,7 +9,7 @@ end
 
 function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
                           only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time])) / num_blocks,
-                          microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], return_calc::Function = simple_differencing)
+                          microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2])
     numAssets = length(assets)
     SS = zeros(num_blocks, numJ, numAssets)
     indices = Dict(assets .=> collect(1:numAssets))
@@ -29,7 +29,7 @@ function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_as
         end
         timegap = (newtime - lasttimes[assetslot])
         centertime = lasttimes[assetslot] + 0.5*timegap
-        ret = return_calc([newval], [lastvalues[assetslot]], [timegap], asset)[1]
+        ret = simple_differencing([newval], [lastvalues[assetslot]])[1]
         lasttimes[assetslot]  = newtime
         lastvalues[assetslot] = newval
 
@@ -91,9 +91,9 @@ Bibinger M, Hautsch N, Malec P, Reiss M (2014). “Estimating the quadratic cova
 """
 function spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
                              only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks,
-                             microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], return_calc::Function = simple_differencing)
+                             microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2])
     corrected_matrices = spectral_lmm_array(ts, assets; regularisation = regularisation, regularisation_params = regularisation_params, only_regulise_if_not_PSD = only_regulise_if_not_PSD, numJ = numJ, num_blocks = num_blocks,
-                                            block_width = block_width, microstructure_noise_var = microstructure_noise_var, return_calc = return_calc)
+                                            block_width = block_width, microstructure_noise_var = microstructure_noise_var)
     cor_weights = repeat([1.0], length(corrected_matrices))
     spectral_estimate = combine_covariance_matrices(corrected_matrices, cor_weights)
     return spectral_estimate

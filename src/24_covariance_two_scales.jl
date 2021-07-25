@@ -1,10 +1,10 @@
-function two_scales_correlation(prices::DataFrame, times::Vector{<:Real}, asseti::Symbol, assetj::Symbol, gamma::Real, num_grids::Real, return_calc::Function)
-    vol_plus_version  = two_scales_volatility(prices[:,asseti] * gamma + (1-gamma) * prices[:,assetj] , times, Symbol("CompoundAsset__",asseti,"__+__",assetj,"__",gamma), num_grids, return_calc)[1]
-    vol_minus_version = two_scales_volatility(prices[:,asseti] * gamma - (1-gamma) * prices[:,assetj] , times, Symbol("CompoundAsset__",asseti,"__-__",assetj,"__",gamma), num_grids, return_calc)[1]
+function two_scales_correlation(prices::DataFrame, times::Vector{<:Real}, asseti::Symbol, assetj::Symbol, gamma::Real, num_grids::Real)
+    vol_plus_version  = two_scales_volatility(prices[:,asseti] * gamma + (1-gamma) * prices[:,assetj] , times, Symbol("CompoundAsset__",asseti,"__+__",assetj,"__",gamma), num_grids)[1]
+    vol_minus_version = two_scales_volatility(prices[:,asseti] * gamma - (1-gamma) * prices[:,assetj] , times, Symbol("CompoundAsset__",asseti,"__-__",assetj,"__",gamma), num_grids)[1]
     covv = (1/(4*gamma*(1-gamma))) * ( vol_plus_version^2 -  vol_minus_version^2 )
     # Note that we calculate these again rather than feeding in the ones calculated earlier because it is improtant the vols are calculated with the same data as the sums/differences.
-    asseti_vol = two_scales_volatility(prices[:,asseti], times, Symbol("CompoundAsset__",asseti,"__ONLY"), num_grids, return_calc)[1]
-    assetj_vol = two_scales_volatility(prices[:,assetj], times, Symbol("CompoundAsset__",assetj,"__ONLY"), num_grids, return_calc)[1]
+    asseti_vol = two_scales_volatility(prices[:,asseti], times, Symbol("CompoundAsset__",asseti,"__ONLY"), num_grids)[1]
+    assetj_vol = two_scales_volatility(prices[:,assetj], times, Symbol("CompoundAsset__",assetj,"__ONLY"), num_grids)[1]
     correl = covv/(asseti_vol * assetj_vol)
     return correl
 end
@@ -21,9 +21,9 @@ end
 Estimation of a CovarianceMatrix using the two scale covariance method.
 """
 function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :CorrelationDefault, regularisation_params::Dict = Dict(),
-                             only_regulise_if_not_PSD::Bool = false, equalweight::Bool = false, num_grids::Real = default_num_grids(ts), return_calc::Function = simple_differencing)
+                             only_regulise_if_not_PSD::Bool = false, equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
 
-    two_scales_vol, micro_noise = two_scales_volatility(ts, assets; num_grids = num_grids, return_calc = return_calc)
+    two_scales_vol, micro_noise = two_scales_volatility(ts, assets; num_grids = num_grids)
 
     N = length(assets)
     mat = zeros(N,N)
@@ -40,7 +40,7 @@ function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get
                     mat[i,j] = 0.0
                 else
                     prices, times = get_refresh_times_and_prices(ts, asseti, assetj)
-                    mat[i,j] = two_scales_correlation(prices, times, asseti, assetj, gamma, num_grids, return_calc)
+                    mat[i,j] = two_scales_correlation(prices, times, asseti, assetj, gamma, num_grids)
                 end
             end
         end

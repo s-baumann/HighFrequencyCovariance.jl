@@ -1,9 +1,9 @@
-function get_preaveraged_prices(ts::SortedDataFrame, asset::Symbol, k_n::Real, gs::Vector, return_calc::Function)
+function get_preaveraged_prices(ts::SortedDataFrame, asset::Symbol, k_n::Real, gs::Vector)
    prices = Array(ts.df[ts.groupingrows[asset],ts.value])
    times = Array(ts.df[ts.groupingrows[asset],ts.time])
    durations = Array(times[2:end] .- times[1:(end-1)])
    times = times[2:end]
-   diffs = return_calc(Array(prices[2:end]), Array(prices[1:(end-1)]), durations, asset)
+   diffs = simple_differencing(Array(prices[2:end]), Array(prices[1:(end-1)]))
    lastrow = length(diffs) - k_n + 1
    if lastrow < 1 return missing, missing end
    preaveraged_returns = Array{eltype(diffs),1}(undef, lastrow)
@@ -40,12 +40,12 @@ Estimation of the CovarianceMatrix using preaveraging method.
 Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for multivariate continuous Itô semimartingales with noise in non-synchronous observation schemes.” Journal of Multivariate Analysis, 120, 59–84. doi:10.1016/j.jmva.2013.05.002.
 """
 function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
-                             only_regulise_if_not_PSD::Bool = false, theta::Real = 0.15, g::NamedTuple = g, return_calc::Function = simple_differencing)
+                             only_regulise_if_not_PSD::Bool = false, theta::Real = 0.15, g::NamedTuple = g)
    # The defaults are from the paper (Christensen et al 2013). theta and the formula for k_n is from halfway down page 67. g is from page 64.
    number_of_ticks = nrow(ts.df)
    k_n = Int(ceil(min(number_of_ticks/2,theta * sqrt(number_of_ticks))))
    gs = g.f.( collect(1:1:(k_n-1)) ./ k_n )
-   prev_prices = get_preaveraged_prices.(Ref(ts), assets, k_n, Ref(gs), Ref(return_calc))
+   prev_prices = get_preaveraged_prices.(Ref(ts), assets, k_n, Ref(gs))
 
   lens = findall(map(i -> ismissing(prev_prices[i][1]), 1:length(prev_prices)))
   if length(lens) > 0
@@ -81,7 +81,7 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
     end
    # We can use this to get the correlation matrix but the variances are too low - as a result of preveraging.
    # We will instead use the two scales vol of Zhang, mykland, Ait-Sahalia 2005.
-   voldict = two_scales_volatility(ts, assets; return_calc = return_calc)[1]
+   voldict = two_scales_volatility(ts, assets)[1]
    vols = map(a -> voldict[a], assets)
    covar.volatility = vols
    return covar

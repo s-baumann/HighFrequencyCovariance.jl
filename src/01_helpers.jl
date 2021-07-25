@@ -45,25 +45,23 @@ function construct_matrix_from_eigen(eigenvalues::Array{R,1}, eigenvectors::Arra
 end
 
 
-simple_differencing(new::Vector,old::Vector, durations::Vector, asset::Symbol) =  (new .- old)
-log_returns(new::Vector,old::Vector, durations::Vector, asset::Symbol) =  log.(new ./ old)
+simple_differencing(new::Vector,old::Vector) =  (new .- old)
+#log_returns(new::Vector,old::Vector, durations::Vector, asset::Symbol) =  log.(new ./ old)
 
 """
 Converts stochastic processes into a dataframe of returns.
 ### Takes
 * dd - A dataframe with a column called :Time and all other columns being asset prices in each period.
 * rescale_for_duration - Should returns be rescaled.
-* return_calc -  A function that takes in a vector of new values and a vector of old values and a symbol for what asset it is. It returns a vector of the returns for that asset.
-       by default this function is simply simple_differencing(new::Vector,old::Vector,asset::Symbol) =  (new .- old)
 ### Returns
 * A DataFrame of returns.
 """
-function get_returns(dd; rescale_for_duration::Bool = false, return_calc::Function = simple_differencing)
+function get_returns(dd; rescale_for_duration::Bool = false)
     N = nrow(dd)
     assets = setdiff(Symbol.(collect(names(dd))), [:Time])
     dd_mat = Array{Float64,2}(dd[1:N,assets])
     time_diffs = dd[2:N,:Time] - dd[1:(N-1),:Time]
-    diffs  = reduce(hcat, map(i -> return_calc(dd_mat[2:end,i] , dd_mat[1:(end-1),i], time_diffs, assets[i]), 1:length(assets)) )
+    diffs  = reduce(hcat, map(i -> simple_differencing(dd_mat[2:end,i] , dd_mat[1:(end-1),i]) , 1:length(assets)) )
     dd_returns = rescale_for_duration ? (1 ./ sqrt.(time_diffs)) .*  diffs : diffs
     dd2 = DataFrame(dd_returns, assets)
     return dd2
