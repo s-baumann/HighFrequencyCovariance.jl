@@ -16,7 +16,7 @@ ts1.df.value = exp.(ts1.df.Value)
 
 iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error + b.Volatility_error)
 
-function subset_dict(dic::Dict, keys::Vector{Symbol})
+function subset_dict(dic::Dict, keys::Vector)
     new_dict = Dict()
     for k in keys
         new_dict[k] = dic[k]
