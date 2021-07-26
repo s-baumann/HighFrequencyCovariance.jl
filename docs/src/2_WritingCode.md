@@ -42,7 +42,7 @@ ts = SortedDataFrame(df, :time, :stock, :logprice)
 ```
 In a real setting this is how we would turn our dataframe of data into a SortedDataFrame.
 
-For the suceeding sections it is useful to get more realistic time series data. So we will generate some Monte Carlo data here using the generate\_random\_path function which generates a random correlation matrix, volatilities, price update times and microstructure noises and generates a SortedDataFrame from a random time series consistent with these.
+For the succeeding sections it is useful to get more realistic time series data. So we will generate some Monte Carlo data here using the generate\_random\_path function which generates a random correlation matrix, volatilities, price update times and microstructure noises and generates a SortedDataFrame from a random time series consistent with these.
 ```
 using HighFrequencyCovariance
 dims = 4
@@ -54,13 +54,20 @@ ts, true_covar, true_micro_noise, true_update_rates = generate_random_path(dims,
 
 As this is a Monte Carlo we already have the true CovarianceMatrix in the true\_covar variable. As we don't have this in applied settings we will disregard this for now and try to estimate it using our data from ts\_data:
 ```
-assets              = get_assets(ts_data)
-simple_estimate     = simple_covariance(ts_data, assets)
-bnhls_estimate      = bnhls_covariance(ts_data, assets)
-spectral_estimate   = spectral_covariance(ts_data, assets)
-preav_estimate      = preaveraged_covariance(ts_data, assets)
-two_scales_estimate = two_scales_covariance(ts_data, assets)
+assets              = get_assets(ts)
+simple_estimate     = simple_covariance(ts, assets)
+bnhls_estimate      = bnhls_covariance(ts, assets)
+spectral_estimate   = spectral_covariance(ts, assets)
+preav_estimate      = preaveraged_covariance(ts, assets)
+two_scales_estimate = two_scales_covariance(ts, assets)
 ```
+We may alternatively use the estimate\_covariance function:
+
+```
+bnhls_estimate2     = estimate_covariance(ts, assets, :BNHLS)
+spectral_estimate2  = estimate_covariance(ts, assets, :Spectral)
+```
+
 Now we may be particularly interested in one of the estimates, for instance the bnhls estimate. We can first see if the correlation matrix is valid:
 ```
 valid_correlation_matrix(bnhls_estimate)
@@ -91,7 +98,7 @@ We can see that in this particular case the correlation matrix calculated with p
 
 Now examining the data we can see that we have some assets that trade more frequently than the others.
 ```
-ticks_per_asset(ts_data)
+ticks_per_asset(ts)
 # Dict{Symbol,Int64} with 4 entries:
 #  :asset_4 => 6848
 #  :asset_3 => 6588
@@ -105,14 +112,14 @@ We will generate a new block if the minimum number of ticks of a new block has 2
 ```
 new_block_threshold = 1.2
 blocking_frame = put_assets_into_blocks_by_trading_frequency(
-                        ts_data, new_block_threshold, bnhls_covariance)
+                        ts, new_block_threshold, bnhls_covariance)
 ```
 This blocking\_frame is a regular dataframe with six columns where each row represents a different estimation. The order of the rows is the order of estimations (so the results of later estimations may overwrite earlier ones). The first column is named :assets and has the type Set{Symbol} which represents the assets
 in each estimation. The second column contains the function that will be used in the estimation of that block. The third column has the name :optional\_parameters and is of type NamedTuple that can provide optional parameters to the covariance function in the second column.
 Every covariance estimation has a function signature with two common arguments before the semicolon (For a SortedDataFrame and a vector of symbols representing what assets to use). There can also be a number of named optional arguments which can be sourced from a NamedTuple.
 The **blockwise\_estimation** function then estimates a block with the line
 ```
-blocking_frame[i,:f](ts_data, collect(blocking_frame[i,:assets]);
+blocking_frame[i,:f](ts, collect(blocking_frame[i,:assets]);
                      blocking_frame[i,:optional_parameters]... )
 ```
 Thus a user can insert a named tuple containing whatever optional parameters are used by the function.
@@ -127,11 +134,11 @@ blocking_frame[one_asset_row, :f] = spectral_covariance
 
 We can now estimate the blockwise estimated CovarianceMatrix as:
 ```
-block_estimate = blockwise_estimation(ts_data, blocking_frame)
+block_estimate = blockwise_estimation(ts, blocking_frame)
 ```
 After a blockwise estimation the result may often not be PSD. So we could regularise at this point:
 ```
-reg_block_estimate = nearest_correlation_matrix(block_estimate , ts_data)
+reg_block_estimate = nearest_correlation_matrix(block_estimate , ts)
 ```
 Finally we might seek to use one of our estimated **CovarianceMatrix**s to calculate an actual covariance matrix over some interval. This can be done with the code:
 ```
