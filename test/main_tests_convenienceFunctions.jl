@@ -3,6 +3,7 @@ using LinearAlgebra
 using Statistics: std, var, mean, cov
 using HighFrequencyCovariance
 using Random
+using StochasticIntegrals
 
 brownian_corr_matrix = Hermitian([1.0 0.75 0.5 0.0;
                                   0.0 1.0 0.5 0.25;
@@ -13,6 +14,10 @@ twister = MersenneTwister(1)
 
 ts1, true_covar, micro_noise, update_rates = generate_random_path(4, 2000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister))
 ts1.df.value = exp.(ts1.df.Value)
+
+# Testing making a ItoSet
+ito = ItoSet(true_covar)
+
 
 iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error + b.Volatility_error)
 
