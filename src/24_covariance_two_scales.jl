@@ -20,7 +20,7 @@ end
 """
 Estimation of a CovarianceMatrix using the two scale covariance method.
 """
-function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :CorrelationDefault, regularisation_params::Dict = Dict(),
+function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :correlation_default, regularisation_params::Dict = Dict(),
                              only_regulise_if_not_PSD::Bool = false, equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
 
     two_scales_vol, micro_noise = two_scales_volatility(ts, assets; num_grids = num_grids)

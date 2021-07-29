@@ -30,12 +30,11 @@ function subset_dict(dic::Dict, keys::Vector)
 end
 
 # Testing Covariation matrix functions.
-covariancemap = Dict{Symbol,Function}([:Simple, :BNHLS, :Spectral, :Preaveraging, :TwoScales] .=>
-                     [simple_covariance, bnhls_covariance, spectral_covariance, preaveraged_covariance, two_scales_covariance])
+covar_functions =  [simple_covariance, bnhls_covariance, spectral_covariance, preaveraged_covariance, two_scales_covariance]
 function test_covariance(settings = Dict())
     success = true
-    for k in keys(covariancemap)
-        f = covariancemap[k]
+    for f in covar_functions
+        k = Symbol(f)
         args = reduce(union, Base.kwarg_decl.(methods(f)))
         releventsettings = intersect(args, keys(settings) )
         sets = (length(releventsettings) > 0) ? subset_dict(settings, releventsettings)  : Dict()
@@ -56,7 +55,7 @@ settings1 = Dict([:kernel , :num_grids] .=>
                  [fejer   , 15])
 test_covariance(settings1)
 settings2 = Dict([:theta , :num_grids, :only_regulise_if_not_PSD  , :regularisation, :equalweight] .=>
-                 [0.5   , 20        , true                       , :Identity, true])
+                 [0.5   , 20        , true                       , :identity_regularisation, true])
 test_covariance(settings2)
 settings3 = Dict{Symbol,Any}([:numJ , :num_blocks, :block_width  ] .=>
                  [Int(110)   , 30        ,  20           ])
@@ -64,12 +63,11 @@ test_covariance(settings3)
 
 
 # Volatility
-volatilitymap = Dict{Symbol,Function}([:Simple, :TwoScales] .=>
-                  [simple_volatility, two_scales_volatility])
+vol_functions = [simple_volatility, two_scales_volatility]
 function test_volatility(settings = Dict())
     success = true
-    for k in keys(volatilitymap)
-        f = volatilitymap[k]
+    for f in vol_functions
+        k = Symbol(f)
         args = reduce(union, Base.kwarg_decl.(methods(f)))
         releventsettings = intersect(args, keys(settings) )
         sets = (length(releventsettings) > 0) ? subset_dict(settings, releventsettings)  : Dict()
@@ -92,12 +90,11 @@ test_volatility(settings1)
 # Testing Regularisation
 covar = two_scales_covariance(ts1; regularisation = missing)
 
-regularisationmap = Dict{Symbol,Function}([:Identity, :EigenClean, :NearestCorrelation, :NearestPSD] .=>
-                [identity_regularisation, eigenvalue_clean, nearest_correlation_matrix, nearest_psd_matrix])
+reg_functions = [identity_regularisation, eigenvalue_clean, nearest_correlation_matrix, nearest_psd_matrix]
 function test_regularisation(covar, settings = Dict())
     success = true
-    for k in keys(regularisationmap)
-        f = regularisationmap[k]
+    for f in reg_functions
+        k = Symbol(f)
         args = reduce(union, Base.kwarg_decl.(methods(f)))
         releventsettings = intersect(args, keys(settings) )
         sets = (length(releventsettings) > 0) ? subset_dict(settings, releventsettings)  : Dict()
