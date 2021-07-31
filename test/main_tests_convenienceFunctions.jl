@@ -72,6 +72,7 @@ function test_volatility(settings = Dict())
         releventsettings = intersect(args, keys(settings) )
         sets = (length(releventsettings) > 0) ? subset_dict(settings, releventsettings)  : Dict()
         estimate   = f(ts1, assets; sets... )
+        estimate = (Symbol(f) == :two_scales_volatility) ? estimate[1] : estimate
         estimate_c = estimate_volatility(ts1, assets, k; sets...)
         cor_err = calculate_mean_abs_distance(estimate, estimate_c)
         t1 = all( (cor_err .< 10*eps()) .| isnan.(cor_err))

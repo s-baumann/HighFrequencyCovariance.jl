@@ -63,5 +63,6 @@ export blockwise_estimation, put_assets_into_blocks_by_trading_frequency
 # Convenience Wrappers
 include("50_ConvenienceFunctions.jl")
 export estimate_volatility, estimate_covariance, regularise
+export estimate_microstructure_noise
 
 end

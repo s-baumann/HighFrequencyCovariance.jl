@@ -16,11 +16,24 @@ function estimate_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_a
     elseif method == :two_scales_volatility
         # two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
         #                num_grids::Real = default_num_grids(ts))
-        return two_scales_volatility(ts, assets; num_grids = num_grids)
+        return two_scales_volatility(ts, assets; num_grids = num_grids)[1]
     else
         error("The volatilty method chosen must be either :simple_volatility or :two_scales_volatility")
     end
 end
+
+"""
+This estimates microstructure noise with the two_scales_volatility method.
+"""
+function estimate_microstructure_noise(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
+                             num_grids::Real = default_num_grids(ts),
+                             time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
+                             use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
+    # two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
+    #                num_grids::Real = default_num_grids(ts))
+    return two_scales_volatility(ts, assets; num_grids = num_grids)[2]
+end
+
 
 
 

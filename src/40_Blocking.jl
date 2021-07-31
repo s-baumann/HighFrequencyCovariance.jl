@@ -61,10 +61,10 @@ output by put_assets_into_blocks_by_trading_frequency (although the actual estim
 as to what that function outputs).
 """
 function blockwise_estimation(ts::SortedDataFrame, blocking_frame::DataFrame)
-    covar = blocking_frame[1,:f](ts, collect(blocking_frame[1,:assets]); blocking_frame[1,:optional_parameters]... )
+    covar = estimate_covariance(ts, collect(blocking_frame[1,:assets]), blocking_frame[1,:f] ; blocking_frame[1,:optional_parameters]... )
     if nrow(blocking_frame) == 1 return covar end
     for i in 2:nrow(blocking_frame)
-        new_covar = blocking_frame[i,:f](ts, collect(blocking_frame[i,:assets]); blocking_frame[i,:optional_parameters]... )
+        new_covar = estimate_covariance(ts, collect(blocking_frame[i,:assets]), blocking_frame[i,:f] ; blocking_frame[i,:optional_parameters]... )
         covar = combine_covariance_matrices([covar, new_covar], [0,1])
     end
     return covar

@@ -11,7 +11,7 @@ brownian_corr_matrix = Hermitian([1.0 0.75 0.5 0.0;
 assets = [:BARC, :HSBC, :VODL, :RYAL]
 twister = MersenneTwister(1)
 
-ts1, true_covar, micro_noise, update_rates = generate_random_path(4, 2000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister))
+ts1, true_covar, micro_noise, update_rates = generate_random_path(4, 4000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister))
 ts2, true_covar, micro_noise, update_rates = generate_random_path(4, 50000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister))
 ts3 = deepcopy(ts2)
 ts3.df.Value = exp.(ts3.df.Value)
@@ -101,7 +101,14 @@ calculate_mean_abs_distance(psd_mat, reg4_cov).Correlation_error .> 2*eps()
 calculate_mean_abs_distance(psd_mat, reg4_cov).Volatility_error .< 10*eps()
 
 # Testing blocking and regularisation.
-blocking_dd = put_assets_into_blocks_by_trading_frequency(ts2, 1.3, spectral_covariance)
+blocking_dd = put_assets_into_blocks_by_trading_frequency(ts2, 1.3, :spectral_covariance)
 block_estimate = blockwise_estimation(ts2, blocking_dd)
 block_estimate = identity_regularisation(block_estimate, ts2)
 iscloser(calculate_mean_abs_distance(block_estimate, true_covar), calculate_mean_abs_distance(spectral_estimate2, true_covar))
+
+
+# Testing getting noise
+noise = estimate_microstructure_noise(ts1, assets)
+noise_from_2s = two_scales_volatility(ts1, assets)[2]
+C = merge(-, noise, noise_from_2s)
+maximum(collect(values(C))) < 1E-13
