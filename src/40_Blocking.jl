@@ -40,11 +40,11 @@ end
 This makes a dataframe that describes how to estimate the covariance matrix blockwise.
 Hautsch, N., Kyj, L.M. and Oomen, R.C.A. (2012), A blocking and regularization approach to high‐dimensional realized covariance estimation. J. Appl. Econ., 27: 625-645
 """
-function put_assets_into_blocks_by_trading_frequency(ts::SortedDataFrame, obs_multiple_for_new_block::Real, func::Function, optional_parameters::NamedTuple = NamedTuple())
+function put_assets_into_blocks_by_trading_frequency(ts::SortedDataFrame, obs_multiple_for_new_block::Real, func::Symbol, optional_parameters::NamedTuple = NamedTuple())
     blocks      = put_assets_into_blocks(ts, obs_multiple_for_new_block)
     blocks2     = make_sorted_adjacent_block_sequence(blocks)
     num_blocks  = length(blocks2)
-    blocking_dd = DataFrame(assets = Set.(blocks2), f = Array{Function}(repeat([func], num_blocks)))
+    blocking_dd = DataFrame(assets = Set.(blocks2), f = Array{Symbol}(repeat([func], num_blocks)))
     blocking_dd[!,:optional_parameters]  .= Ref(optional_parameters)
 
     blocking_dd[!,:number_of_assets] = map(i -> length(blocking_dd[i, :assets]), 1:nrow(blocking_dd))
