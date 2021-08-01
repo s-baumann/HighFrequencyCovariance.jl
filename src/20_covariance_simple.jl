@@ -42,6 +42,10 @@ function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{S
 end
 
 """
+         simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
+                           only_regulise_if_not_PSD::Bool = false, time_grid::Union{Missing,Vector} = missing,
+                           fixed_spacing::Union{Missing,<:Real} = missing, refresh_times::Bool = false, rough_guess_number_of_intervals::Integer = 5)
+
 Estimation of the covariance matrix in the standard simple way.
 https://en.wikipedia.org/wiki/Sample_mean_and_covariance
 """
