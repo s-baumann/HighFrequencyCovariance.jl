@@ -2,9 +2,21 @@ using Documenter, HighFrequencyCovariance
 
 makedocs(
     format = Documenter.HTML(),
-    sitename = "HighFrequencyCovariance",
+    sitename = "HighFrequencyCovariance.jl",
     modules = [HighFrequencyCovariance],
-    pages = ["index.md", "1_algorithms.md" , "2_data_structures.md","3_WritingCode.md", "9_references.md"]
+    pages = Any[
+        "Introduction" => "index.md",
+        "First Steps with HighFrequencyCovariance.jl" => Any[
+            "Algorithms" => "1_algorithms.md",
+            "Data Structures" => "2_data_structures.md",
+            "Writing Code" => "3_WritingCode.md",
+            "References" => "9_references.md"
+        ],
+        "API" => Any[
+            "Types" => "types.md",
+            "Functions" => "functions.md"
+        ]
+    ],
 )
 
 deploydocs(
