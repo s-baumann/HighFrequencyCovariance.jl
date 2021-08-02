@@ -100,7 +100,7 @@ This is a convenience wrapper for the regularisation techniques.
     :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).
 """
 function regularise(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector, method::Symbol = :correlation_default;
-                    identity_weight::Union{Missing,<:Real} = missing, spacing::Union{Missing,<:Real} = missing,
+                    spacing::Union{Missing,<:Real} = missing,
                     weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
                     doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
     if method == :covariance_default
@@ -110,15 +110,15 @@ function regularise(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector, me
     end
 
     if method == :identity_regularisation
-        # identity_regularisation(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector; identity_weight::Union{Missing,<:Real} = missing, spacing::Union{Missing,<:Real} = missing)
-        return identity_regularisation(mat, ts,  mat_labels; identity_weight = identity_weight, spacing = spacing)
+        # identity_regularisation(mat::Hermitian, ts::SortedDataFrame, mat_labels::Vector; spacing::Union{Missing,<:Real} = missing)
+        return identity_regularisation(mat, ts, mat_labels; spacing = spacing)
     elseif method == :eigenvalue_clean
-        # eigenvalue_clean(mat::Hermitian, ts::SortedDataFrame, mat_labels = missing)
-        return eigenvalue_clean(mat, ts, mat_labels)
+        # eigenvalue_clean(mat::Hermitian, ts::SortedDataFrame)
+        return eigenvalue_clean(mat, ts)
     elseif method == :nearest_correlation_matrix
-        # nearest_correlation_matrix(mat::Hermitian, mat_labels::Vector = missing; weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
+        # nearest_correlation_matrix(mat::Hermitian; weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
         #                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
-        return nearest_correlation_matrix(mat, mat_labels; weighting_matrix = weighting_matrix, doDykstra = doDykstra,
+        return nearest_correlation_matrix(mat; weighting_matrix = weighting_matrix, doDykstra = doDykstra,
                                           stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
     elseif method == :nearest_psd_matrix
         # nearest_psd_matrix(mat::Hermitian)
@@ -136,7 +136,7 @@ This is a convenience wrapper for the regularisation techniques.
     :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).
 """
 function regularise(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame, method::Symbol = :nearest_correlation_matrix;
-                    identity_weight::Union{Missing,<:Real} = missing, spacing::Union{Missing,<:Real} = missing,
+                    spacing::Union{Missing,<:Real} = missing,
                     apply_to_covariance::Bool = true,
                     weighting_matrix = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
                     doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
@@ -147,9 +147,8 @@ function regularise(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame, me
     end
 
     if method == :identity_regularisation
-        # identity_regularisation(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; identity_weight::Union{Missing,<:Real} = missing,
-        #                         spacing::Union{Missing,<:Real} = missing, apply_to_covariance::Bool = true)
-        return identity_regularisation(covariance_matrix, ts; identity_weight = identity_weight, spacing = spacing, apply_to_covariance = apply_to_covariance)
+        # identity_regularisation(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; spacing::Union{Missing,<:Real} = missing, apply_to_covariance::Bool = true)
+        return identity_regularisation(covariance_matrix, ts; spacing = spacing, apply_to_covariance = apply_to_covariance)
     elseif method == :eigenvalue_clean
         # eigenvalue_clean(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; apply_to_covariance::Bool = true)
         return eigenvalue_clean(covariance_matrix, ts; apply_to_covariance = apply_to_covariance)

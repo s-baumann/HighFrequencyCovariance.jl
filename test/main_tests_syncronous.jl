@@ -115,7 +115,7 @@ dist.Correlation_error .> 1000*eps()
 # Running regularistation on a CovarianceMatrix's correlation matrix.
 psd_mat = two_scales_covariance(ts2, assets; regularisation = :nearest_correlation_matrix)
 valid_correlation_matrix(psd_mat)
-reg1 = identity_regularisation(psd_mat, ts2; identity_weight =  0.5, apply_to_covariance = false) # Inputting a weight explicitly.
+reg1 = identity_regularisation(psd_mat, 0.5; apply_to_covariance = false) # Inputting a weight explicitly.
 calculate_mean_abs_distance(psd_mat, reg1).Correlation_error .> 10*eps()
 calculate_mean_abs_distance(psd_mat, reg1).Volatility_error .< 10*eps()
 

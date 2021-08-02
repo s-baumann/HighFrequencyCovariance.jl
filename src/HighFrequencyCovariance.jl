@@ -18,12 +18,12 @@ export subset_to_tick, subset_to_time, calculate_mean_abs_distance
 export to_dataframe, valid_correlation_matrix, is_psd_matrix
 export ticks_per_asset, get_assets
 include("01_helpers.jl")
-export simple_differencing, log_returns
+export simple_differencing
 include("02_subsample_ticks.jl")
 export cov2cor, cor2cov, cov2cor_and_vol, covariance, construct_matrix_from_eigen, get_returns
 export combine_covariance_matrices, rearrange
 export squared_frobenius, squared_frobenius_distance
-export next_tick, get_all_refresh_times, latest_value, time_between_refreshes, random_value_in_interval
+export get_all_refresh_times, latest_value, time_between_refreshes, random_value_in_interval
 include("03_MonteCarlo.jl")
 export generate_random_path, ItoSet
 include("04_Serialisation.jl")
@@ -52,7 +52,7 @@ export two_scales_covariance
 include("30_Regularisation_identity.jl")
 export identity_regularisation
 include("31_Regularisation_NearestCorrelationMatrix.jl")
-export project_to_U, project_to_S, iterate_higham, find_nearest_correlation_matrix, nearest_correlation_matrix, nearest_psd_matrix
+export project_to_U, project_to_S, iterate_higham, nearest_correlation_matrix, nearest_psd_matrix
 include("32_Regularisation_RMT.jl")
 export eigenvalue_clean
 

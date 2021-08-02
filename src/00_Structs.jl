@@ -5,7 +5,15 @@ This struct wraps a DataFrame. In the constructor function for the dataframe
 we presort the data and create a mapping dict so that it is fast to subset the
 DataFrame by the group.
 
-To construct pass in the dataframe, name of time column, name of grouping column and name of value column to the constructor.
+For the constructor pass in the dataframe, name of time column, name of grouping
+ column and name of value column to the constructor.
+### Takes
+* df::DataFrame - The tick data
+* time::Symbol 0 The column of the data representing time.
+* grouping::Symbol - The column of the data representing the asset name
+* value::Symbol - The column of the data representing price/logprice/etc.
+### Returns
+* A `SortedDataFrame`.
 """
 struct SortedDataFrame
     df::DataFrame
@@ -33,6 +41,11 @@ end
 """
 This returns a vector of all of the assets in the SortedDataFrame with at least
 some number of observations (10 by default).
+### Takes
+* ts::SortedDataFrame - Tick data.
+* obs_to_include::Integer - An integer for the minimum number of ticks in ts to include each asset.
+### Returns
+* A `Vector{Symbol}` with each asset.
 """
 function get_assets(ts::SortedDataFrame, obs_to_include::Integer = 10)
     all_assets = unique(ts.df[:,ts.grouping])
@@ -46,7 +59,12 @@ function get_assets(ts::SortedDataFrame, obs_to_include::Integer = 10)
 end
 
 """
-This subsets a SortedDataFrame to only the n first observations.
+This subsets a SortedDataFrame to only the first n ticks.
+### Takes
+* ts::SortedDataFrame - Tick data.
+* n::Integer - How many ticks to subset to.
+### Returns
+* A (smaller) `SortedDataFrame`.
 """
 function subset_to_tick(ts::SortedDataFrame, n::Integer)
     newdf = ts.df[1:n,:]
@@ -60,6 +78,11 @@ function subset_to_tick(ts::SortedDataFrame, n::Integer)
 end
 """
 This subsets a SortedDataFrame to only the first observations up until some time.
+### Takes
+* ts::SortedDataFrame - Tick data.
+* totime::Real - Up to what time.
+### Returns
+* A (smaller) `SortedDataFrame`.
 """
 function subset_to_time(ts::SortedDataFrame, totime::Real)
     ind = searchsortedfirst(ts.df[:,ts.time], totime) - 1
@@ -68,7 +91,11 @@ function subset_to_time(ts::SortedDataFrame, totime::Real)
 end
 
 """
-The time between the first and the last tick in a SortedDataFrame.
+The time elapsed between the first and the last tick in a SortedDataFrame.
+### Takes
+* ts::SortedDataFrame - Tick data.
+### Returns
+* A scalar representing this duration.
 """
 function duration(ts::SortedDataFrame)
     return ts.df[nrow(ts.df),ts.time] - ts.df[1,ts.time]
@@ -78,17 +105,27 @@ end
 This stores three elements. A Hermitian correlation matrix, a vector of volatilities
 and a vector of labels. The order of the labels matches the order of the assets in
 the volatility vector and correlation matrix.
+
+The default constructor is used:
+### Takes
+* correlation::Hermitian{R}
+* volatility::Vector{R}
+* labels::Vector{Symbol}
+### Returns
+* A `CovarianceMatrix`.
 """
 mutable struct CovarianceMatrix{R<:Real}
     correlation::Hermitian{R}
-    volatility::Array{R,1}
-    labels::Array{Symbol,1}
+    volatility::Vector{R}
+    labels::Vector{Symbol}
 end
 
-
-
 """
-This makes an empty CovarianceMatrix struct with all volatilities and correlations being NaNs
+This makes an empty CovarianceMatrix struct with all volatilities and correlations being NaNs.
+### Takes
+* labels::Vector{Symbol} - The names of the asset names for this (empty) `CovarianceMatrix`.
+### Returns
+* An (empty) `CovarianceMatrix`
 """
 function make_nan_covariance_matrix(labels::Vector{Symbol})
     d = length(labels)
@@ -101,8 +138,31 @@ function make_nan_covariance_matrix(labels::Vector{Symbol})
 end
 
 """
-Calculates the mean absolute distance (elementwise) between two CovarianceMatrixs.
-Undefined if any labels differ between the two CovarianceMatrixs
+    calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix)
+
+Calculates the mean absolute distance (elementwise in L1 norm) between two `CovarianceMatrix`s.
+Undefined if any labels differ between the two CovarianceMatrixs.
+### Takes
+* cov1::CovarianceMatrix - The first `CovarianceMatrix`
+* cov2::CovarianceMatrix - The second `CovarianceMatrix`
+### Returns
+* An `Tuple` with the distance for correlations in first entry and distance for volatilities in the second.
+
+    calculate_mean_abs_distance(d1::Dict{Symbol,<:Real}, d2::Dict{Symbol,<:Real})
+Calculates the mean absolute distance (elementwise in L1 norm) between two `CovarianceMatrix`s.
+### Takes
+* d1::Dict{Symbol,<:Real} - The first `Dict`
+* d2::Dict{Symbol,<:Real} - The second `Dict`
+### Returns
+* A scalar with the mean distance between matching elements.
+
+    calculate_mean_abs_distance(d1::Tuple{Dict{Symbol,<:Real},Dict{Symbol,<:Real}}, d2::Tuple{Dict{Symbol,<:Real},Dict{Symbol,<:Real}})
+Calculates the distance between the first element of d1 and first of d2. And second elements of each. Returns the Tuple.
+### Takes
+* d1::Tuple{Dict{Symbol,<:Real},Dict{Symbol,<:Real}}
+* d2::Tuple{Dict{Symbol,<:Real},Dict{Symbol,<:Real}}
+### Returns
+* A `Tuple` with two scalars.
 """
 function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix)
     if length(symdiff(cov1.labels, cov2.labels)) != 0 return NaN, NaN end
@@ -127,7 +187,13 @@ end
 
 
 """
-Extract the correlation between two assets stored in a CovarianceMatrix
+Extract the correlation between two assets stored in a CovarianceMatrix.
+### Takes
+* covar::CovarianceMatrix - A `CovarianceMatrix`
+* asset1::Symbol - A `Symbol` representing an asset.
+* asset2::Symbol - A `Symbol` representing an asset.
+### Returns
+* A Scalar (the correlation coefficient).
 """
 function get_correlation(covar::CovarianceMatrix, asset1::Symbol, asset2::Symbol)
     index1 = findfirst(asset1 .== covar.labels)
@@ -137,7 +203,12 @@ function get_correlation(covar::CovarianceMatrix, asset1::Symbol, asset2::Symbol
 end
 
 """
-Get the volatility for a stock from a CovarianceMatrix
+Get the volatility for a stock from a CovarianceMatrix.
+### Takes
+* covar::CovarianceMatrix - A `CovarianceMatrix`
+* asset1::Symbol - A `Symbol` representing an asset.
+### Returns
+* A Scalar (the volatility).
 """
 function get_volatility(covar::CovarianceMatrix, asset1::Symbol)
     index1 = findfirst(asset1 .== covar.labels)
@@ -146,7 +217,11 @@ function get_volatility(covar::CovarianceMatrix, asset1::Symbol)
 end
 
 """
-Test if a Hermitian matrix is psd.
+Test if a Hermitian matrix is psd (Positive Semi-Definite).
+### Takes
+* mat::Hermitian
+### Returns
+* A `Bool` that is true if mat is psd and false if not.
 """
 function is_psd_matrix(mat::Hermitian)
     eig = eigen(mat).values
@@ -155,7 +230,13 @@ function is_psd_matrix(mat::Hermitian)
 end
 
 """
-Test if a Hermitian matrix is a valid correlation matrix.
+Test if a `Hermitian` matrix is a valid correlation matrix. If a `Hermitian` is input
+then it will be tested. If a `CovarianceMatrix` is input then its correlation matrix
+will be tested.
+### Takes
+* mat::Hermitian OR covar::CovarianceMatrix
+### Returns
+* A `Bool` that is true if mat is a valid correlation matrix and false if not.
 """
 function valid_correlation_matrix(mat::Hermitian)
     A = is_psd_matrix(mat)
@@ -167,8 +248,13 @@ valid_correlation_matrix(covar::CovarianceMatrix) = valid_correlation_matrix(cov
 
 """
 Count the number of observations for each asset.
+### Takes
+* ts::SortedDataFrame - The tick data
+* assets::Vector{Symbol} - A vector with asset `Symbol`s.
+### Returns
+* A `Dict` with the number of observations for each input asset.
 """
-function ticks_per_asset(ts::SortedDataFrame, assets = get_assets(ts))
+function ticks_per_asset(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts))
     ticks_per_asset = map(a -> length(ts.groupingrows[a]), assets)
     return Dict{Symbol,eltype(ticks_per_asset)}(assets .=> ticks_per_asset)
 end

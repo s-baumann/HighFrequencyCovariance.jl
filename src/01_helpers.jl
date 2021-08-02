@@ -2,8 +2,13 @@
 """
 Converts a matrix (representing a covariance matrix) into a Hermitian correlation
 matrix and a vector of standard deviations.
+### Takes
+* cor::AbstractMatrix - A matrix.
+### Returns
+* A `Hermitian`.
+* A `Vector` of standard deviations (not volatilities).
 """
-function cov2cor(mat)
+function cov2cor(mat::AbstractMatrix)
     sdevs = sqrt.(diag(mat))
     cor = mat ./ (sdevs * transpose(sdevs))
     cor[diagind(cor)] .= 1
@@ -12,22 +17,39 @@ end
 """
 Converts a matrix (representing a covariance matrix) into a Hermitian correlation
 matrix and a vector of volatilities.
+### Takes
+* cor::AbstractMatrix - A correlation matrix.
+* duration::Real - The duration that the covariance matrix is for.
+### Returns
+* A `Hermitian`.
+* A `Vector` of volatilities.
 """
-function cov2cor_and_vol(mat, duration = 1)
+function cov2cor_and_vol(mat::AbstractMatrix, duration::Real = 1)
     cor, sdevs = cov2cor(mat)
     return Hermitian(cor), sdevs/sqrt(duration)
 end
 
 """
 Converts a correlation matrix and some standard deviations into a Hermitian covariance matrix.
+### Takes
+* cor::AbstractMatrix - A correlation matrix.
+* sdevs::Vector{<:Real} - A vector of standard deviations (not volatilities - use
+                       sdevs = sqrt(duration) .* volatilities to convert if necessary).
+### Returns
+* A `Hermitian`.
 """
-function cor2cov(cor,sdevs)
+function cor2cov(cor::AbstractMatrix,sdevs::Vector{<:Real})
     mat = cor .* (sdevs * transpose(sdevs))
     return Hermitian(mat)
 end
 
 """
 This makes a Hermitian matrix for the covariance matrix over some duration.
+### Takes
+* cm::CovarianceMatrix - A CovarianceMatrix struct.
+* duration::Real - A duration. This should be in same units as used in estimating cm's volatilities.
+### Returns
+* A `Hermitian`.
 """
 function covariance(cm::CovarianceMatrix, duration::Real)
     sds = sqrt.((cm.volatility.^2) .* duration)
@@ -36,27 +58,38 @@ end
 
 """
 Constructs a matrix from its eigenvalue decomposition.
+### Takes
+* eigenvalues::Vector{<:Real} - A vector of eigenvalues.
+* eigenvectors::Matrix{<:Real} - A matrix of eigenvectors. The i'th column corresponds to the i'th eigenvalue.
+### Returns
+* A `Matrix`.
 """
-function construct_matrix_from_eigen(eigenvalues::Array{R,1}, eigenvectors::Array{R,2}) where R<:Real
+function construct_matrix_from_eigen(eigenvalues::Vector{<:Real}, eigenvectors::Matrix{<:Real})
     value_matrix = zeros(length(eigenvalues), length(eigenvalues))
     value_matrix[diagind(value_matrix)] = eigenvalues
     final_mat = eigenvectors * value_matrix * transpose(eigenvectors)
     return final_mat
 end
 
-
+"""
+Does simple differencing of two vectors.
+### Takes
+* new::Vector - A `Vector` of `Real`s.
+* old::Vector - A `Vector` of `Real`s
+### Returns
+* A `Vector` of `Real`s
+"""
 simple_differencing(new::Vector,old::Vector) =  (new .- old)
-#log_returns(new::Vector,old::Vector, durations::Vector, asset::Symbol) =  log.(new ./ old)
 
 """
-Converts stochastic processes into a dataframe of returns.
+Converts A long format dataframe of prices into a dataframe of returns.
 ### Takes
-* dd - A dataframe with a column called :Time and all other columns being asset prices in each period.
+* dd::DataFrame - A `DataFrame` with a column called :Time and all other columns being asset prices in each period.
 * rescale_for_duration - Should returns be rescaled.
 ### Returns
 * A DataFrame of returns.
 """
-function get_returns(dd; rescale_for_duration::Bool = false)
+function get_returns(dd::DataFrame; rescale_for_duration::Bool = false)
     N = nrow(dd)
     assets = setdiff(Symbol.(collect(names(dd))), [:Time])
     dd_mat = Array{Float64,2}(dd[1:N,assets])
@@ -78,10 +111,10 @@ is_missing_nan_inf(x) = (ismissing(x) | isnan(x)) | isinf(x)
 
 """
 Combines a vector of CovarianceMatrix structs into one CovarianceMatrix struct.
-### Takes
-* vect - A vector of CovarianceMatrices
-# cor_weights - A vector for how much to weight the correlations from each covariance matrix (by default they will be equalweighted).
-# vol_weights - A vector for how much to weight the volatilities from each covariance matrix (by default they will be equalweighted).
+### Inputs
+* vect::Vector{CovarianceMatrix{<:Real}} - A vector of of CovarianceMatrix structs.
+* cor_weights - A vector for how much to weight the correlations from each covariance matrix (by default they will be equalweighted).
+* vol_weights - A vector for how much to weight the volatilities from each covariance matrix (by default they will be equalweighted).
 ### Returns
 * A matrix (Array{Union{Missing,R},1} where R<:Real) and a vector of labels for each row/column of the matrix.
 """
@@ -108,30 +141,45 @@ function combine_covariance_matrices(vect::Vector{CovarianceMatrix{REAL}}, cor_w
     return CovarianceMatrix(hermitian_new_mat, new_vols, all_labels)
 end
 
-
-
-
 """
 Rearrange the order of labels in a CovarianceMatrix
+### Takes
+* cm::CovarianceMatrix - A `CovarianceMatrix`.
+* labels::Vector{Symbol} - A `Vector` of labels.
+### Returns
+* A `CovarianceMatrix`.
 """
-function rearrange(A::CovarianceMatrix, labels::Array{Symbol,1})
-  if length(symdiff(labels, A.labels)) > 0 error("You have either put in labels that are not in the covariance matrix or you have not put in all the labels that are in the covariance matrix") end
-  reordering = map(x -> findfirst(x .== A.labels)[1], labels)
-  Acor = Hermitian(A.correlation[reordering,reordering])
-  Avol = A.volatility[reordering]
+function rearrange(cm::CovarianceMatrix, labels::Vector{Symbol})
+  if length(symdiff(labels, cm.labels)) > 0 error("You have either put in labels that are not in the covariance matrix or you have not put in all the labels that are in the covariance matrix") end
+  reordering = map(x -> findfirst(x .== cm.labels)[1], labels)
+  Acor = Hermitian(cm.correlation[reordering,reordering])
+  Avol = cm.volatility[reordering]
   return CovarianceMatrix(Acor, Avol, labels)
 end
 
+"""
+Rearrange the squared frobenius distance between two matrices. Returns a real
+"""
 function squared_frobenius_distance(x1::AbstractMatrix, x2::AbstractMatrix = x1)
     return squared_frobenius(x1 .- x2)
 end
+"""
+Rearrange the squared frobenius norm of a matrix. Returns a real.
+"""
 function squared_frobenius(x1::AbstractMatrix)
     p = size(x1)[1]
     return tr(x1 * transpose(x1))/p
 end
 
+
+
 """
 Get a DataFrame showing how many time is between each refresh and how many ticks in total.
+### Takes
+* ts::SortedDataFrame - Tick data.
+* assets::Vector{Symbol} - A `Vector` of labels.
+### Returns
+* A `DataFrame` summarising the average number of time between ticks for each asset.
 """
 function time_between_refreshes(ts::SortedDataFrame; assets::Vector{Symbol} = get_assets(ts))
     total_secs = maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])

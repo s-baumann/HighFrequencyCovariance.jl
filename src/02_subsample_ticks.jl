@@ -1,5 +1,12 @@
 """
 Get the latest price at a each input time.
+
+### Takes
+* ts::SortedDataFrame - The tick data.
+* at_times::Vector{R} - The times you want the latest prices for.
+* assets::Vector{Symbol} - The assets you want latest prices for
+### Returns
+* A `DataFrame`. Rows are for each time specified in at_times. Columns are for each asset.
 """
 function latest_value(ts::SortedDataFrame, at_times::Vector{R}; assets::Vector{Symbol} = get_assets(ts)) where R<:Real
     dd = DataFrame(Time = at_times)
@@ -11,8 +18,10 @@ function latest_value(ts::SortedDataFrame, at_times::Vector{R}; assets::Vector{S
 end
 
 """
-If you have two sorted vectors. You want to find the index of each "indices" in the vector "reference". then this is much faster than
-doing something like map( x -> searchsortedlast(reference, x), indices) as it only goes once through the reference vector.
+If you have two sorted vectors. You want to find the index of each "indices" in
+the vector "reference". then this is much faster than doing something like
+map( x -> searchsortedlast(reference, x), indices) as it only goes once through
+the reference vector.
 """
 function searchsortedlast_both(reference::Vector, indices::Vector)
     len = length(indices)
@@ -42,7 +51,14 @@ end
 
 
 """
-Get a random value in an interval. So if you input times 1,7,8 then for the second entryy it will pick a random update (if any exist) between times 1 and 7.
+Get a random value in an interval. So if you input times 1,7,8 then for the second entry it will pick a random update (if any exist) between times 1 and 7.
+### Takes
+* ts::SortedDataFrame - The tick data.
+* at_times::Vector{R} - The times that seperate the intervals of interest.
+* assets::Vector{Symbol} - The assets of interest.
+* twister_arb_value_in_interval::MersenneTwister - The RNG used in selecting the random interval.
+### Returns
+* A `DataFrame` with prices for each asset from random ticks in each interval.
 """
 function random_value_in_interval(ts::SortedDataFrame, at_times::Vector{R}; assets::Vector{Symbol} = get_assets(ts), twister_arb_value_in_interval::MersenneTwister = MersenneTwister(2604)) where R<:Real
     dd = DataFrame(Time = at_times)
@@ -59,6 +75,8 @@ function random_value_in_interval(ts::SortedDataFrame, at_times::Vector{R}; asse
     return dd
 end
 
+"""
+"""
 function next_tick(ts::SortedDataFrame, from_index::I; assets::Vector{Symbol} = get_assets(ts)) where R<:Real where I<:Integer
     inds = Array{I,1}()
     for a in assets
@@ -75,9 +93,19 @@ end
 
 """
 Get a vector of all refresh times when all assets have an updated price.
+So if there are assets A and B that trade at times (1,5,6,7,10) and (2,5,7,9)
+then the refresh times are (2,5,7,10) as at these four times there are updated
+prices for all assets that have happened since the previous refresh time.
+
+### Takes
+* ts::SortedDataFrame - The tick data.
+* assets::Vector{Symbol} - The assets of interest.
+* start_time::Real - From what time should we start looking for updated prices.
+### Returns
+* A `Vector` of refresh times.
 """
 function get_all_refresh_times(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); start_time::R = minimum(ts.df[:,ts.time])) where R<:Real
-    ticks = Array{R,1}()
+    ticks = Vector{R}()
     start_ind = searchsortedfirst(ts.df[:,ts.time], start_time) - 1
     while true
         new_tick, start_ind = next_tick(ts, start_ind + 1; assets = assets)

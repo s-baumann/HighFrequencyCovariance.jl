@@ -68,9 +68,11 @@ two_scales_estimate_nearest_corr = two_scales_covariance(ts2, assets; regularisa
 two_scales_estimate_nearest_psd = two_scales_covariance(ts2, assets; regularisation = :nearest_psd_matrix)
 two_scales_estimate_eigen = two_scales_covariance(ts2, assets; regularisation = :eigenvalue_clean)
 
+
 # Running regularistation on a CovarianceMatrix's correlation matrix.
 valid_correlation_matrix(two_scales_estimate_nearest_corr)
 
+psd_mat = two_scales_estimate_nearest_corr
 
 reg1 = identity_regularisation(psd_mat, ts2)
 calculate_mean_abs_distance(psd_mat, reg1).Correlation_error .> 10*eps()

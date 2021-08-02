@@ -1,6 +1,26 @@
 """
 Generate a random path of price updates with a specified number of dimensions and ticks. There are options for whether the data is syncronous or asyncronous, the volatility of the price
 processes, the refresh rate on the (exponential) arrival times of price updates, the minimum and the maximum microstructure noises.
+
+### Takes
+* dimensions::Integer - The number of assets
+* ticks::Integer - The number of ticks to produce
+* syncronous::Bool - Should ticks be syncronous (for each asset) or asyncronous
+* twister::MersenneTwister - The MersenneTwister used for RNG.
+* minvol::Real - The minimum volatility in sampling (only used if vols is missing)
+* maxvol::Real - The maximum volatility in sampling (only used if vols is missing)
+* min_refresh_rate::Real - The minimum refresh rate in sampling
+* max_refresh_rate::Real - The maximum refresh rate in sampling
+* min_noise_var::Real  - The minimum assetwise microstructure noise variance
+* max_noise_var::Real  - The minimum assetwise microstructure noise variance
+* assets::Union{Vector,Missing} = missing
+* brownian_corr_matrix::Union{Hermitian,Missing} - The correlation matrix to use. This is sampled from the Inverse Wishart distribution if none is input.
+* vols::Union{Vector,Missing} - The correlation matrix to use. This is sampled from the Inverse Wishart distribution if none is input.
+### Returns
+* A `SortedDataFrame` of tick data
+* A CovarianceMatrix representing the true data generation process used in making the tick data
+* A dict of microstructure_noises for each asset.
+* A dict of update_rates for each asset.
 """
 function generate_random_path(dimensions::Integer, ticks::Integer; syncronous::Bool = false, twister::MersenneTwister = MersenneTwister(1), minvol::Real = 0.0, maxvol::Real = 0.02,
                               min_refresh_rate::Real = 1.0, max_refresh_rate::Real = 5.0, min_noise_var::Real = 0.0, max_noise_var::Real = 0.01, assets::Union{Vector,Missing} = missing,
@@ -35,8 +55,13 @@ import StochasticIntegrals.ItoSet
 Convert a CovarianceMatrix into an ItoSet from the StochasticIntegrals package.
 This package can then be used to do things like generate draws from the Multivariate
 Gaussian corresponding to the covariance matrix and other things.
+
+### Takes
+* covariance_matrix::CovarianceMatrix{<:Real}
+### Returns
+* A `StochasticIntegrals.ItoSet` struct.
 """
-function ItoSet(covariance_matrix::CovarianceMatrix{R}) where R<:Real
+function ItoSet(covariance_matrix::CovarianceMatrix{<:Real})
     itos = Dict{Symbol,ItoIntegral}()
     for i in 1:length(covariance_matrix.labels)
         lab = covariance_matrix.labels[i]
@@ -44,4 +69,5 @@ function ItoSet(covariance_matrix::CovarianceMatrix{R}) where R<:Real
         itos[lab] =  ItoIntegral(lab, voll)
     end
     ito_set_ = ItoSet(covariance_matrix.correlation , covariance_matrix.labels, itos)
+    return ito_set_
 end
