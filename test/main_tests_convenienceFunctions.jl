@@ -3,7 +3,6 @@ using LinearAlgebra
 using Statistics: std, var, mean, cov
 using HighFrequencyCovariance
 using Random
-using StochasticIntegrals
 
 brownian_corr_matrix = Hermitian([1.0 0.75 0.5 0.0;
                                   0.0 1.0 0.5 0.25;
