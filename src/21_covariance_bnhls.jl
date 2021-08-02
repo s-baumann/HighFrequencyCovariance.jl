@@ -97,7 +97,25 @@ function bnhls_covariance_estimate_given_returns(returns::Array{R,2}; kernel::HF
 end
 
 """
-This calculates covariance with the Multivariate realised kernel oof BNHLS(2011)
+This calculates covariance with the Multivariate realised kernel oof BNHLS(2011).
+
+    bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
+                     only_regulise_if_not_PSD::Bool = false, kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6,
+                     m::Integer = 2)
+
+### Inputs
+* ts::SortedDataFrame - The tick data.
+* assets::Vector{Symbol} - The assets you want to estimate volatilities for.
+* regularisation::Union{Missing,Symbol} - A symbol representing what regularisation technique should be used. If missing no regularisation is performed.
+* regularisation_params::Dict - keyword arguments to be consumed in the regularisation algorithm.
+* only_regulise_if_not_PSD::Bool - Should regularisation only be attempted if the matrix is not psd already.
+* kernel::HFC_Kernel{<:Real} - The kernel used. See the paper for details.
+* H::Real - The number of lags/leads used in estimation. See the paper for details.
+* m::Integer - The number of end returns to average.
+### Returns
+* A `CovarianceMatrix`.
+
+### References
 Barndorff-Nielsen, O., Hansen, P.R., Lunde, A., Shephard, N. 2011. - The whole paper but particularly 2.2, 2.3 here. Kernels are in table 1. choices of H are discussed in section 3.4 of the paper.
 """
 function bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),

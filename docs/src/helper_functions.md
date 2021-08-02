@@ -11,7 +11,7 @@ Pages = ["helper_functions.md"]
 
 ## Working with SortedDataFrame structs
 
-```@index
+```@docs
     get_assets
     ticks_per_asset
     duration
@@ -21,7 +21,7 @@ Pages = ["helper_functions.md"]
 
 ## Working with CovarianceMatrix structs
 
-```@index
+```@docs
     covariance
     get_correlation
     get_volatility
@@ -54,7 +54,7 @@ Pages = ["helper_functions.md"]
 ## For getting a DataFrame version of a CovarianceMatrix and vice versa.
 
 ```@docs
-    to_dataframe
+    HighFrequencyCovariance.to_dataframe
     dataframe_to_covariancematrix
 ```
 

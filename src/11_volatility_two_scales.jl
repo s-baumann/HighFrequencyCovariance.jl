@@ -6,6 +6,37 @@ function vol_given_values_and_times(vals::Vector, times::Vector, asset::Symbol)
     return sqrt(sum(returns .^ 2)/duration)
 end
 
+function default_num_grids(ts::SortedDataFrame)
+    min_ticks = minimum(map( a -> length(ts.groupingrows[a]) , collect(keys(ts.groupingrows)) ))
+    return Int(max(floor(min_ticks / 100), 3))
+end
+
+"""
+Calculates volatility with the two scales method of Zhang, Mykland, Ait-Sahalia 2005. The amount of time for the grid spacing is by default this is a tenth of the total duration
+by default. If this doesn't make sense for your use of it then choose a spacing at which you expect the effect of microstructure noise will be small.
+
+    two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_grids::Real)
+
+### Inputs
+* vals::Vector - The prices at each instant in time.
+* times::Vector - The times corresponding to each element in vals.
+* asset::Symbol - The name of the asset.
+* num_grids::Real - Number of grids used in order in two scales estimation.
+### Returns
+* A scalar for the estimated volatility of the asset.
+* A scalar for the estimated microstructure noise variance.
+
+    two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
+                          num_grids::Real = default_num_grids(ts))
+
+### Inputs
+* ts::SortedDataFrame - The tick data.
+* assets::Vector{Symbol} - The assets you want to estimate volatilities for.
+* num_grids::Real - Number of grids used in order in two scales estimation.
+### Returns
+* A  Dict with estimated volatilities for each asset.
+* A  Dict with estimated microstructure noise variances for each asset.
+"""
 function two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_grids::Real)
     dura  = maximum(times) - minimum(times)
     if (dura < eps()) | (length(vals) < 10) return NaN, NaN end
@@ -18,17 +49,8 @@ function two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_g
     return pure_vol, noise
 end
 
-function default_num_grids(ts::SortedDataFrame)
-    min_ticks = minimum(map( a -> length(ts.groupingrows[a]) , collect(keys(ts.groupingrows)) ))
-    return Int(max(floor(min_ticks / 100), 3))
-end
-
-"""
-Calculates volatility with the two scales method of Zhang, Mykland, Ait-Sahalia 2005. The amount of time for the grid spacing is by default this is a tenth of the total duration
-by default. If this doesn't make sense for your use of it then choose a spacing at which you expect the effect of microstructure noise will be small.
-"""
 function two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                num_grids::Real = default_num_grids(ts))
+                               num_grids::Real = default_num_grids(ts))
     vols = Dict{Symbol,eltype(ts.df[:,ts.value])}()
     micro_noise_var = Dict{Symbol,eltype(ts.df[:,ts.value])}()
     for a in assets

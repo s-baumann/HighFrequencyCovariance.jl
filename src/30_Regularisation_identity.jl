@@ -13,11 +13,27 @@ end
 
 """
 Regularisation of the correlation matrix by mixing with the identity matrix as per Ledoit & Wolf 2003.
-Ledoit, O. , Wolf, M. 2003. Improved Estimation of the Covariance Matrix of Stock Returns with an application to portfolio selection. Journal of empirical finance. 10. 603-621.
 
     identity_regularisation(mat::Hermitian, asset_returns::DataFrame)
-    identity_regularisation(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector; spacing::Union{Missing,<:Real} = missing)
+
+### Inputs
+* mat::Hermitian - A matrix to be regularised.
+* asset_returns::DataFrame - A `DataFrame` with returns for each asset.
+### Returns
+* A `Hermitian`.
+
+    identity_regularisation(mat::Hermitian, asset_returns::DataFrame) where R<:Real
+
+### Inputs
+* mat::Hermitian - A matrix to be regularised.
+* ts::SortedDataFrame - Tick data.
+### Returns
+* A `Hermitian`.
+
     identity_regularisation(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; spacing::Union{Missing,<:Real} = missing, apply_to_covariance::Bool = true)
+
+
+
 This regularises the matrix by doing an elementwise convex linear combination of
 it with the identity matrix. The weight the identity matrix gets is that specified
 in Ledoit and Wolf. The inputs are:
@@ -33,6 +49,10 @@ If a `Hermitian` is input then one will be returned. If a `CovarianceMatrix` is 
 This regularises the matrix by doing an elementwise convex linear combination of it
  with the identity matrix (where identity_weight is the weight the identity matrix gets).
  A `Hermitian` is returned.
+
+### References
+
+Ledoit, O. , Wolf, M. 2003. Improved Estimation of the Covariance Matrix of Stock Returns with an application to portfolio selection. Journal of empirical finance. 10. 603-621.
 """
 function identity_regularisation(mat::Hermitian, identity_weight::Real)
     II = I(size(mat)[1])

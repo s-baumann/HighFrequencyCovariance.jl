@@ -1,7 +1,9 @@
 """
 Get the latest price at a each input time.
 
-### Takes
+    latest_value(ts::SortedDataFrame, at_times::Vector{R}; assets::Vector{Symbol} = get_assets(ts)) where R<:Real
+
+### Inputs
 * ts::SortedDataFrame - The tick data.
 * at_times::Vector{R} - The times you want the latest prices for.
 * assets::Vector{Symbol} - The assets you want latest prices for
@@ -52,7 +54,10 @@ end
 
 """
 Get a random value in an interval. So if you input times 1,7,8 then for the second entry it will pick a random update (if any exist) between times 1 and 7.
-### Takes
+
+    random_value_in_interval(ts::SortedDataFrame, at_times::Vector{R}; assets::Vector{Symbol} = get_assets(ts), twister_arb_value_in_interval::MersenneTwister = MersenneTwister(2604)) where R<:Real
+
+### Inputs
 * ts::SortedDataFrame - The tick data.
 * at_times::Vector{R} - The times that seperate the intervals of interest.
 * assets::Vector{Symbol} - The assets of interest.
@@ -75,8 +80,7 @@ function random_value_in_interval(ts::SortedDataFrame, at_times::Vector{R}; asse
     return dd
 end
 
-"""
-"""
+
 function next_tick(ts::SortedDataFrame, from_index::I; assets::Vector{Symbol} = get_assets(ts)) where R<:Real where I<:Integer
     inds = Array{I,1}()
     for a in assets
@@ -97,7 +101,9 @@ So if there are assets A and B that trade at times (1,5,6,7,10) and (2,5,7,9)
 then the refresh times are (2,5,7,10) as at these four times there are updated
 prices for all assets that have happened since the previous refresh time.
 
-### Takes
+    get_all_refresh_times(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); start_time::R = minimum(ts.df[:,ts.time])) where R<:Real
+
+### Inputs
 * ts::SortedDataFrame - The tick data.
 * assets::Vector{Symbol} - The assets of interest.
 * start_time::Real - From what time should we start looking for updated prices.
@@ -113,10 +119,3 @@ function get_all_refresh_times(ts::SortedDataFrame, assets::Vector{Symbol} = get
         push!(ticks, new_tick)
     end
 end
-
-
-
-
-
-
-# For Generalised Sampling Time

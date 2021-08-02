@@ -20,6 +20,21 @@ end
 
 """
 Calculates volatility with the simple method.
+
+    simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
+                      time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
+                      use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
+
+### Inputs
+* ts::SortedDataFrame - The tick data.
+* assets::Vector{Symbol} - The assets you want to estimate volatilities for.
+* time_grid::Union{Missing,Dict} - The grid with which to calculate returns. If missing one is generated with a fixed spacing (if that is provided) or a default spacing.
+* fixed_spacing::Union{Missing,Dict,<:Real} - A spacing used to calculate a time grid. Not used if a time_grid is input or if use_all_obs=true.
+* use_all_obs::Bool - Use all observations to estimate volatilities. Not used if a time_grid is provided.
+* rough_guess_number_of_intervals::Integer - A rough number of intervals to calculate a default spacing. Not used if a time_grid or fixed_spacing is provided or if use_all_obs=true.
+* T::Real - The duration of the tick data.
+### Returns
+* A scalar representing the optimal interval spacing.
 """
 function simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
                            time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
@@ -53,8 +68,17 @@ end
 """
 Calculates a default spacing between returns to use.
 This comes from the equation at section 1.2.3 of Zhang, Mykland, Ait-Sahalia 2005.
+
+    default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5, T = duration(ts))
+
+### Inputs
+* ts::SortedDataFrame - The tick data.
+* rough_guess_number_of_intervals::Integer - A rough estimate of how many intervals to split the tick data into. This is used in a first pass to estimate the optimal interval spacing.
+* T::Real - The duration of the tick data.
+### Returns
+* A scalar representing the optimal interval spacing.
 """
-function default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5, T = duration(ts))
+function default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5, T::Real = duration(ts))
     rough_vol_guess, rough_micro_guess  = two_scales_volatility(ts; num_grids = rough_guess_number_of_intervals)
     n_guess = Dict{Symbol,eltype(ts.df[:,ts.value])}()
     for a in keys(rough_vol_guess)

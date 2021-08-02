@@ -1,12 +1,13 @@
 """
- estimate_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts), method::Symbol = :two_scales_volatility;
-                     num_grids::Real = default_num_grids(ts),
-                     time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
-                     use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
 This is a convenience wrapper for the two volatility estimation techniques
   included in this package. The method can be :simple_volatility or
   :two_scales_volatility in which case the simple or two scales volatilty
   methods will be called.
+
+    estimate_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts), method::Symbol = :two_scales_volatility;
+                        num_grids::Real = default_num_grids(ts),
+                        time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
+                        use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
 """
 function estimate_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts), method::Symbol = :two_scales_volatility;
                              num_grids::Real = default_num_grids(ts),
@@ -30,6 +31,12 @@ end
 
 """
 This estimates microstructure noise with the two_scales_volatility method.
+
+    estimate_microstructure_noise(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
+                                  num_grids::Real = default_num_grids(ts),
+                                  time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
+                                  use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
+
 """
 function estimate_microstructure_noise(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
                              num_grids::Real = default_num_grids(ts),
@@ -43,6 +50,16 @@ end
 """
 This is a convenience wrapper for the five covariance estimation techniques included in this package.
 The method can be :simple_covariance, :bnhls_covariance, :spectral_covariance, :preaveraged_covariance or :two_scales_covariance.
+
+    estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts), method::Symbol = :preaveraged_covariance;
+                        regularisation::Union{Missing,Symbol} = :default, regularisation_params::Dict = Dict(),
+                        only_regulise_if_not_PSD::Bool = false,
+                        time_grid::Union{Missing,Vector} = missing,
+                        fixed_spacing::Union{Missing,<:Real} = missing, refresh_times::Bool = false, rough_guess_number_of_intervals::Integer = 5, # General Inputs
+                        kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6, m::Integer = 2, # BNHLS parameters
+                        numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks, microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], # Spectral Covariance parameters
+                        theta::Real = 0.15, g::NamedTuple = g, # Preaveraging
+                        equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
 """
 function estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts), method::Symbol = :preaveraged_covariance;
                              regularisation::Union{Missing,Symbol} = :default, regularisation_params::Dict = Dict(),
@@ -95,9 +112,12 @@ end
 
 # The Hermitian version
 """
-This is a convenience wrapper for the regularisation techniques.
-    The methods can be:
-    :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).
+This is a convenience wrapper for the regularisation techniques. The methods can be :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).
+
+    regularise(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector, method::Symbol = :correlation_default;
+               spacing::Union{Missing,<:Real} = missing,
+               weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
+               doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
 """
 function regularise(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector, method::Symbol = :correlation_default;
                     spacing::Union{Missing,<:Real} = missing,
@@ -131,9 +151,13 @@ end
 
 # The CovarianceMatrix version
 """
-This is a convenience wrapper for the regularisation techniques.
-    The methods can be:
-    :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).
+This is a convenience wrapper for the regularisation techniques. The methods can be :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).
+
+    regularise(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame, method::Symbol = :nearest_correlation_matrix;
+               spacing::Union{Missing,<:Real} = missing,
+               apply_to_covariance::Bool = true,
+               weighting_matrix = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
+               doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
 """
 function regularise(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame, method::Symbol = :nearest_correlation_matrix;
                     spacing::Union{Missing,<:Real} = missing,

@@ -37,6 +37,22 @@ g = (f = x-> min(x, 1-x), psi = 0.25)
 
 """
 Estimation of the CovarianceMatrix using preaveraging method.
+
+    preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
+                           only_regulise_if_not_PSD::Bool = false, theta::Real = 0.15, g::NamedTuple = g)
+
+### Inputs
+* ts::SortedDataFrame - The tick data.
+* assets::Vector{Symbol} - The assets you want to estimate volatilities for.
+* regularisation::Union{Missing,Symbol} - A symbol representing what regularisation technique should be used. If missing no regularisation is performed.
+* regularisation_params::Dict - keyword arguments to be consumed in the regularisation algorithm.
+* only_regulise_if_not_PSD::Bool - Should regularisation only be attempted if the matrix is not psd already.
+* theta::Real - A theta value. See paper for details.
+* g::NamedTuple - A tuple containing a preaveraging method (with name "f") and a ψ value. See paper for details.
+### Returns
+* A `CovarianceMatrix`.
+
+### References
 Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for multivariate continuous Itô semimartingales with noise in non-synchronous observation schemes.” Journal of Multivariate Analysis, 120, 59–84. doi:10.1016/j.jmva.2013.05.002.
 """
 function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),

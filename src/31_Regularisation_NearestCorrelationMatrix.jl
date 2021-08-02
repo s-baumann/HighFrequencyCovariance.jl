@@ -151,10 +151,9 @@ order to decide what the `closest` pds matrix.
 If a `Hermitian` is input then a `Hermitian` will be returned. If a `CovarianceMatrix` is
 input then a `CovarianceMatrix` will be returned.
 
-## References
-Higham NJ (2002). "Computing the nearest correlation matrix - a problem from finance."
- IMA Journal of Numerical Analysis, 22, 329–343. doi:10.1002/nla.258.
 
+### References
+Higham NJ (2002). "Computing the nearest correlation matrix - a problem from finance." IMA Journal of Numerical Analysis, 22, 329–343. doi:10.1002/nla.258.
 """
 function nearest_psd_matrix(mat::Hermitian)
     W = Diagonal(Float64.(I(size(mat)[1])))

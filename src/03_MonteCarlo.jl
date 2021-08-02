@@ -4,7 +4,11 @@ import StochasticIntegrals.ItoSet
 Generate a random path of price updates with a specified number of dimensions and ticks. There are options for whether the data is syncronous or asyncronous, the volatility of the price
 processes, the refresh rate on the (exponential) arrival times of price updates, the minimum and the maximum microstructure noises.
 
-### Takes
+    generate_random_path(dimensions::Integer, ticks::Integer; syncronous::Bool = false, twister::MersenneTwister = MersenneTwister(1), minvol::Real = 0.0, maxvol::Real = 0.02,
+                         min_refresh_rate::Real = 1.0, max_refresh_rate::Real = 5.0, min_noise_var::Real = 0.0, max_noise_var::Real = 0.01, assets::Union{Vector,Missing} = missing,
+                         brownian_corr_matrix::Union{Hermitian,Missing} = missing, vols::Union{Vector,Missing} = missing)
+
+### Inputs
 * dimensions::Integer - The number of assets
 * ticks::Integer - The number of ticks to produce
 * syncronous::Bool - Should ticks be syncronous (for each asset) or asyncronous
@@ -57,7 +61,9 @@ Convert a CovarianceMatrix into an ItoSet from the StochasticIntegrals package.
 This package can then be used to do things like generate draws from the Multivariate
 Gaussian corresponding to the covariance matrix and other things.
 
-### Takes
+    ItoSet(covariance_matrix::CovarianceMatrix{<:Real})
+
+### Inputs
 * covariance_matrix::CovarianceMatrix{<:Real}
 ### Returns
 * A `StochasticIntegrals.ItoSet` struct.
