@@ -86,22 +86,22 @@ function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_as
 end
 
 """
-Estimation of a CovarianceMatrix using the spectral covariance method.
-
     spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
                         only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks,
                         microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2])
 
+Estimation of a CovarianceMatrix using the spectral covariance method.
+
 ### Inputs
-* ts::SortedDataFrame - The tick data.
-* assets::Vector{Symbol} - The assets you want to estimate volatilities for.
-* regularisation::Union{Missing,Symbol} - A symbol representing what regularisation technique should be used. If missing no regularisation is performed.
-* regularisation_params::Dict - keyword arguments to be consumed in the regularisation algorithm.
-* only_regulise_if_not_PSD::Bool - Should regularisation only be attempted if the matrix is not psd already.
-* numJ::Integer - The number of J values. See the paper for details.
-* num_blocks::Integer - The number of blocks to split the time frame into. See the paper for details.
-* block_width::Real - The width of each block to split the time frame into.
-* microstructure_noise_var::Dict{Symbol,<:Real} - Estimates of microstructure noise variance for each asset.
+* `ts` - The tick data.
+* `assets` - The assets you want to estimate volatilities for.
+* `regularisation` - A symbol representing what regularisation technique should be used. If missing no regularisation is performed.
+* `regularisation_params` - keyword arguments to be consumed in the regularisation algorithm.
+* `only_regulise_if_not_PSD` - Should regularisation only be attempted if the matrix is not psd already.
+* `numJ` - The number of J values. See the paper for details.
+* `num_blocks` - The number of blocks to split the time frame into. See the paper for details.
+* `block_width` - The width of each block to split the time frame into.
+* `microstructure_noise_var` - Estimates of microstructure noise variance for each asset.
 ### Returns
 * A `CovarianceMatrix`.
 

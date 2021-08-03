@@ -24,13 +24,13 @@ Estimation of a CovarianceMatrix using the two scale covariance method.
                           only_regulise_if_not_PSD::Bool = false, equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
 
 ### Inputs
-* ts::SortedDataFrame - The tick data.
-* assets::Vector{Symbol} - The assets you want to estimate volatilities for.
-* regularisation::Union{Missing,Symbol} - A symbol representing what regularisation technique should be used. If missing no regularisation is performed.
-* regularisation_params::Dict - keyword arguments to be consumed in the regularisation algorithm.
-* only_regulise_if_not_PSD::Bool - Should regularisation only be attempted if the matrix is not psd already.
-* equalweight::Bool - Should we use equal weight for the two different linear combinations of assets. If false then an optimal weight is calculated (from volatilities).
-* num_grids::Real - Number of grids used in order in two scales estimation.
+* `ts` - The tick data.
+* `assets` - The assets you want to estimate volatilities for.
+* `regularisation` - A symbol representing what regularisation technique should be used. If missing no regularisation is performed.
+* `regularisation_params` - keyword arguments to be consumed in the regularisation algorithm.
+* `only_regulise_if_not_PSD` - Should regularisation only be attempted if the matrix is not psd already.
+* `equalweight` - Should we use equal weight for the two different linear combinations of assets. If false then an optimal weight is calculated (from volatilities).
+* `num_grids` - Number of grids used in order in two scales estimation.
 ### Returns
 * A `CovarianceMatrix`.
 """

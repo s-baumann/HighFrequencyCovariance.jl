@@ -12,30 +12,37 @@ function default_num_grids(ts::SortedDataFrame)
 end
 
 """
+    two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_grids::Real)
+
 Calculates volatility with the two scales method of Zhang, Mykland, Ait-Sahalia 2005. The amount of time for the grid spacing is by default this is a tenth of the total duration
 by default. If this doesn't make sense for your use of it then choose a spacing at which you expect the effect of microstructure noise will be small.
 
-    two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_grids::Real)
-
 ### Inputs
-* vals::Vector - The prices at each instant in time.
-* times::Vector - The times corresponding to each element in vals.
-* asset::Symbol - The name of the asset.
-* num_grids::Real - Number of grids used in order in two scales estimation.
+* `vals` - The prices at each instant in time.
+* `times` - The times corresponding to each element in `vals`.
+* `asset` - The name of the asset.
+* `num_grids` - Number of grids used in order in two scales estimation.
 ### Returns
 * A scalar for the estimated volatility of the asset.
 * A scalar for the estimated microstructure noise variance.
 
+
     two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
                           num_grids::Real = default_num_grids(ts))
 
+Calculates volatility with the two scales method of Zhang, Mykland, Ait-Sahalia 2005. The amount of time for the grid spacing is by default this is a tenth of the total duration
+by default. If this doesn't make sense for your use of it then choose a spacing at which you expect the effect of microstructure noise will be small.
+
 ### Inputs
-* ts::SortedDataFrame - The tick data.
-* assets::Vector{Symbol} - The assets you want to estimate volatilities for.
-* num_grids::Real - Number of grids used in order in two scales estimation.
+* `ts` - The tick data.
+* `assets` - The assets you want to estimate volatilities for.
+* `num_grids` - Number of grids used in order in two scales estimation.
 ### Returns
 * A  Dict with estimated volatilities for each asset.
 * A  Dict with estimated microstructure noise variances for each asset.
+
+### References
+Zhang L, Mykland PA, Aït-Sahalia Y (2005). "A Tale of Two Time Scales: Determining Integrated Volatility with Noisy High-Frequency Data." Journal of the American Statistical Association, 100(472), 1394–1411. ISSN 01621459. doi:10.1198/016214505000000169.
 """
 function two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_grids::Real)
     dura  = maximum(times) - minimum(times)

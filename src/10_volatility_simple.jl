@@ -19,20 +19,20 @@ function simple_volatility_with_grid(ts::SortedDataFrame, assets::Vector{Symbol}
 end
 
 """
-Calculates volatility with the simple method.
-
     simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
                       time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
                       use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
 
+Calculates volatility with the simple method.
+
 ### Inputs
-* ts - The tick data.
-* assets - The assets you want to estimate volatilities for.
-* time\_grid - The grid with which to calculate returns. If missing one is generated with a fixed spacing (if that is provided) or a default spacing.
-* fixed\_spacing - A spacing used to calculate a time grid. Not used if a time\_grid is input or if use\_all\_obs=true.
-* use\_all\_obs - Use all observations to estimate volatilities. Not used if a time\_grid is provided.
-* rough\_guess\_number\_of\_intervals - A rough number of intervals to calculate a default spacing. Not used if a time\_grid or fixed\_spacing is provided or if use\_all\_obs=true.
-* T - The duration of the tick data.
+* `ts` - The tick data.
+* `assets` - The assets you want to estimate volatilities for.
+* `time_grid` - The grid with which to calculate returns. If missing one is generated with a fixed spacing (if that is provided) or a default spacing.
+* `fixed_spacing` - A spacing used to calculate a time grid. Not used if a `time_grid` is input or if `use_all_obs = true`.
+* `use_all_obs` - Use all observations to estimate volatilities. Not used if a `time_grid` is provided.
+* `rough_guess_number_of_intervals` - A rough number of intervals to calculate a default spacing. Not used if a `time_grid` or `fixed_spacing` is provided or if `use_all_obs = true`.
+* `T` - The duration of the tick data.
 ### Returns
 * A scalar representing the optimal interval spacing.
 """
@@ -66,15 +66,15 @@ function simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_ass
 end
 
 """
+    default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5, T = duration(ts))
+
 Calculates a default spacing between returns to use.
 This comes from the equation at section 1.2.3 of Zhang, Mykland, Ait-Sahalia 2005.
 
-    default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5, T = duration(ts))
-
 ### Inputs
-* ts::SortedDataFrame - The tick data.
-* rough_guess_number_of_intervals::Integer - A rough estimate of how many intervals to split the tick data into. This is used in a first pass to estimate the optimal interval spacing.
-* T::Real - The duration of the tick data.
+* `ts` - The tick data.
+* `rough_guess_number_of_intervals` - A rough estimate of how many intervals to split the tick data into. This is used in a first pass to estimate the optimal interval spacing.
+* `T` - The duration of the tick data.
 ### Returns
 * A scalar representing the optimal interval spacing.
 """

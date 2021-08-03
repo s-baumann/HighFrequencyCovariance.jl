@@ -36,19 +36,19 @@ univariate_HYn(vect::Vector, k_n::Real, psi::Real) = sum(map(i -> vect[i] * sum(
 g = (f = x-> min(x, 1-x), psi = 0.25)
 
 """
-Estimation of the CovarianceMatrix using preaveraging method.
-
     preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
                            only_regulise_if_not_PSD::Bool = false, theta::Real = 0.15, g::NamedTuple = g)
 
+Estimation of the CovarianceMatrix using preaveraging method.
+
 ### Inputs
-* ts::SortedDataFrame - The tick data.
-* assets::Vector{Symbol} - The assets you want to estimate volatilities for.
-* regularisation::Union{Missing,Symbol} - A symbol representing what regularisation technique should be used. If missing no regularisation is performed.
-* regularisation_params::Dict - keyword arguments to be consumed in the regularisation algorithm.
-* only_regulise_if_not_PSD::Bool - Should regularisation only be attempted if the matrix is not psd already.
-* theta::Real - A theta value. See paper for details.
-* g::NamedTuple - A tuple containing a preaveraging method (with name "f") and a ψ value. See paper for details.
+* `ts` - The tick data.
+* `assets` - The assets you want to estimate volatilities for.
+* `regularisation` - A symbol representing what regularisation technique should be used. If missing no regularisation is performed.
+* `regularisation_params` - keyword arguments to be consumed in the regularisation algorithm.
+* `only_regulise_if_not_PSD` - Should regularisation only be attempted if the matrix is not psd already.
+* `theta` - A theta value. See paper for details.
+* `g` - A tuple containing a preaveraging method (with name "f") and a ψ value. See paper for details.
 ### Returns
 * A `CovarianceMatrix`.
 

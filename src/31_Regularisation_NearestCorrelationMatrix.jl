@@ -67,8 +67,6 @@ function iterate_higham(Y::Union{Hermitian,Diagonal}, Dykstra::Union{Hermitian,D
 end
 
 """
-Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
-
     nearest_correlation_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
                                  doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
     nearest_correlation_matrix(covariance_matrix::CovarianceMatrix; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
@@ -77,6 +75,9 @@ Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diag
                                  doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
     nearest_correlation_matrix(mat::Hermitian, mat_labels::Vector = missing; weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
                                  doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
+
+Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
+
 
 These functions calls the `iterate_higham` function to move a matrix towards it nearest correlation matrix until it hits a fixed point.
  * covariance_matrix::CovarianceMatrix or mat::Hermitian - The matrix to be regularised.

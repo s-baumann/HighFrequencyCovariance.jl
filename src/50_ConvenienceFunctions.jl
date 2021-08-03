@@ -151,7 +151,7 @@ end
 
 # The CovarianceMatrix version
 """
-This is a convenience wrapper for the regularisation techniques. The methods can be :identity\_regularisation, :eigenvalue\_clean, :nearest\_correlation\_matrix or :nearest\_psd\_matrix. You can also choose :covariance\_default (which is :nearest\_psd\_matrix) or  :correlation\_default (which is :nearest\_correlation\_matrix).
+This is a convenience wrapper for the regularisation techniques. The methods can be :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).
 
     regularise(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame, method::Symbol = :nearest_correlation_matrix;
                spacing::Union{Missing,<:Real} = missing,
@@ -160,15 +160,15 @@ This is a convenience wrapper for the regularisation techniques. The methods can
                doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
 
 ### Inputs
-* covariance\_matrix - The matrix you want to regularise.
+* covariance_matrix - The matrix you want to regularise.
 * ts - The tick data.
-* method  - The method you want to use. This can be :identity\_regularisation, :eigenvalue\_clean, :nearest\_correlation\_matrix or :nearest\_psd\_matrix. You can also choose :covariance\_default (which is :nearest\_psd\_matrix) or  :correlation\_default (which is :nearest\_correlation\_matrix).
-* spacing - The interval spacing used in choosing an identity weight (identity\_regularisation method only).
-* apply\_to\_covariance - Should regularisation be applied to the covariance matrix. If false it is applied to the correlation matrix.
-* weighting\_matrix - The weighting matrix used to calculate the nearest psd matrix (:nearest\_correlation\_matrix method only).
-* doDykstra - Should a Dykstra correction be applied (:nearest\_correlation\_matrix method only).
-* stop\_at\_first_correlation\_matrix - Should we stop at first valid correlation matrix (:nearest\_correlation\_matrix method only).
-* max\_iterates - Maximum number of iterates (:nearest\_correlation\_matrix method only).
+* method  - The method you want to use. This can be :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).
+* spacing - The interval spacing used in choosing an identity weight (identity_regularisation method only).
+* apply_to_covariance - Should regularisation be applied to the covariance matrix. If false it is applied to the correlation matrix.
+* weighting_matrix - The weighting matrix used to calculate the nearest psd matrix (:nearest_correlation_matrix method only).
+* doDykstra - Should a Dykstra correction be applied (:nearest_correlation_matrix method only).
+* stop_at_first_correlation_matrix - Should we stop at first valid correlation matrix (:nearest_correlation_matrix method only).
+* max_iterates - Maximum number of iterates (:nearest_correlation_matrix method only).
 ### Returns
 * A `CovarianceMatrix`
 """
