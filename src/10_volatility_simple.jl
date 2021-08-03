@@ -26,13 +26,13 @@ Calculates volatility with the simple method.
                       use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
 
 ### Inputs
-* ts::SortedDataFrame - The tick data.
-* assets::Vector{Symbol} - The assets you want to estimate volatilities for.
-* time_grid::Union{Missing,Dict} - The grid with which to calculate returns. If missing one is generated with a fixed spacing (if that is provided) or a default spacing.
-* fixed_spacing::Union{Missing,Dict,<:Real} - A spacing used to calculate a time grid. Not used if a time_grid is input or if use_all_obs=true.
-* use_all_obs::Bool - Use all observations to estimate volatilities. Not used if a time_grid is provided.
-* rough_guess_number_of_intervals::Integer - A rough number of intervals to calculate a default spacing. Not used if a time_grid or fixed_spacing is provided or if use_all_obs=true.
-* T::Real - The duration of the tick data.
+* ts - The tick data.
+* assets - The assets you want to estimate volatilities for.
+* time\_grid - The grid with which to calculate returns. If missing one is generated with a fixed spacing (if that is provided) or a default spacing.
+* fixed\_spacing - A spacing used to calculate a time grid. Not used if a time\_grid is input or if use\_all\_obs=true.
+* use\_all\_obs - Use all observations to estimate volatilities. Not used if a time\_grid is provided.
+* rough\_guess\_number\_of\_intervals - A rough number of intervals to calculate a default spacing. Not used if a time\_grid or fixed\_spacing is provided or if use\_all\_obs=true.
+* T - The duration of the tick data.
 ### Returns
 * A scalar representing the optimal interval spacing.
 """
