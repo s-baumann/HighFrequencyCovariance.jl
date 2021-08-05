@@ -1,36 +1,38 @@
 import StochasticIntegrals.ItoSet
 
 """
-Generate a random path of price updates with a specified number of dimensions and ticks. There are options for whether the data is syncronous or asyncronous, the volatility of the price
-processes, the refresh rate on the (exponential) arrival times of price updates, the minimum and the maximum microstructure noises.
-
     generate_random_path(dimensions::Integer, ticks::Integer; syncronous::Bool = false, twister::MersenneTwister = MersenneTwister(1), minvol::Real = 0.0, maxvol::Real = 0.02,
                          min_refresh_rate::Real = 1.0, max_refresh_rate::Real = 5.0, min_noise_var::Real = 0.0, max_noise_var::Real = 0.01, assets::Union{Vector,Missing} = missing,
                          brownian_corr_matrix::Union{Hermitian,Missing} = missing, vols::Union{Vector,Missing} = missing)
 
+Generate a random path of price updates with a specified number of dimensions and ticks. There are options for whether the data is syncronous or asyncronous, the volatility of the price
+processes, the refresh rate on the (exponential) arrival times of price updates, the minimum and the maximum microstructure noises.
 ### Inputs
-* dimensions::Integer - The number of assets
-* ticks::Integer - The number of ticks to produce
-* syncronous::Bool - Should ticks be syncronous (for each asset) or asyncronous
-* twister::MersenneTwister - The MersenneTwister used for RNG.
-* minvol::Real - The minimum volatility in sampling (only used if vols is missing)
-* maxvol::Real - The maximum volatility in sampling (only used if vols is missing)
-* min_refresh_rate::Real - The minimum refresh rate in sampling
-* max_refresh_rate::Real - The maximum refresh rate in sampling
-* min_noise_var::Real  - The minimum assetwise microstructure noise variance
-* max_noise_var::Real  - The minimum assetwise microstructure noise variance
-* assets::Union{Vector,Missing} = missing
-* brownian_corr_matrix::Union{Hermitian,Missing} - The correlation matrix to use. This is sampled from the Inverse Wishart distribution if none is input.
-* vols::Union{Vector,Missing} - The correlation matrix to use. This is sampled from the Inverse Wishart distribution if none is input.
+* `dimensions` - The number of assets.
+* `ticks` - The number of ticks to produce.
+* `syncronous` - Should ticks be syncronous (for each asset) or asyncronous.
+* `twister` - The MersenneTwister used for RNG.
+* `minvol` - The minimum volatility in sampling (only used if vols is missing).
+* `maxvol` - The maximum volatility in sampling (only used if vols is missing).
+* `min_refresh_rate` - The minimum refresh rate in sampling.
+* `max_refresh_rate` - The maximum refresh rate in sampling.
+* `min_noise_var`  - The minimum assetwise microstructure noise variance.
+* `max_noise_var`  - The minimum assetwise microstructure noise variance.
+* `assets` - The names of the assets that you want to use. The length of this must be equal to the `dimensions` input.
+* `brownian_corr_matrix` - The correlation matrix to use. This is sampled from the Inverse Wishart distribution if none is input.
+* `vols` - The correlation matrix to use. This is sampled from the Inverse Wishart distribution if none is input.
 ### Returns
-* A `SortedDataFrame` of tick data
-* A CovarianceMatrix representing the true data generation process used in making the tick data
-* A dict of microstructure_noises for each asset.
-* A dict of update_rates for each asset.
+* A `SortedDataFrame` of tick data.
+* A `CovarianceMatrix` representing the true data generation process used in making the tick data.
+* A `Dict` of microstructure noise variances for each asset.
+* A `Dict` of update rates for each asset.
 """
 function generate_random_path(dimensions::Integer, ticks::Integer; syncronous::Bool = false, twister::MersenneTwister = MersenneTwister(1), minvol::Real = 0.0, maxvol::Real = 0.02,
                               min_refresh_rate::Real = 1.0, max_refresh_rate::Real = 5.0, min_noise_var::Real = 0.0, max_noise_var::Real = 0.01, assets::Union{Vector,Missing} = missing,
                               brownian_corr_matrix::Union{Hermitian,Missing} = missing, vols::Union{Vector,Missing} = missing)
+    if (ismissing(assets) == false) && (dimensions != length(assets))
+        error("If you input asset names then the number of asset names must be of length equal to the dimensions input.")
+    end
 
     if ismissing(brownian_corr_matrix)
         wish = InverseWishart(dimensions, Matrix(Float64.(I(dimensions))))
@@ -57,14 +59,13 @@ function generate_random_path(dimensions::Integer, ticks::Integer; syncronous::B
 end
 
 """
-Convert a CovarianceMatrix into an ItoSet from the StochasticIntegrals package.
-This package can then be used to do things like generate draws from the Multivariate
-Gaussian corresponding to the covariance matrix and other things.
-
     ItoSet(covariance_matrix::CovarianceMatrix{<:Real})
 
+Convert a `CovarianceMatrix` into an `ItoSet` from the StochasticIntegrals package.
+This package can then be used to do things like generate draws from the Multivariate
+Gaussian corresponding to the covariance matrix and other things.
 ### Inputs
-* covariance_matrix::CovarianceMatrix{<:Real}
+* `covariance_matrix` - The `CovarianceMatrix` that you want to convert into an `StochasticIntegrals.ItoSet`
 ### Returns
 * A `StochasticIntegrals.ItoSet` struct.
 """

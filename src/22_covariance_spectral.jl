@@ -91,7 +91,6 @@ end
                         microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2])
 
 Estimation of a CovarianceMatrix using the spectral covariance method.
-
 ### Inputs
 * `ts` - The tick data.
 * `assets` - The assets you want to estimate volatilities for.
@@ -106,7 +105,6 @@ Estimation of a CovarianceMatrix using the spectral covariance method.
 * A `CovarianceMatrix`.
 
 ### References
-
 Bibinger M, Hautsch N, Malec P, Reiss M (2014). “Estimating the quadratic covariation matrix from noisy observations: Local method of moments and efficiency.” The Annals of Statistics, 42(4), 1312–1346. doi:10.1214/14-AOS1224.
 """
 function spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),

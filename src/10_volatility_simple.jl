@@ -24,7 +24,6 @@ end
                       use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
 
 Calculates volatility with the simple method.
-
 ### Inputs
 * `ts` - The tick data.
 * `assets` - The assets you want to estimate volatilities for.
@@ -34,7 +33,7 @@ Calculates volatility with the simple method.
 * `rough_guess_number_of_intervals` - A rough number of intervals to calculate a default spacing. Not used if a `time_grid` or `fixed_spacing` is provided or if `use_all_obs = true`.
 * `T` - The duration of the tick data.
 ### Returns
-* A scalar representing the optimal interval spacing.
+* A `Dict` with an estimated volatility for each asset.
 """
 function simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
                            time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
@@ -70,7 +69,6 @@ end
 
 Calculates a default spacing between returns to use.
 This comes from the equation at section 1.2.3 of Zhang, Mykland, Ait-Sahalia 2005.
-
 ### Inputs
 * `ts` - The tick data.
 * `rough_guess_number_of_intervals` - A rough estimate of how many intervals to split the tick data into. This is used in a first pass to estimate the optimal interval spacing.

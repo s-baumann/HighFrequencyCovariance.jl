@@ -14,11 +14,18 @@ end
 sqrt_psd(A::Diagonal) = sqrt(A)
 
 """
-This maps the Hermitian/Hermitian matrix A to the nearest matrix in the U space (the space of all unit diagonal matrices
-as defined by Higham 2001). The inverse weight matrix invW determines how much to adjust
-each element to get it to be unit diagonal. The weight matrix must be Hermitian positive definite.
+    project_to_U(A::Union{Diagonal,Hermitian}, invW::Hermitian)
+
+This maps the Hermitian/Hermitian matrix `A` to the nearest matrix in the U space (the space of all unit diagonal matrices as defined by Higham 2001). The inverse weight matrix `invW` determines how much to adjust
+each element to get it to be unit diagonal. In other words it is used to determine what is the nearest correlation matrix. The weight matrix must be Hermitian positive definite.
 We use the W-norm (as defined by Higham 2001).
-# References
+### Inputs
+* `A` - The matrix you want to project to the U space
+* `invW` - The inverse weighting matrix.
+### Outputs
+* A `Diagonal` or a `Hermitian`.
+
+### References
 Higham, N. J. 2001. Bottom of page 335.
 """
 function project_to_U(A::Union{Diagonal,Hermitian}, invW::Hermitian)
@@ -35,11 +42,21 @@ function project_to_U(A::Union{Diagonal,Hermitian}, invW::Diagonal)
 end
 
 """
-This maps a matrix to the nearest psd matrix. W_root should be the principal square root of a psd Hermitian weighting matrix, W.
-W_inv_sqrt should be the corresponding square root of the inverse of W.
-Higham, N. J. 2001. Theorem 3.2
+    project_to_S(A::Hermitian, W_root::Union{Hermitian,Diagonal}; W_inv_sqrt::Union{Hermitian,Diagonal} = sqrt_psd(inv(W_root^2)))
+    project_to_S(A::Diagonal, W_root::Union{Hermitian,Diagonal}; W_inv_sqrt::Union{Hermitian,Diagonal,Missing} = missing)
 
+This maps a matrix to the nearest psd matrix. W_root should be the principal square root of a psd Hermitian weighting matrix, W.
+`W_inv_sqrt` should be the corresponding square root of the inverse of W.
 `nearest_psd_matrix` is a simpler interface for this function however it does not allow weighting matrices to be specified.
+### Inputs
+* `A` - The matrix you want to project to the S space. This can be a `Diagonal` or a `Hermitian`. Note that if you input a `Diagonal` matrix then it is already in the S space and so it will be returned without any calculation.
+* `W_root` - The inverse weighting matrix.
+* `W_inv_sqrt` - The root of `W_root`. This is calculated if you don't have it but it can save some calculation effort if you already have it.
+### Outputs
+* A `Hermitian`.
+
+### References
+Higham, N. J. 2001. Theorem 3.2
 """
 function project_to_S(A::Hermitian, W_root::Union{Hermitian,Diagonal}; W_inv_sqrt::Union{Hermitian,Diagonal} = sqrt_psd(inv(W_root^2)))
       Wroot_A_WRoot = Hermitian(W_root * A * W_root)
@@ -53,9 +70,21 @@ project_to_S(A::Diagonal, W_root::Union{Hermitian,Diagonal}; W_inv_sqrt::Union{H
 
 
 """
-Do one iterate mapping the input matrix to the S space (of psd matrices) and then to
-the U space (unit diagonal and all other entries below 1 in absolute value).
+    iterate_higham(Y::Union{Hermitian,Diagonal}, Dykstra::Union{Hermitian,Diagonal}, W_root::Union{Hermitian,Diagonal}, W_inv::Union{Hermitian,Diagonal}, W_inv_sqrt::Union{Hermitian,Diagonal})
+
+Do one iterate mapping the input matrix to the S space (of psd matrices) and then to the U space (unit diagonal and all other entries below 1 in absolute value).
 Returns the updated matrix and the next iterate's Dykstra correction.
+### Inputs
+* `Y` - The matrix you want to project to the iterate towards the space of valid correlation matrices.
+* `Dykstra` - The Dykstra correction matrix.
+* `W_root` - The root of `W`.
+* `W_inv` - The inverse of `W`.
+* `W_inv_sqrt` - The root of the inverse of `W`.
+### Outputs
+* A `Hermitian`.
+* An updated Dykstra correction matrix.
+
+### References
 Higham, N. J. 2001. Algorithm 3.3
 """
 function iterate_higham(Y::Union{Hermitian,Diagonal}, Dykstra::Union{Hermitian,Diagonal}, W_root::Union{Hermitian,Diagonal}, W_inv::Union{Hermitian,Diagonal}, W_inv_sqrt::Union{Hermitian,Diagonal})
@@ -67,39 +96,85 @@ function iterate_higham(Y::Union{Hermitian,Diagonal}, Dykstra::Union{Hermitian,D
 end
 
 """
+    nearest_correlation_matrix(mat::AbstractMatrix, weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(mat)[1])));
+                               doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
+Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
+### Inputs
+* `mat` - A matrix you want to regularise.
+* `ts` - The tick data.
+* `weighting_matrix` - The weighting matrix used to weight what the **nearest** valid correlation matrix is.
+* `doDykstra` - Should Dykstra correction be done.
+* `stop_at_first_correlation_matrix` - Should we keep iterating until we have done all iterates or stop at the first valid correlation matrix.
+* `max_iterates` - The maximum number of iterates to do towards a valid correlation matrix.
+### Returns
+* A `Matrix`
+* An integer saying how many iterates were done
+* A Symbol with a convergence message.
+
+
     nearest_correlation_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
-                                 doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
-    nearest_correlation_matrix(covariance_matrix::CovarianceMatrix; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
-                                 doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
-    nearest_correlation_matrix(mat::Hermitian, ts::SortedDataFrame, mat_labels = missing; weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
-                                 doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
-    nearest_correlation_matrix(mat::Hermitian, mat_labels::Vector = missing; weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
-                                 doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
+                               doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
 
 Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
+### Inputs
+* `covariance_matrix` - The matrix you want to regularise.
+* `ts` - The tick data.
+* `weighting_matrix` - The weighting matrix used to weight what the **nearest** valid correlation matrix is.
+* `doDykstra` - Should Dykstra correction be done.
+* `stop_at_first_correlation_matrix` - Should we keep iterating until we have done all iterates or stop at the first valid correlation matrix.
+* `max_iterates` - The maximum number of iterates to do towards a valid correlation matrix.
+### Returns
+* A `CovarianceMatrix`
 
 
-These functions calls the `iterate_higham` function to move a matrix towards it nearest correlation matrix until it hits a fixed point.
- * covariance_matrix::CovarianceMatrix or mat::Hermitian - The matrix to be regularised.
- * ts::SortedDataFrame - The tick data
- * weighting_matrix::Union{Diagonal,Hermitian} - What weighting matrix should be used (in determining what is the nearest correlation matrix).
- * doDykstra::Bool Should a Dykstra correction be done.
- * stop_at_first_correlation_matrix::Bool  Should the iteration stop at the first valid correlation matrix or continue until all iterates have been performed.
- * max_iterates::Integer What is the maximum number of iterates to do. If stop_at_first_correlation_matrix = false then max_iterates is the number of iterates that we will do.
-If a `Hermitian` is input then one will be returned. If a `CovarianceMatrix` is input then one will be returned.
+    nearest_correlation_matrix(covariance_matrix::CovarianceMatrix; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
+                               doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
+
+Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
+### Inputs
+* `covariance_matrix` - The matrix you want to regularise.
+* `weighting_matrix` - The weighting matrix used to weight what the **nearest** valid correlation matrix is.
+* `doDykstra` - Should Dykstra correction be done.
+* `stop_at_first_correlation_matrix` - Should we keep iterating until we have done all iterates or stop at the first valid correlation matrix.
+* `max_iterates` - The maximum number of iterates to do towards a valid correlation matrix.
+### Returns
+* A `CovarianceMatrix`
 
 
-     nearest_correlation_matrix(mat::Union{Diagonal,Hermitian}, W::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(mat)[1])));
-                                 doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
-This also iterates a matrix towards convergence but returns a tuple with the updated
- Hermitian/Diagonal matrix in the first slot, the number of iterates in the second
- and a Symbol representing a convergence status in the third. The arguments are as above.
+    nearest_correlation_matrix(mat::Hermitian; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(mat).(I(size(mat)[1]))),
+                               doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
+Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
+### Inputs
+* `mat` - The matrix you want to regularise.
+* `weighting_matrix` - The weighting matrix used to weight what the **nearest** valid correlation matrix is.
+* `doDykstra` - Should Dykstra correction be done.
+* `stop_at_first_correlation_matrix` - Should we keep iterating until we have done all iterates or stop at the first valid correlation matrix.
+* `max_iterates` - The maximum number of iterates to do towards a valid correlation matrix.
+### Returns
+* A `Hermitian`
+
+
+    nearest_correlation_matrix(mat::Hermitian, ts::SortedDataFrame; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(mat).(I(size(mat)[1]))),
+                               doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
+Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
+### Inputs
+* `covariance_matrix` - The matrix you want to regularise.
+* `ts` - The tick data.
+* `weighting_matrix` - The weighting matrix used to weight what the **nearest** valid correlation matrix is.
+* `doDykstra` - Should Dykstra correction be done.
+* `stop_at_first_correlation_matrix` - Should we keep iterating until we have done all iterates or stop at the first valid correlation matrix.
+* `max_iterates` - The maximum number of iterates to do towards a valid correlation matrix.
+### Returns
+* A `Hermitian`
+
+### References
+Higham NJ (2002). "Computing the nearest correlation matrix - a problem from finance." IMA Journal of Numerical Analysis, 22, 329–343. doi:10.1002/nla.258.
 """
-function nearest_correlation_matrix(mat::AbstractMatrix, W::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(mat)[1])));
+function nearest_correlation_matrix(mat::AbstractMatrix, weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(mat)[1])));
                                     doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
-    @assert all(size(mat) .== size(W))
-    W_root = sqrt_psd(W)
-    W_inv = inv(W)
+    @assert all(size(mat) .== size(weighting_matrix))
+    W_root = sqrt_psd(weighting_matrix)
+    W_inv = inv(weighting_matrix)
     W_inv_sqrt = sqrt_psd(W_inv)
 
     N = size(mat)[1]
@@ -141,16 +216,43 @@ end
 
 
 """
+    nearest_psd_matrix(mat::Hermitian)
+
 This function maps a Hermitian matrix to the nearest psd matrix. This uses the project_to_S
 method in Higham (2001; Theorem 3.2). No special weighting is applied in this case.
 Advanced users can use the `project_to_S` directly if they want to use weights in
 order to decide what the `closest` pds matrix.
+### Inputs
+* `mat` - The matrix you want to map to a psd matrix
+### Results
+* A `Hermitian`
 
-    nearest_psd_matrix(mat::Hermitian)
+
     nearest_psd_matrix(covariance_matrix::CovarianceMatrix; apply_to_covariance::Bool = true)
+
+This function maps a Hermitian matrix to the nearest psd matrix. This uses the project_to_S
+method in Higham (2001; Theorem 3.2). No special weighting is applied in this case.
+Advanced users can use the `project_to_S` directly if they want to use weights in
+order to decide what the `closest` pds matrix.
+### Inputs
+* `covariance_matrix` - The matrix you want to map to a psd matrix
+* `apply_to_covariance` - Should regularisation be applied to the correlation or covariance matrix.
+### Results
+* A `CovarianceMatrix`
+
+
     nearest_psd_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; apply_to_covariance::Bool = true)
-If a `Hermitian` is input then a `Hermitian` will be returned. If a `CovarianceMatrix` is
-input then a `CovarianceMatrix` will be returned.
+
+This function maps a Hermitian matrix to the nearest psd matrix. This uses the project_to_S
+method in Higham (2001; Theorem 3.2). No special weighting is applied in this case.
+Advanced users can use the `project_to_S` directly if they want to use weights in
+order to decide what the `closest` pds matrix.
+### Inputs
+* `covariance_matrix` - The matrix you want to map to a psd matrix
+* `ts` - The Tick data
+* `apply_to_covariance` - Should regularisation be applied to the correlation or covariance matrix.
+### Results
+* A `CovarianceMatrix`
 
 
 ### References

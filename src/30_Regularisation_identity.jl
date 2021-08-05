@@ -12,46 +12,61 @@ function b_bar(dd,S)
 end
 
 """
-Regularisation of the correlation matrix by mixing with the identity matrix as per Ledoit & Wolf 2003.
+    identity_regularisation(mat::Hermitian, identity_weight::Real)
 
-    identity_regularisation(mat::Hermitian, asset_returns::DataFrame)
-
+Regularisation of the correlation matrix by mixing with the identity matrix.
 ### Inputs
-* mat::Hermitian - A matrix to be regularised.
-* asset_returns::DataFrame - A `DataFrame` with returns for each asset.
+* `mat` - A matrix to be regularised.
+* `identity_weight` - How much weight to give to the identity matrix. Should be between 0 and 1.
 ### Returns
 * A `Hermitian`.
+
 
     identity_regularisation(mat::Hermitian, asset_returns::DataFrame) where R<:Real
 
+Regularisation of the correlation matrix by mixing with the identity matrix as per Ledoit & Wolf 2003.
 ### Inputs
-* mat::Hermitian - A matrix to be regularised.
-* ts::SortedDataFrame - Tick data.
+* `mat` - A matrix to be regularised.
+* `ts` - Tick data.
 ### Returns
 * A `Hermitian`.
 
+
+    identity_regularisation(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector; spacing::Union{Missing,<:Real} = missing)
+
+Regularisation of the correlation matrix by mixing with the identity matrix as per Ledoit & Wolf 2003.
+### Inputs
+* `mat` - A matrix to be regularised.
+* `ts` - Tick data.
+* `mat_labels` - The labels for each asset in the matrix.
+* `spacing` A spacing to use to estimate returns. This is used in determining the optimal weight to give to the identity matrix.
+### Returns
+* A `Hermitian`.
+
+
     identity_regularisation(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; spacing::Union{Missing,<:Real} = missing, apply_to_covariance::Bool = true)
 
+Regularisation of the correlation matrix by mixing with the identity matrix as per Ledoit & Wolf 2003.
+### Inputs
+* `covariance_matrix` - The `CovarianceMatrix` to be regularised.
+* `ts` - Tick data.
+* `spacing` A spacing to use to estimate returns. This is used in determining the optimal weight to give to the identity matrix.
+* `apply_to_covariance` Should regularisation be applied to the covariance matrix or the correlation matrix.
+### Returns
+* A `CovarianceMatrix`.
 
 
-This regularises the matrix by doing an elementwise convex linear combination of
-it with the identity matrix. The weight the identity matrix gets is that specified
-in Ledoit and Wolf. The inputs are:
-* covariance_matrix::CovarianceMatrix or mat::Hermitian - The matrix to be regularised.
-* asset_returns::DataFrame - A DataFrame containing returns for each asset. There should be one column for each asset.
-* ts::SortedDataFrame - The tick data
-* spacing::Union{Missing,<:Real} - What spacing (in time) should returns be calculated from ts. If missing refresh times will be used.
-* apply_to_covariance::Bool - Should regularisation be applied to the correlation or covariance matrix.
+    identity_regularisation(covariance_matrix::CovarianceMatrix, identity_weight::Real; apply_to_covariance = false)
 
-If a `Hermitian` is input then one will be returned. If a `CovarianceMatrix` is input then one will be returned.
-
-    identity_regularisation(mat::Hermitian, identity_weight::Real)
-This regularises the matrix by doing an elementwise convex linear combination of it
- with the identity matrix (where identity_weight is the weight the identity matrix gets).
- A `Hermitian` is returned.
+Regularisation of the correlation matrix by mixing with the identity matrix.
+### Inputs
+* `covariance_matrix` - The `CovarianceMatrix` to be regularised.
+* `identity_weight` - How much weight to give to the identity matrix. Should be between 0 and 1.
+* `apply_to_covariance` Should regularisation be applied to the covariance matrix or the correlation matrix.
+### Returns
+* A `CovarianceMatrix`.
 
 ### References
-
 Ledoit, O. , Wolf, M. 2003. Improved Estimation of the Covariance Matrix of Stock Returns with an application to portfolio selection. Journal of empirical finance. 10. 603-621.
 """
 function identity_regularisation(mat::Hermitian, identity_weight::Real)

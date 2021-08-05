@@ -40,7 +40,6 @@ g = (f = x-> min(x, 1-x), psi = 0.25)
                            only_regulise_if_not_PSD::Bool = false, theta::Real = 0.15, g::NamedTuple = g)
 
 Estimation of the CovarianceMatrix using preaveraging method.
-
 ### Inputs
 * `ts` - The tick data.
 * `assets` - The assets you want to estimate volatilities for.

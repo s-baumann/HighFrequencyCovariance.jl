@@ -60,6 +60,8 @@ end
 """
 This averages the first few and last few returns. We do this to returns rather than
 prices (as suggested in BNHLS 2011).
+
+## References
 Barndorff-Nielsen, O., Hansen, P.R., Lunde, A., Shephard, N. 2011. - Section 2.2.
 """
 function preaveraging_end_returns(returns::Array{R,2}, m::Integer) where R<:Real
@@ -102,7 +104,6 @@ end
                      m::Integer = 2)
 
 This calculates covariance with the Multivariate realised kernel oof BNHLS(2011).
-
 ### Inputs
 * `ts` - The tick data.
 * `assets` - The assets you want to estimate volatilities for.

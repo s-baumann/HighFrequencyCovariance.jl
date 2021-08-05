@@ -1,28 +1,31 @@
 """
-This is a convenience wrapper for the two volatility estimation techniques
-  included in this package. The method can be :simple_volatility or
-  :two_scales_volatility in which case the simple or two scales volatilty
-  methods will be called.
-
     estimate_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts), method::Symbol = :two_scales_volatility;
                         num_grids::Real = default_num_grids(ts),
                         time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
                         use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
+
+This is a convenience wrapper for the two volatility estimation techniques included in this package.
+### Inputs
+* `ts` - The tick data.
+* `assets` - What assets from ts that you want to estimate the covariance for.
+* `method` - The method can be `:simple_volatility` (for the simple volatility method) or `:two_scales_volatility` (for the two scales volatility method)
+* `num_grids` - Number of grids used in order in two scales estimation.
+* `time_grid` - The grid with which to calculate returns. If missing one is generated with a fixed spacing (if that is provided) or a default spacing.
+* `fixed_spacing` - A spacing used to calculate a time grid. Not used if a `time_grid` is input or if `use_all_obs = true`.
+* `use_all_obs` - Use all observations to estimate volatilities. Not used if a `time_grid` is provided.
+* `rough_guess_number_of_intervals` - A rough number of intervals to calculate a default spacing. Not used if a `time_grid` or `fixed_spacing` is provided or if `use_all_obs = true`.
+### Returns
+* A `Dict` with estimated volatilities for each asset.
 """
 function estimate_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts), method::Symbol = :two_scales_volatility;
                              num_grids::Real = default_num_grids(ts),
                              time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
                              use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
     if method == :simple_volatility
-        # simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-        #                           time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
-        #                           use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
         return simple_volatility(ts, assets;
                                    time_grid = time_grid, fixed_spacing = fixed_spacing,
                                    use_all_obs = use_all_obs, rough_guess_number_of_intervals = rough_guess_number_of_intervals)
     elseif method == :two_scales_volatility
-        # two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-        #                num_grids::Real = default_num_grids(ts))
         return two_scales_volatility(ts, assets; num_grids = num_grids)[1]
     else
         error("The volatilty method chosen must be either :simple_volatility or :two_scales_volatility")
@@ -30,27 +33,22 @@ function estimate_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_a
 end
 
 """
+    estimate_microstructure_noise(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); num_grids::Real = default_num_grids(ts))
+
 This estimates microstructure noise with the two_scales_volatility method.
-
-    estimate_microstructure_noise(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                                  num_grids::Real = default_num_grids(ts),
-                                  time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
-                                  use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
-
+### Inputs
+* `ts` - The tick data.
+* `assets` - What assets from ts that you want to estimate the covariance for.
+* `num_grids` - Number of grids used in order in two scales estimation.
+### Returns
+* A `Dict` with estimated microstructure noise variances for each asset.
 """
 function estimate_microstructure_noise(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                             num_grids::Real = default_num_grids(ts),
-                             time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
-                             use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
-    # two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-    #                num_grids::Real = default_num_grids(ts))
+                             num_grids::Real = default_num_grids(ts))
     return two_scales_volatility(ts, assets; num_grids = num_grids)[2]
 end
 
 """
-This is a convenience wrapper for the five covariance estimation techniques included in this package.
-The method can be :simple_covariance, :bnhls_covariance, :spectral_covariance, :preaveraged_covariance or :two_scales_covariance.
-
     estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts), method::Symbol = :preaveraged_covariance;
                         regularisation::Union{Missing,Symbol} = :default, regularisation_params::Dict = Dict(),
                         only_regulise_if_not_PSD::Bool = false,
@@ -60,6 +58,37 @@ The method can be :simple_covariance, :bnhls_covariance, :spectral_covariance, :
                         numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks, microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], # Spectral Covariance parameters
                         theta::Real = 0.15, g::NamedTuple = g, # Preaveraging
                         equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
+
+This is a convenience wrapper for the regularisation techniques.
+### Inputs
+* `ts` - The tick data.
+* `assets` - What assets from ts that you want to estimate the covariance for.
+* `method`  - The method you want to use. This can be `:simple_covariance`, `:bnhls_covariance`, `:spectral_covariance`, `:preaveraged_covariance` or `:two_scales_covariance`.
+* `regularisation` - The regularisation method to use. This can be `:identity_regularisation`, `:eigenvalue_clean`, `:nearest_correlation_matrix` or `:nearest_psd_matrix`. You can also choose `:covariance_default` (which is `:nearest_psd_matrix`) or  `:correlation_default` (which is `:nearest_correlation_matrix`). If missing then the default regularisation method for your chosen covariance estimation method will be used.
+* `regularisation_params` - Keyword arguments that will be used by your chosen regularisation method.
+* `only_regulise_if_not_PSD` - Should the resultant matrix only be regularised if it is not psd.
+
+* `time_grid` - The grid with which to calculate returns (`:simple_covariance` method only).
+* `fixed_spacing` - A spacing used to calculate a time grid. Not used if `refresh_times=true` (`:simple_covariance` method only).
+* `refresh_times` - Should refresh times be used to estimate covariance (`:simple_covariance` method only).
+* `rough_guess_number_of_intervals` - A rough number of intervals to calculate a default spacing. Not used if a `time_grid` or `fixed_spacing` is provided or if `refresh_times=true` (`:simple_covariance` method only).
+
+* `kernel` - The kernel used. See the bnhls paper for details. (`:bnhls_covariance` method only)
+* `H` - The number of lags/leads used in estimation. See the bnhls paper for details. (`:bnhls_covariance` method only)
+* `m` - The number of end returns to average. (`:bnhls_covariance` method only)
+
+* `numJ` - The number of J values. See the paper for details (`:spectral_covariance` method only).
+* `num_blocks` - The number of blocks to split the time frame into. See the preaveraging paper for details (`:spectral_covariance` method only).
+* `block_width` - The width of each block to split the time frame into (`:spectral_covariance` method only).
+* `microstructure_noise_var` - Estimates of microstructure noise variance for each asset (`:spectral_covariance` method only).
+
+* `theta` - A theta value. See paper for details (`:preaveraged_covariance` method only).
+* `g` - A tuple containing a preaveraging method (with name "f") and a ψ value. See paper for details (`:preaveraged_covariance` method only).
+
+* `equalweight` - Should we use equal weight for the two different linear combinations of assets. If false then an optimal weight is calculated (from volatilities) (`:two_scales_covariance` method only).
+* `num_grids` - Number of grids used in order in two scales estimation (`:two_scales_covariance` method only).
+### Returns
+* A `CovarianceMatrix`
 """
 function estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts), method::Symbol = :preaveraged_covariance;
                              regularisation::Union{Missing,Symbol} = :default, regularisation_params::Dict = Dict(),
@@ -75,34 +104,21 @@ function estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_a
     end
 
     if method == :simple_covariance
-        # simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
-        #                           only_regulise_if_not_PSD::Bool = false, time_grid::Union{Missing,Vector} = missing,
-        #                           fixed_spacing::Union{Missing,<:Real} = missing, refresh_times::Bool = false, rough_guess_number_of_intervals::Integer = 5)
         return simple_covariance(ts, assets; regularisation = regularisation, only_regulise_if_not_PSD = only_regulise_if_not_PSD,
                                    time_grid = time_grid,
                                    fixed_spacing = fixed_spacing, refresh_times = refresh_times, rough_guess_number_of_intervals = rough_guess_number_of_intervals)
     elseif method == :bnhls_covariance
-        # bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
-        #                          only_regulise_if_not_PSD::Bool = false, kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6,
-        #                          m::Integer = 2)
         return bnhls_covariance(ts, assets; regularisation = regularisation,
                                   only_regulise_if_not_PSD = only_regulise_if_not_PSD, kernel = kernel, H = H,
                                   m = m)
     elseif method == :spectral_covariance
-        # spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
-        #                             only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks,
-        #                             microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2])
         return spectral_covariance(ts, assets; regularisation = regularisation,
                                      only_regulise_if_not_PSD = only_regulise_if_not_PSD, numJ = numJ, num_blocks = num_blocks, block_width = block_width,
                                      microstructure_noise_var = microstructure_noise_var)
     elseif method == :preaveraged_covariance
-        # preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CovarianceDefault, regularisation_params::Dict = Dict(),
-        #                             only_regulise_if_not_PSD::Bool = false, theta::Real = 0.15, g::NamedTuple = g)
         return preaveraged_covariance(ts, assets; regularisation = regularisation,
                                      only_regulise_if_not_PSD = only_regulise_if_not_PSD, theta = theta, g = g)
     elseif method == :two_scales_covariance
-        # two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :CorrelationDefault, regularisation_params::Dict = Dict(),
-        #                             only_regulise_if_not_PSD::Bool = false, equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
         return two_scales_covariance(ts, assets; regularisation = regularisation, only_regulise_if_not_PSD = only_regulise_if_not_PSD,
                                     equalweight = equalweight, num_grids = num_grids)
     else
@@ -112,12 +128,26 @@ end
 
 # The Hermitian version
 """
-This is a convenience wrapper for the regularisation techniques. The methods can be :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).
-
     regularise(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector, method::Symbol = :correlation_default;
                spacing::Union{Missing,<:Real} = missing,
                weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
                doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
+
+This is a convenience wrapper for the regularisation techniques.
+### Inputs
+* `mat` - The matrix you want to regularise.
+* `ts` - The tick data.
+* `mat_labels` - The name of the assets for each row/column of the matrix.
+* `method`  - The method you want to use. This can be `:identity_regularisation`, `:eigenvalue_clean`, `:nearest_correlation_matrix` or `:nearest_psd_matrix`. You can also choose `:covariance_default` (which is `:nearest_psd_matrix`) or  `:correlation_default` (which is `:nearest_correlation_matrix`).
+
+* `spacing` - The interval spacing used in choosing an identity weight (`identity_regularisation` method only).
+
+* `weighting_matrix` - The weighting matrix used to calculate the nearest psd matrix (`:nearest_correlation_matrix` method only).
+* `doDykstra` - Should a Dykstra correction be applied (`:nearest_correlation_matrix` method only).
+* `stop_at_first_correlation_matrix` - Should we stop at first valid correlation matrix (`:nearest_correlation_matrix` method only).
+* `max_iterates` - Maximum number of iterates (`:nearest_correlation_matrix` method only).
+### Returns
+* A `Hermitian`
 """
 function regularise(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector, method::Symbol = :correlation_default;
                     spacing::Union{Missing,<:Real} = missing,
@@ -128,53 +158,46 @@ function regularise(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector, me
     elseif method == :correlation_default
         method = :nearest_correlation_matrix
     end
-
     if method == :identity_regularisation
-        # identity_regularisation(mat::Hermitian, ts::SortedDataFrame, mat_labels::Vector; spacing::Union{Missing,<:Real} = missing)
         return identity_regularisation(mat, ts, mat_labels; spacing = spacing)
     elseif method == :eigenvalue_clean
-        # eigenvalue_clean(mat::Hermitian, ts::SortedDataFrame)
         return eigenvalue_clean(mat, ts)
     elseif method == :nearest_correlation_matrix
-        # nearest_correlation_matrix(mat::Hermitian; weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
-        #                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
         return nearest_correlation_matrix(mat; weighting_matrix = weighting_matrix, doDykstra = doDykstra,
                                           stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
     elseif method == :nearest_psd_matrix
-        # nearest_psd_matrix(mat::Hermitian)
         return nearest_psd_matrix(mat)
     else
         error("The covariance method chosen must be :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).")
     end
 end
 
-
-# The CovarianceMatrix version
 """
-This is a convenience wrapper for the regularisation techniques. The methods can be :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).
-
     regularise(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame, method::Symbol = :nearest_correlation_matrix;
-               spacing::Union{Missing,<:Real} = missing,
                apply_to_covariance::Bool = true,
+               spacing::Union{Missing,<:Real} = missing,
                weighting_matrix = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
                doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
 
+This is a convenience wrapper for the regularisation techniques.
 ### Inputs
-* covariance_matrix - The matrix you want to regularise.
-* ts - The tick data.
-* method  - The method you want to use. This can be :identity_regularisation, :eigenvalue_clean, :nearest_correlation_matrix or :nearest_psd_matrix. You can also choose :covariance_default (which is :nearest_psd_matrix) or  :correlation_default (which is :nearest_correlation_matrix).
-* spacing - The interval spacing used in choosing an identity weight (identity_regularisation method only).
-* apply_to_covariance - Should regularisation be applied to the covariance matrix. If false it is applied to the correlation matrix.
-* weighting_matrix - The weighting matrix used to calculate the nearest psd matrix (:nearest_correlation_matrix method only).
-* doDykstra - Should a Dykstra correction be applied (:nearest_correlation_matrix method only).
-* stop_at_first_correlation_matrix - Should we stop at first valid correlation matrix (:nearest_correlation_matrix method only).
-* max_iterates - Maximum number of iterates (:nearest_correlation_matrix method only).
+* `covariance_matrix` - The matrix you want to regularise.
+* `ts` - The tick data.
+* `method`  - The method you want to use. This can be `:identity_regularisation`, `:eigenvalue_clean`, `:nearest_correlation_matrix` or `:nearest_psd_matrix`. You can also choose `:covariance_default` (which is `:nearest_psd_matrix`) or  `:correlation_default` (which is `:nearest_correlation_matrix`).
+* `apply_to_covariance` - Should regularisation be applied to the covariance matrix. If false it is applied to the correlation matrix.
+
+* `spacing` - The interval spacing used in choosing an identity weight (`identity_regularisation` method only).
+
+* `weighting_matrix` - The weighting matrix used to calculate the nearest psd matrix (`:nearest_correlation_matrix` method only).
+* `doDykstra` - Should a Dykstra correction be applied (`:nearest_correlation_matrix` method only).
+* `stop_at_first_correlation_matrix` - Should we stop at first valid correlation matrix (`:nearest_correlation_matrix` method only).
+* `max_iterates` - Maximum number of iterates (`:nearest_correlation_matrix` method only).
 ### Returns
 * A `CovarianceMatrix`
 """
 function regularise(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame, method::Symbol = :nearest_correlation_matrix;
-                    spacing::Union{Missing,<:Real} = missing,
                     apply_to_covariance::Bool = true,
+                    spacing::Union{Missing,<:Real} = missing,
                     weighting_matrix = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
                     doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
     if method == :covariance_default
@@ -182,7 +205,6 @@ function regularise(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame, me
     elseif method == :correlation_default
         method = :nearest_correlation_matrix
     end
-
     if method == :identity_regularisation
         return identity_regularisation(covariance_matrix, ts; spacing = spacing, apply_to_covariance = apply_to_covariance)
     elseif method == :eigenvalue_clean
