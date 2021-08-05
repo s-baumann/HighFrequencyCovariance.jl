@@ -16,6 +16,12 @@ ts2, true_covar, micro_noise, update_rates = generate_random_path(4, 50000; brow
 ts3 = deepcopy(ts2)
 ts3.df.Value = exp.(ts3.df.Value)
 
+# Testing printing
+print(ts1)
+show(ts1)
+print(true_covar)
+show(true_covar)
+
 iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error + b.Volatility_error)
 
 # Preav Convergence

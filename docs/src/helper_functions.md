@@ -58,13 +58,6 @@ Pages = ["helper_functions.md"]
     dataframe_to_covariancematrix
 ```
 
-## Blocking and Regularisation Functions
-
-```@docs
-    put_assets_into_blocks_by_trading_frequency
-    blockwise_estimation
-```
-
 ## Internal Functions potentially of use for advanced users
 
 ### Metrics for distances between CovarianceMatrix structs

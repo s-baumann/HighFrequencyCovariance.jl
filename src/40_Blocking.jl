@@ -8,7 +8,6 @@ This splits assets into seperate blocks depending on their number of ticks.
 ### Returns
 * A `DataFrame`.
 """
-
 function put_assets_into_blocks(ts::SortedDataFrame, new_group_mult::Real)
     frequencies = time_between_refreshes(ts)
     group_stack = Vector{Vector{Symbol}}()

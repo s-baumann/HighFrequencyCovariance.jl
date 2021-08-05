@@ -6,6 +6,16 @@ function vol_given_values_and_times(vals::Vector, times::Vector, asset::Symbol)
     return sqrt(sum(returns .^ 2)/duration)
 end
 
+"""
+    default_num_grids(ts::SortedDataFrame)
+
+This gives a default number of intervals to divide a series of ticks over for the purposes of estimating returns and volatility.
+### Inputs
+* `ts` - The tick data.
+### Returns
+* An integer for the number of intervals.
+"""
+
 function default_num_grids(ts::SortedDataFrame)
     min_ticks = minimum(map( a -> length(ts.groupingrows[a]) , collect(keys(ts.groupingrows)) ))
     return Int(max(floor(min_ticks / 100), 3))
