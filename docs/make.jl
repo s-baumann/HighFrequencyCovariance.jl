@@ -15,7 +15,8 @@ makedocs(
         "API" => Any[
             "Types" => "types.md",
             "Estimation Functions" => "functions.md",
-            "Helper Functions" => "helper_functions.md"
+            "Helper Functions" => "helper_functions.md",
+            "Internal Functions" => "internals.md"
         ]
     ],
 )

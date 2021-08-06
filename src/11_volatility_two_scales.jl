@@ -15,7 +15,6 @@ This gives a default number of intervals to divide a series of ticks over for th
 ### Returns
 * An integer for the number of intervals.
 """
-
 function default_num_grids(ts::SortedDataFrame)
     min_ticks = minimum(map( a -> length(ts.groupingrows[a]) , collect(keys(ts.groupingrows)) ))
     return Int(max(floor(min_ticks / 100), 3))
