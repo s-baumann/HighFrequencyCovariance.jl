@@ -33,8 +33,8 @@ struct SortedDataFrame
     function SortedDataFrame(df::DataFrame, timevar::Symbol, groupingvar::Symbol, valuevar::Symbol, dic::Dict{Symbol,Array{I,1}}) where I<:Integer
         return new(df, timevar, groupingvar, valuevar, dic)
     end
-    function SortedDataFrame(df::SortedDataFrame, time::Symbol, grouping::Symbol, value::Symbol = :Value)
-       return SortedDataFrame(df.df, time, grouping, value)
+    function SortedDataFrame(df::SortedDataFrame)
+       return df
     end
 end
 
