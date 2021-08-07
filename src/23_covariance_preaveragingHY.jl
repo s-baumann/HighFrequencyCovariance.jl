@@ -36,8 +36,10 @@ univariate_HYn(vect::Vector, k_n::Real, psi::Real) = sum(map(i -> vect[i] * sum(
 g = (f = x-> min(x, 1-x), psi = 0.25)
 
 """
-    preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
-                           only_regulise_if_not_PSD::Bool = false, theta::Real = 0.15, g::NamedTuple = g)
+    preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
+                           regularisation::Union{Missing,Symbol} = :covariance_default,
+                           regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
+                           theta::Real = 0.15, g::NamedTuple = g)
 
 Estimation of the CovarianceMatrix using preaveraging method.
 ### Inputs
@@ -54,8 +56,10 @@ Estimation of the CovarianceMatrix using preaveraging method.
 ### References
 Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for multivariate continuous Itô semimartingales with noise in non-synchronous observation schemes.” Journal of Multivariate Analysis, 120, 59–84. doi:10.1016/j.jmva.2013.05.002.
 """
-function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
-                             only_regulise_if_not_PSD::Bool = false, theta::Real = 0.15, g::NamedTuple = g)
+function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
+                                regularisation::Union{Missing,Symbol} = :covariance_default,
+                                regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
+                                theta::Real = 0.15, g::NamedTuple = g)
    # The defaults are from the paper (Christensen et al 2013). theta and the formula for k_n is from halfway down page 67. g is from page 64.
    number_of_ticks = nrow(ts.df)
    k_n = Int(ceil(min(number_of_ticks/2,theta * sqrt(number_of_ticks))))

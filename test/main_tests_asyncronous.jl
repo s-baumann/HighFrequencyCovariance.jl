@@ -28,7 +28,9 @@ ts1 = SortedDataFrame(ts1.df, ts1.time, ts1.grouping, ts1.value,  ts1.groupingro
 # Subsetting to tick.
 ts1 = subset_to_time(ts1, 1670) # There is nothing special about 1670. It just gives us about 4000 ticks for the tests coming up.
 
-
+# Getting ticks per asset
+tpa = ticks_per_asset(ts1)
+all(values(tpa) .> 1)
 
 iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error + b.Volatility_error)
 
@@ -37,7 +39,7 @@ preav_estimate1 = preaveraged_covariance(ts1, assets)
 preav_estimate2 = preaveraged_covariance(ts2, assets)
 iscloser(calculate_mean_abs_distance(preav_estimate2, true_covar), calculate_mean_abs_distance(preav_estimate1, true_covar))
 is_psd_matrix(preav_estimate1)
-is_psd_matrix(preav_estimate2) 
+is_psd_matrix(preav_estimate2)
 valid_correlation_matrix(preav_estimate1)
 valid_correlation_matrix(preav_estimate2)
 

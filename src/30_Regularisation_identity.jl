@@ -32,7 +32,8 @@ Regularisation of the correlation matrix by mixing with the identity matrix as p
 * A `Hermitian`.
 
 
-    identity_regularisation(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector; spacing::Union{Missing,<:Real} = missing)
+    identity_regularisation(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector;
+                            spacing::Union{Missing,<:Real} = missing)
 
 Regularisation of the correlation matrix by mixing with the identity matrix as per Ledoit & Wolf 2003.
 ### Inputs
@@ -44,7 +45,8 @@ Regularisation of the correlation matrix by mixing with the identity matrix as p
 * A `Hermitian`.
 
 
-    identity_regularisation(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; spacing::Union{Missing,<:Real} = missing, apply_to_covariance::Bool = true)
+    identity_regularisation(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame;
+                            spacing::Union{Missing,<:Real} = missing, apply_to_covariance::Bool = true)
 
 Regularisation of the correlation matrix by mixing with the identity matrix as per Ledoit & Wolf 2003.
 ### Inputs
@@ -56,7 +58,8 @@ Regularisation of the correlation matrix by mixing with the identity matrix as p
 * A `CovarianceMatrix`.
 
 
-    identity_regularisation(covariance_matrix::CovarianceMatrix, identity_weight::Real; apply_to_covariance = false)
+    identity_regularisation(covariance_matrix::CovarianceMatrix, identity_weight::Real;
+                            apply_to_covariance = false)
 
 Regularisation of the correlation matrix by mixing with the identity matrix.
 ### Inputs

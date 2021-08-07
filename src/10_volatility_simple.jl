@@ -65,7 +65,8 @@ function simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_ass
 end
 
 """
-    default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5, T = duration(ts))
+    default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5,
+                    T = duration(ts))
 
 Calculates a default spacing between returns to use.
 This comes from the equation at section 1.2.3 of Zhang, Mykland, Ait-Sahalia 2005.
@@ -76,7 +77,8 @@ This comes from the equation at section 1.2.3 of Zhang, Mykland, Ait-Sahalia 200
 ### Returns
 * A scalar representing the optimal interval spacing.
 """
-function default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5, T::Real = duration(ts))
+function default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5,
+                         T::Real = duration(ts))
     rough_vol_guess, rough_micro_guess  = two_scales_volatility(ts; num_grids = rough_guess_number_of_intervals)
     n_guess = Dict{Symbol,eltype(ts.df[:,ts.value])}()
     for a in keys(rough_vol_guess)

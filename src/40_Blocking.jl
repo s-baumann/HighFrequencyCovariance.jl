@@ -44,7 +44,9 @@ function make_sorted_adjacent_block_sequence(blocks::Vector{Vector{Symbol}})
 end
 
 """
-    put_assets_into_blocks_by_trading_frequency(ts::SortedDataFrame, obs_multiple_for_new_block::Real, func::Symbol, optional_parameters::NamedTuple = NamedTuple())
+    put_assets_into_blocks_by_trading_frequency(ts::SortedDataFrame,
+                                                obs_multiple_for_new_block::Real, func::Symbol,
+                                                optional_parameters::NamedTuple = NamedTuple())
 
 This makes a DataFrame that describes how to estimate the covariance matrix blockwise.
 ### Inputs
@@ -58,7 +60,8 @@ This makes a DataFrame that describes how to estimate the covariance matrix bloc
 ### References
 Hautsch, N., Kyj, L.M. and Oomen, R.C.A. (2012), A blocking and regularization approach to high‐dimensional realized covariance estimation. J. Appl. Econ., 27: 625-645
 """
-function put_assets_into_blocks_by_trading_frequency(ts::SortedDataFrame, obs_multiple_for_new_block::Real, func::Symbol, optional_parameters::NamedTuple = NamedTuple())
+function put_assets_into_blocks_by_trading_frequency(ts::SortedDataFrame, obs_multiple_for_new_block::Real,
+                                                     func::Symbol, optional_parameters::NamedTuple = NamedTuple())
     blocks      = put_assets_into_blocks(ts, obs_multiple_for_new_block)
     blocks2     = make_sorted_adjacent_block_sequence(blocks)
     num_blocks  = length(blocks2)

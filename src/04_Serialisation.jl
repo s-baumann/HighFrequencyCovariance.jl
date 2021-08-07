@@ -1,7 +1,8 @@
-
 import StochasticIntegrals.to_dataframe
+
 """
-    to_dataframe(covar::CovarianceMatrix, othercols::Dict = Dict{Symbol,Any}(); delete_duplicate_correlations::Bool = true)
+    to_dataframe(covar::CovarianceMatrix, othercols::Dict = Dict{Symbol,Any}();
+                 delete_duplicate_correlations::Bool = true)
 
 Convert a CovarianceMatrix to a `DataFrame` format.
 ### Inputs

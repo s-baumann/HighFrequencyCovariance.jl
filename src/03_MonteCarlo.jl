@@ -1,9 +1,13 @@
 import StochasticIntegrals.ItoSet
 
 """
-    generate_random_path(dimensions::Integer, ticks::Integer; syncronous::Bool = false, twister::MersenneTwister = MersenneTwister(1), minvol::Real = 0.0, maxvol::Real = 0.02,
-                         min_refresh_rate::Real = 1.0, max_refresh_rate::Real = 5.0, min_noise_var::Real = 0.0, max_noise_var::Real = 0.01, assets::Union{Vector,Missing} = missing,
-                         brownian_corr_matrix::Union{Hermitian,Missing} = missing, vols::Union{Vector,Missing} = missing)
+    generate_random_path(dimensions::Integer, ticks::Integer; syncronous::Bool = false
+                         twister::MersenneTwister = MersenneTwister(1), minvol::Real = 0.0,
+                         maxvol::Real = 0.02, min_refresh_rate::Real = 1.0,
+                         max_refresh_rate::Real = 5.0, min_noise_var::Real = 0.0,
+                         max_noise_var::Real = 0.01, assets::Union{Vector,Missing} = missing,
+                         brownian_corr_matrix::Union{Hermitian,Missing} = missing,
+                         vols::Union{Vector,Missing} = missing)
 
 Generate a random path of price updates with a specified number of dimensions and ticks. There are options for whether the data is syncronous or asyncronous, the volatility of the price
 processes, the refresh rate on the (exponential) arrival times of price updates, the minimum and the maximum microstructure noises.
@@ -27,9 +31,13 @@ processes, the refresh rate on the (exponential) arrival times of price updates,
 * A `Dict` of microstructure noise variances for each asset.
 * A `Dict` of update rates for each asset.
 """
-function generate_random_path(dimensions::Integer, ticks::Integer; syncronous::Bool = false, twister::MersenneTwister = MersenneTwister(1), minvol::Real = 0.0, maxvol::Real = 0.02,
-                              min_refresh_rate::Real = 1.0, max_refresh_rate::Real = 5.0, min_noise_var::Real = 0.0, max_noise_var::Real = 0.01, assets::Union{Vector,Missing} = missing,
-                              brownian_corr_matrix::Union{Hermitian,Missing} = missing, vols::Union{Vector,Missing} = missing)
+function generate_random_path(dimensions::Integer, ticks::Integer; syncronous::Bool = false,
+                              twister::MersenneTwister = MersenneTwister(1), minvol::Real = 0.0,
+                              maxvol::Real = 0.02, min_refresh_rate::Real = 1.0,
+                              max_refresh_rate::Real = 5.0, min_noise_var::Real = 0.0,
+                              max_noise_var::Real = 0.01, assets::Union{Vector,Missing} = missing,
+                              brownian_corr_matrix::Union{Hermitian,Missing} = missing,
+                              vols::Union{Vector,Missing} = missing)
     if (ismissing(assets) == false) && (dimensions != length(assets))
         error("If you input asset names then the number of asset names must be of length equal to the dimensions input.")
     end

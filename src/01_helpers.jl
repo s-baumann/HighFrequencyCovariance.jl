@@ -63,7 +63,8 @@ function covariance(cm::CovarianceMatrix, duration::Real)
 end
 
 """
-    construct_matrix_from_eigen(eigenvalues::Vector{<:Real}, eigenvectors::Matrix{<:Real})
+    construct_matrix_from_eigen(eigenvalues::Vector{<:Real},
+                                eigenvectors::Matrix{<:Real})
 
 Constructs a matrix from its eigenvalue decomposition.
 ### Inputs
@@ -125,8 +126,9 @@ end
 is_missing_nan_inf(x) = (ismissing(x) | isnan(x)) | isinf(x)
 
 """
-    combine_covariance_matrices(vect::Vector{CovarianceMatrix{REAL}}, cor_weights::Vector{<:Real} = repeat([1.0], length(vect)),
-                                vol_weights::Vector{<:Real} = cor_weights) where REAL<:Real
+    combine_covariance_matrices(vect::Vector{CovarianceMatrix{T}},
+                                cor_weights::Vector{<:Real} = repeat([1.0], length(vect)),
+                                vol_weights::Vector{<:Real} = cor_weights) where T<:Real
 
 Combines a vector of `CovarianceMatrix` structs into one `CovarianceMatrix` struct.
 ### Inputs
@@ -136,7 +138,7 @@ Combines a vector of `CovarianceMatrix` structs into one `CovarianceMatrix` stru
 ### Returns
 * A matrix and a vector of labels for each row/column of the matrix.
 """
-function combine_covariance_matrices(vect::Vector{CovarianceMatrix{REAL}}, cor_weights::Vector{<:Real} = repeat([1.0], length(vect)), vol_weights::Vector{<:Real} = cor_weights) where REAL<:Real
+function combine_covariance_matrices(vect::Vector{CovarianceMatrix{T}}, cor_weights::Vector{<:Real} = repeat([1.0], length(vect)), vol_weights::Vector{<:Real} = cor_weights) where T<:Real
     all_labels = union(map(x -> x.labels, vect)...)
     dims = length(all_labels)
     R = promote_type(map(x -> eltype(x.correlation), vect)...)
@@ -207,7 +209,8 @@ end
 
 
 """
-    time_between_refreshes(ts::SortedDataFrame; assets::Vector{Symbol} = get_assets(ts))
+    time_between_refreshes(ts::SortedDataFrame;
+                           assets::Vector{Symbol} = get_assets(ts))
 
 Get a `DataFrame` showing how many time is between each refresh and how many ticks in total.
 ### Inputs

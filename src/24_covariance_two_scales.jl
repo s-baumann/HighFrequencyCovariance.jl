@@ -18,11 +18,12 @@ function get_refresh_times_and_prices(ts::SortedDataFrame, asset1::Symbol, asset
 end
 
 """
+    two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
+                          regularisation::Union{Missing,Symbol} = :correlation_default,
+                          regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
+                          equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
+
 Estimation of a CovarianceMatrix using the two scale covariance method.
-
-    two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :correlation_default, regularisation_params::Dict = Dict(),
-                          only_regulise_if_not_PSD::Bool = false, equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
-
 ### Inputs
 * `ts` - The tick data.
 * `assets` - The assets you want to estimate volatilities for.
@@ -34,8 +35,10 @@ Estimation of a CovarianceMatrix using the two scale covariance method.
 ### Returns
 * A `CovarianceMatrix`.
 """
-function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);  regularisation::Union{Missing,Symbol} = :correlation_default, regularisation_params::Dict = Dict(),
-                             only_regulise_if_not_PSD::Bool = false, equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
+function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
+                               regularisation::Union{Missing,Symbol} = :correlation_default,
+                               regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
+                               equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
 
     two_scales_vol, micro_noise = two_scales_volatility(ts, assets; num_grids = num_grids)
 

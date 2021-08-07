@@ -120,7 +120,8 @@ function duration(ts::SortedDataFrame)
 end
 
 """
-    CovarianceMatrix(correlation::Hermitian{R}, volatility::Vector{R}, labels::Vector{Symbol}) where R<:Real
+    CovarianceMatrix(correlation::Hermitian{R}, volatility::Vector{R},
+                     labels::Vector{Symbol}) where R<:Real
 
 This `Struct` stores three elements. A `Hermitian` correlation matrix, a vector of volatilities
 and a vector of labels. The order of the labels matches the order of the assets in
@@ -204,16 +205,6 @@ Calculates the mean absolute distance (elementwise in L1 norm) between two `Cova
 * `d2` - The second `Dict`
 ### Returns
 * A scalar with the mean distance between matching elements.
-
-
-    calculate_mean_abs_distance(d1::Tuple{Dict{Symbol,<:Real},Dict{Symbol,<:Real}}, d2::Tuple{Dict{Symbol,<:Real},Dict{Symbol,<:Real}})
-
-Calculates the distance between the first element of d1 and first of d2. And second elements of each. Returns a `Tuple` with two scalars for the distances between each element and the corresponding element of the other.
-### Inputs
-* `d1` - The first `Tuple`
-* `d2` - The second `Tuple`
-### Returns
-* A `Tuple` with two scalars representing the distances between `Tuple` elements.
 """
 function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix)
     if length(symdiff(cov1.labels, cov2.labels)) != 0 return NaN, NaN end
@@ -231,10 +222,6 @@ function calculate_mean_abs_distance(d1::Dict{Symbol,<:Real}, d2::Dict{Symbol,<:
     end
     return dist / length(common_labels)
 end
-function calculate_mean_abs_distance(d1::Tuple{Dict{Symbol,<:Real},Dict{Symbol,<:Real}}, d2::Tuple{Dict{Symbol,<:Real},Dict{Symbol,<:Real}})
-    return calculate_mean_abs_distance(d1[1], d2[1]), calculate_mean_abs_distance(d1[2], d2[2])
-end
-
 
 
 """

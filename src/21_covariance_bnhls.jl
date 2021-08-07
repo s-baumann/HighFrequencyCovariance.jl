@@ -99,8 +99,11 @@ function bnhls_covariance_estimate_given_returns(returns::Array{R,2}; kernel::HF
 end
 
 """
-    bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
-                     only_regulise_if_not_PSD::Bool = false, kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6,
+    bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
+                     regularisation::Union{Missing,Symbol} = :covariance_default,
+                     regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
+                     kernel::HFC_Kernel{<:Real} = parzen,
+                     H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6,
                      m::Integer = 2)
 
 This calculates covariance with the Multivariate realised kernel oof BNHLS(2011).
@@ -119,8 +122,11 @@ This calculates covariance with the Multivariate realised kernel oof BNHLS(2011)
 ### References
 Barndorff-Nielsen, O., Hansen, P.R., Lunde, A., Shephard, N. 2011. - The whole paper but particularly 2.2, 2.3 here. Kernels are in table 1. choices of H are discussed in section 3.4 of the paper.
 """
-function bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
-                          only_regulise_if_not_PSD::Bool = false, kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6,
+function bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
+                          regularisation::Union{Missing,Symbol} = :covariance_default,
+                          regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
+                          kernel::HFC_Kernel{<:Real} = parzen,
+                          H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6,
                           m::Integer = 2)
     at_times = get_all_refresh_times(ts, assets)
     dd_compiled = latest_value(ts, at_times; assets = assets)

@@ -18,7 +18,8 @@ function _eigenvalue_clean(mat::Hermitian, obs::Real)
 end
 
 """
-    eigenvalue_clean(eigenvalues::Vector{<:Real}, eigenvectors::Matrix{<:Real}, eigenvalue_threshold::Real)
+    eigenvalue_clean(eigenvalues::Vector{<:Real}, eigenvectors::Matrix{<:Real},
+                     eigenvalue_threshold::Real)
 
 This takes the small eigenvalues (with values below eigenvalue_threshold). It sets them to the
 greater of their average or eigenvalue_threshold/(4*number_of_small_eigens). Then the matrix is reconstructed and returned (as a `Hermitian`)
@@ -52,7 +53,8 @@ The method of Laloux, Cizeau, Bouchaud & Potters 2000 is used to choose a thresh
 * A `Hermitian`.
 
 
-    eigenvalue_clean(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; apply_to_covariance::Bool = true)
+    eigenvalue_clean(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame;
+                     apply_to_covariance::Bool = true)
 ### Inputs
 * `mat` - A matrix that you want to regularise with eigenvalue regularisation.
 * `ts` - The tick data.
@@ -67,7 +69,8 @@ from upstream problems so it is useful to return the matrix rather than throw at
 ## References
 Laloux, L., Cizeau, P., Bouchaud J. , Potters, M. 2000. "Random matrix theory and financial correlations" International Journal of Theoretical Applied FInance, 3, 391-397.
 """
-function eigenvalue_clean(eigenvalues::Vector{<:Real}, eigenvectors::Matrix{<:Real}, eigenvalue_threshold::Real)
+function eigenvalue_clean(eigenvalues::Vector{<:Real},
+                          eigenvectors::Matrix{<:Real}, eigenvalue_threshold::Real)
     number_of_small_eigens = sum(eigenvalues .< eigenvalue_threshold)
     av_small_eigens = max(eigenvalue_threshold/(4*number_of_small_eigens) , mean(eigenvalues[eigenvalues .< eigenvalue_threshold]) )
     eigenvalues[eigenvalues .< eigenvalue_threshold] .= av_small_eigens
@@ -85,7 +88,8 @@ function eigenvalue_clean(mat::Hermitian, ts::SortedDataFrame)
     regularised_mat = _eigenvalue_clean(mat, obs)
     return Hermitian(regularised_mat)
 end
-function eigenvalue_clean(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; apply_to_covariance::Bool = true)
+function eigenvalue_clean(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame;
+                          apply_to_covariance::Bool = true)
     if apply_to_covariance
         regularised_covariance = eigenvalue_clean(covariance(covariance_matrix,1), ts)
         corr, vols = cov2cor_and_vol(regularised_covariance, 1)
