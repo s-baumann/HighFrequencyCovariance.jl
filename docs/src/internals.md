@@ -5,7 +5,7 @@ CurrentModule = HighFrequencyCovariance
 # Internal Functions
 
 ```@index
-Pages = ["helper_functions.md"]
+Pages = ["internals.md"]
 ```
 
 ### Metrics for distances between CovarianceMatrix structs
