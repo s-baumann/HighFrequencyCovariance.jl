@@ -26,4 +26,4 @@ struct SortedDataFrame
     groupingrows::Dict{Symbol,Vector{Int64}}
 end
 ```
-This presorts a `DataFrame` by time and adds in an index (groupingrows) for each asset. Together these allow the covariance estimation functions to run faster. The other struct elements are the labels of the columns of interest in the `DataFrame`.
+This presorts a `DataFrame` by time and adds in an index (`groupingrows`) for each asset. Together these allow the covariance estimation functions to run faster. The other struct elements are the labels of the columns of interest in the `DataFrame`.
