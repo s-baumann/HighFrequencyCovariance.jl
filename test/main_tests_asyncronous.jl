@@ -11,7 +11,7 @@ brownian_corr_matrix = Hermitian([1.0 0.75 0.5 0.0;
 assets = [:BARC, :HSBC, :VODL, :RYAL]
 twister = MersenneTwister(1)
 
-ts1, true_covar, micro_noise, update_rates = generate_random_path(4, 4000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister))
+ts1, true_covar, micro_noise, update_rates = generate_random_path(4, 5000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister))
 ts2, true_covar, micro_noise, update_rates = generate_random_path(4, 50000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister))
 ts3 = deepcopy(ts2)
 ts3.df.Value = exp.(ts3.df.Value)
@@ -22,12 +22,22 @@ show(ts1)
 print(true_covar)
 show(true_covar)
 
+# Testing constructors of SortedDataFrames
+ts1 = SortedDataFrame(ts1)
+ts1 = SortedDataFrame(ts1.df, ts1.time, ts1.grouping, ts1.value,  ts1.groupingrows)
+# Subsetting to tick.
+ts1 = subset_to_time(ts1, 1670) # There is nothing special about 1670. It just gives us about 4000 ticks for the tests coming up.
+
+
+
 iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error + b.Volatility_error)
 
 # Preav Convergence
 preav_estimate1 = preaveraged_covariance(ts1, assets)
 preav_estimate2 = preaveraged_covariance(ts2, assets)
 iscloser(calculate_mean_abs_distance(preav_estimate2, true_covar), calculate_mean_abs_distance(preav_estimate1, true_covar))
+is_psd_matrix(preav_estimate1)
+is_psd_matrix(preav_estimate2) 
 valid_correlation_matrix(preav_estimate1)
 valid_correlation_matrix(preav_estimate2)
 
