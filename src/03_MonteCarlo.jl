@@ -24,7 +24,7 @@ processes, the refresh rate on the (exponential) arrival times of price updates,
 * `max_noise_var`  - The minimum assetwise microstructure noise variance.
 * `assets` - The names of the assets that you want to use. The length of this must be equal to the `dimensions` input.
 * `brownian_corr_matrix` - The correlation matrix to use. This is sampled from the Inverse Wishart distribution if none is input.
-* `vols` - The correlation matrix to use. This is sampled from the Inverse Wishart distribution if none is input.
+* `vols` - The volatilities to use. These are sampled  from the uniform distribution between `min_noise_var` and `max_noise_var`.
 ### Returns
 * A `SortedDataFrame` of tick data.
 * A `CovarianceMatrix` representing the true data generation process used in making the tick data.

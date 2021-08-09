@@ -147,11 +147,12 @@ This prints the `CovarianceMatrix` in a nice format.
 """
 function show(cm::CovarianceMatrix)
     println("Volatilities")
-    flat_labels = reshape(cm.labels, (1, length(cm.labels)))
+    flat_labels = reshape( cm.labels , (1, length(cm.labels)))
     Base.print_matrix(stdout, vcat(flat_labels, cm.volatility'))
+    println("\n")
     println("Correlations")
     corr = vcat(flat_labels, cm.correlation)
-    corr = hcat([:Correlations, cm.labels...], corr)
+    corr = hcat([:___, cm.labels...], corr)
     Base.print_matrix(stdout, corr)
 end
 

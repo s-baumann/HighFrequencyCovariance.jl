@@ -111,7 +111,7 @@ function estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_a
                              numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks, microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], # Spectral Covariance parameters
                              theta::Real = 0.15, g::NamedTuple = g, # Preaveraging
                              equalweight::Bool = false, num_grids::Real = default_num_grids(ts)) # Two Scales parameters
-    if regularisation == :default
+    if (ismissing(regularisation) == false) && (regularisation == :default)
         regularisation = (method == :two_scales_covariance) ? :correlation_default : :covariance_default
     end
 
