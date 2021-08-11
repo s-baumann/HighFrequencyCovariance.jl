@@ -66,7 +66,7 @@ function get_assets(ts::SortedDataFrame, obs_to_include::Integer = 10)
         cond2 = (maximum(ts.df[ts.groupingrows[a], ts.value] ) - minimum(ts.df[ts.groupingrows[a], ts.value] ) > 1000*eps())
         if (cond1 & cond2) push!(assets, a) end
     end
-    return assets
+    return sort(assets)
 end
 
 """
