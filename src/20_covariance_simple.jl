@@ -22,7 +22,7 @@ end
 Estimation of the covariance matrix in the standard simple way given a time grid.
 https://en.wikipedia.org/wiki/Sample_mean_and_covariance
 """
-function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Vector; regularisation::Symbol = :covariance_default,
+function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Vector; regularisation::Union{Missing,Symbol} = :covariance_default,
                                            regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false)
     dd_compiled = latest_value(ts, time_grid; assets = assets)
     dd = get_returns(dd_compiled; rescale_for_duration = false)
