@@ -69,7 +69,7 @@ function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get
     covmat = dont_regulise ? mat : regularise(mat, ts, assets, regularisation; regularisation_params... )
 
     vols = map(a -> two_scales_vol[a], assets)
-    covmat = CovarianceMatrix(covmat, vols, assets)
+    covmat = CovarianceMatrix(covmat, vols, assets, ts.time_period_per_unit)
 
     return covmat
 end

@@ -34,3 +34,12 @@ preav_estimate3 = preaveraged_covariance(ts3, assets3)
 vector_of_covars = [preav_estimate1, preav_estimate2, preav_estimate3]
 combined = combine_covariance_matrices(vector_of_covars, [1,2,3], [3,2,1])
 isnan(get_correlation(combined, :BARC, :HSBC)) # As they never appear together.
+
+# Testing order does not matter
+preav_estimate4 = preaveraged_covariance(ts3, assets)
+vector_of_covars = [preav_estimate1, preav_estimate2, preav_estimate4]
+combined = combine_covariance_matrices(vector_of_covars, [1,2,3], [3,2,1])
+vector_of_covars = [preav_estimate4, preav_estimate2, preav_estimate1]
+combined2 = combine_covariance_matrices(vector_of_covars, [3,2,1], [1,2,3])
+calculate_mean_abs_distance(combined, combined2).Correlation_error .< 10*eps()
+calculate_mean_abs_distance(combined, combined2).Volatility_error .< 10*eps()

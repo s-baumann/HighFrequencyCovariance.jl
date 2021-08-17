@@ -12,6 +12,8 @@ For the constructor pass in the dataframe, name of time column, name of grouping
 * `time` - The column of the data representing time.
 * `grouping` - The column of the data representing the asset name
 * `value` - The column of the data representing price/logprice/etc.
+* `time_period_per_unit` - The period that one unit (in the time column) corresponds to.
+
 ### Returns
 * A `SortedDataFrame`.
 """
@@ -21,21 +23,27 @@ struct SortedDataFrame
     grouping::Symbol
     value::Symbol
     groupingrows::Dict{Symbol,Array{Int64,1}}
-    function SortedDataFrame(df::DataFrame, time::Symbol = :Time, grouping::Symbol = :Name, value::Symbol = :Value)
+    time_period_per_unit::Dates.Period
+    function SortedDataFrame(df::DataFrame, time::Symbol, grouping::Symbol,
+                             value::Symbol, time_period_per_unit::Dates.Period)
        df2 = sort(df, time)
-       I = Int64
-       dic = Dict{Symbol,Array{I,1}}()
+       dic = Dict{Symbol,Vector{Int64}}()
        for g in unique(df2[:,grouping])
           dic[g] = findall(df2[:,grouping] .== g)
        end
-       return new(df2, time, grouping, value, dic)
+       if typeof(time_period_per_unit) in [Year, Quarter, Month]
+           error("time_period_per_unit cannot be a Year, Quarter or Month as it is undefined how many seconds/days/etc exist per Year, Quarter or Month.")
+       end
+       return new(df2, time, grouping, value, dic, time_period_per_unit)
     end
-    function SortedDataFrame(df::DataFrame, timevar::Symbol, groupingvar::Symbol, valuevar::Symbol, dic::Dict{Symbol,Array{I,1}}) where I<:Integer
-        return new(df, timevar, groupingvar, valuevar, dic)
+    function SortedDataFrame(df::DataFrame, timevar::Symbol, groupingvar::Symbol, valuevar::Symbol,
+                             dic::Dict{Symbol,Vector{I}}, vol_unit::Dates.Period) where I<:Integer
+        return new(df, timevar, groupingvar, valuevar, dic, vol_unit)
     end
-    function SortedDataFrame(df::SortedDataFrame)
-       return df
-    end
+end
+
+function time_period_ratio(neww::Dates.Period, oldd::Dates.Period)
+    return Nanosecond(neww) / Nanosecond(oldd)
 end
 
 import Base.show, Base.print
@@ -87,7 +95,7 @@ function subset_to_tick(ts::SortedDataFrame, n::Integer)
         newvec = ts.groupingrows[a][ts.groupingrows[a] .<= n]
         if length(newvec) > 0 newgroupingrows[a] = newvec end
     end
-    return SortedDataFrame(newdf, ts.time, ts.grouping, ts.value, newgroupingrows)
+    return SortedDataFrame(newdf, ts.time, ts.grouping, ts.value, newgroupingrows, ts.time_period_per_unit)
 end
 
 """
@@ -112,11 +120,15 @@ end
 The time elapsed between the first and the last tick in a `SortedDataFrame`.
 ### Inputs
 * `ts` - Tick data.
+* `in_dates_period` - In Dates.Period format or just a number for the numeric difference between first and last tick.
 ### Returns
 * A scalar representing this duration.
 """
-function duration(ts::SortedDataFrame)
-    return ts.df[nrow(ts.df),ts.time] - ts.df[1,ts.time]
+function duration(ts::SortedDataFrame; in_dates_period::Bool = true)
+    duration_in_time_col_units = ts.df[nrow(ts.df),ts.time] - ts.df[1,ts.time]
+    if !in_dates_period return duration_in_time_col_units end
+    duration_in_nanoseconds = round(Nanosecond(ts.time_period_per_unit).value * duration_in_time_col_units)
+    return Nanosecond(duration_in_nanoseconds)
 end
 
 """
@@ -130,7 +142,8 @@ The default constructor is used.
 ### Inputs
 * `correlation` - A `Hermitian` correlation matrix.
 * `volatility` - Volatilities for each asset.
-* `labels` - The labels for the `correlation` and `volatility` members. The n'th entry of the `labels` vector should contain the name of the asset that has its volatility in the n'th entry of the `volatility` member and its correlations in the n'th row/colum of the `correlation` member.
+* `labels` - The labels for the `correlation` and `volatility` members. The n'th entry of the `labels` vector should contain the name of the asset that has its volatility in the n'th entry of the `volatility` member and its correlations in the n'th row/column of the `correlation` member.
+* `time_period_per_unit` - The period that one unit of volatility corresponds to.
 ### Returns
 * A `CovarianceMatrix`.
 """
@@ -138,15 +151,18 @@ mutable struct CovarianceMatrix{R<:Real}
     correlation::Hermitian{R}
     volatility::Vector{R}
     labels::Vector{Symbol}
+    time_period_per_unit::Dates.Period
 end
 
 """
-This prints the `CovarianceMatrix` in a nice format.
-
     show(cm::CovarianceMatrix)
+
+This prints the `CovarianceMatrix` in a nice format.
+### Inputs
+* `cm` - The `CovarianceMatrix` you want to print.
 """
 function show(cm::CovarianceMatrix)
-    println("Volatilities")
+    println("Volatilities per time interval of ", cm.time_period_per_unit)
     flat_labels = reshape( cm.labels , (1, length(cm.labels)))
     Base.print_matrix(stdout, vcat(flat_labels, cm.volatility'))
     println("\n")
@@ -157,33 +173,47 @@ function show(cm::CovarianceMatrix)
 end
 
 """
-This prints the `CovarianceMatrix` in a nice format.
+    convert_vol(vol::Union{Vector{<:Real},Real}, vol_period::Dates.Period, new_vol_period::Dates.Period)
 
+### Inputs
+* `Vol` - The volatility you want to convert.
+* `vol_period` - The period of the volatility you have.
+* `new_vol_period` - The period that you want to convert the volatility to.
+"""
+function convert_vol(vol::Union{Vector{<:Real},Real}, vol_period::Dates.Period, new_vol_period::Dates.Period)
+    return vol .* sqrt( time_period_ratio(new_vol_period, vol_period) )
+end
+convert_vol(vol::Missing, vol_period::Dates.Period, new_vol_period::Dates.Period) = missing
+
+"""
     print(cm::CovarianceMatrix)
+
+This prints the `CovarianceMatrix` in a nice format.
+### Inputs
+* `cm` - The `CovarianceMatrix` you want to print.
 """
 function print(cm::CovarianceMatrix)
     show(cm)
 end
 
-
-
 """
-    make_nan_covariance_matrix(labels::Vector{Symbol})
+    make_nan_covariance_matrix(labels::Vector{Symbol}, time_period_per_unit::Dates.Period)
 
 This makes an empty `CovarianceMatrix` struct with all volatilities and correlations being NaNs.
 ### Inputs
 * `labels` - The names of the asset names for this (empty) `CovarianceMatrix`.
+* `time_period_per_unit` - The time interval the volatilities will be for.
 ### Returns
 * An (empty) `CovarianceMatrix`
 """
-function make_nan_covariance_matrix(labels::Vector{Symbol})
+function make_nan_covariance_matrix(labels::Vector{Symbol}, time_period_per_unit::Dates.Period)
     d = length(labels)
     correlation = ones(d,d)
     correlation .= NaN
     correlation[diagind(correlation)] .= 1
     vols = ones(d)
     vols .= NaN
-    return CovarianceMatrix(Hermitian(correlation), vols, labels)
+    return CovarianceMatrix(Hermitian(correlation), vols, labels, time_period_per_unit)
 end
 
 """
@@ -224,7 +254,6 @@ function calculate_mean_abs_distance(d1::Dict{Symbol,<:Real}, d2::Dict{Symbol,<:
     return dist / length(common_labels)
 end
 
-
 """
     get_correlation(covar::CovarianceMatrix, asset1::Symbol, asset2::Symbol)
 
@@ -244,19 +273,20 @@ function get_correlation(covar::CovarianceMatrix, asset1::Symbol, asset2::Symbol
 end
 
 """
-    get_volatility(covar::CovarianceMatrix, asset1::Symbol)
+    get_volatility(covar::CovarianceMatrix, asset1::Symbol, time_period_per_unit::Dates.Period = Second(1))
 
 Get the volatility for a stock from a `CovarianceMatrix`.
 ### Inputs
 * `covar` - A `CovarianceMatrix`
 * `asset1` - A `Symbol` representing an asset.
+* `time_period_per_unit` - The time interval the volatilities will be for.
 ### Returns
 * A Scalar (the volatility).
 """
-function get_volatility(covar::CovarianceMatrix, asset1::Symbol)
+function get_volatility(covar::CovarianceMatrix, asset1::Symbol, time_period_per_unit::Dates.Period = covar.time_period_per_unit)
     index1 = findfirst(asset1 .== covar.labels)
     if isnothing(index1) return missing end
-    return covar.volatility[index1]
+    return convert_vol(covar.volatility[index1], covar.time_period_per_unit, time_period_per_unit)
 end
 
 """

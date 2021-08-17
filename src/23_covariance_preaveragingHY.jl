@@ -29,7 +29,7 @@ function HY_n(A::Tuple{Vector{<:Real},Vector{<:Real}}, B::Tuple{Vector{<:Real},V
    return cov_sum / ((psi * k_n)^2)
 end
 
-# This is the 3rd equation in the aymptotic theory section of the paper. We don't use the above version because sometimes that gives us negative variances.
+# This is the 3rd equation in the aymptotic theory section of the paper.
 univariate_HYn(vect::Vector, k_n::Real, psi::Real) = sum(map(i -> vect[i] * sum( map(j -> vect[i-j], (1-k_n):(k_n-1)  ) ), k_n:(length(vect)-2k_n+1)))/((psi*k_n)^2)
 
 
@@ -69,7 +69,7 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
   lens = findall(map(i -> ismissing(prev_prices[i][1]), 1:length(prev_prices)))
   if length(lens) > 0
      @warn string("Cannot estimate the correlation matrix with ", number_of_ticks, " ticks. There are insufficient ticks for ", assets[lens])
-     return make_nan_covariance_matrix(assets)
+     return make_nan_covariance_matrix(assets, ts.time_period_per_unit)
   end
 
    N = length(assets)
@@ -93,11 +93,12 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
 
    # In some cases we get negative terms on the diagonal with this algorithm.
    negative_diagonals = findall(diag(HYn) .< eps())
-   covar = make_nan_covariance_matrix(assets)
+   covar = make_nan_covariance_matrix(assets, ts.time_period_per_unit)
    if length(negative_diagonals) == 0
-       corr, _ = cov2cor_and_vol(HYn, 1)
+       corr, _ = cov2cor_and_vol(HYn, ts.time_period_per_unit, ts.time_period_per_unit)
        covar.correlation = corr
-    end
+   end
+
    # We can use this to get the correlation matrix but the variances are too low - as a result of preveraging.
    # We will instead use the two scales vol of Zhang, mykland, Ait-Sahalia 2005.
    voldict = two_scales_volatility(ts, assets)[1]

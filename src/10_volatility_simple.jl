@@ -31,7 +31,6 @@ Calculates volatility with the simple method.
 * `fixed_spacing` - A spacing used to calculate a time grid. Not used if a `time_grid` is input or if `use_all_obs = true`.
 * `use_all_obs` - Use all observations to estimate volatilities. Not used if a `time_grid` is provided.
 * `rough_guess_number_of_intervals` - A rough number of intervals to calculate a default spacing. Not used if a `time_grid` or `fixed_spacing` is provided or if `use_all_obs = true`.
-* `T` - The duration of the tick data.
 ### Returns
 * A `Dict` with an estimated volatility for each asset.
 """
@@ -66,7 +65,7 @@ end
 
 """
     default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5,
-                    T = duration(ts))
+                    T = duration(ts; in_dates_period = false))
 
 Calculates a default spacing between returns to use.
 This comes from the equation at section 1.2.3 of Zhang, Mykland, Ait-Sahalia 2005.
@@ -78,13 +77,13 @@ This comes from the equation at section 1.2.3 of Zhang, Mykland, Ait-Sahalia 200
 * A scalar representing the optimal interval spacing.
 """
 function default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5,
-                         T::Real = duration(ts))
+                         T::Real = duration(ts; in_dates_period = false))
     rough_vol_guess, rough_micro_guess  = two_scales_volatility(ts; num_grids = rough_guess_number_of_intervals)
     n_guess = Dict{Symbol,eltype(ts.df[:,ts.value])}()
     for a in keys(rough_vol_guess)
         n_guess[a] = ( (T/(4* rough_micro_guess[a]^2)) * T * rough_vol_guess[a]^4 )^(1/3)
         if (rough_micro_guess[a] < 0.0000001)
-            n_guess[a] = duration(ts)/20
+            n_guess[a] = duration(ts; in_dates_period = false)/20
         end
     end
     return n_guess

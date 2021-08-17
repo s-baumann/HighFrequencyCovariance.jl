@@ -17,20 +17,45 @@ function cov2cor(mat::AbstractMatrix)
 end
 
 """
-    cov2cor_and_vol(mat::AbstractMatrix, duration::Real)
+    cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Dates.Period, duration_for_desired_vols::Dates.Period)
+    cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Real, duration_for_desired_vols::Real)
 
 Converts a matrix (representing a covariance matrix) into a `Hermitian` correlation matrix and a vector of volatilities.
 ### Inputs
 * `cor` - A correlation matrix.
-* `duration` - The duration that the covariance matrix is for.
+* `duration_of_covariance_matrix` - The duration of the covariance matrix. If these are input as reals they must have the same units.
+* `duration_for_desired_vols` - The duration you want a volatility for. If these are input as reals they must have the same units.
+### Returns
+* A `Hermitian`.
+* A `Vector` of volatilities.
+
+
+    cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix_in_nanoseconds::Real, duration_for_desired_vols::Dates.Period)
+
+### Inputs
+* `cor` - A correlation matrix.
+* `duration_of_covariance_matrix_in_natural_units` - The duration of the covariance matrix. It duration must be input in units that you know of (for instance the `time_period_per_unit` of a `SortedDataFrame`).
 ### Returns
 * A `Hermitian`.
 * A `Vector` of volatilities.
 """
-function cov2cor_and_vol(mat::AbstractMatrix, duration::Real)
+function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Dates.Period, duration_for_desired_vols::Dates.Period)
     cor, sdevs = cov2cor(mat)
-    return Hermitian(cor), sdevs/sqrt(duration)
+    vols = sdevs / sqrt(  time_period_ratio(duration_for_desired_vols, duration_of_covariance_matrix)  )
+    return Hermitian(cor), vols
 end
+function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Real, duration_for_desired_vols::Real)
+    cor, sdevs = cov2cor(mat)
+    vols = sdevs / sqrt(  duration_for_desired_vols / duration_of_covariance_matrix  )
+    return Hermitian(cor), vols
+end
+function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix_in_natural_units::Real)
+    cor, sdevs = cov2cor(mat)
+    vols = sdevs / sqrt( duration_of_covariance_matrix_in_natural_units  )
+    return Hermitian(cor), vols
+end
+
+
 
 """
     cor2cov(cor::AbstractMatrix,sdevs::Vector{<:Real})
@@ -38,27 +63,27 @@ end
 Converts a correlation matrix and some standard deviations into a `Hermitian` covariance matrix.
 ### Inputs
 * `cor` - A correlation matrix.
-* `sdevs` - A vector of standard deviations (not volatilities - use sdevs = sqrt(duration) .* volatilities to convert if necessary).
+* `sdevs` - A vector of standard deviations (not volatilities).
 ### Returns
 * A `Hermitian`.
 """
-function cor2cov(cor::AbstractMatrix,sdevs::Vector{<:Real})
+function cor2cov(cor::AbstractMatrix, sdevs::Vector{<:Real})
     mat = cor .* (sdevs * transpose(sdevs))
     return Hermitian(mat)
 end
 
 """
-    covariance(cm::CovarianceMatrix, duration::Real)
+    covariance(cm::CovarianceMatrix, duration::Dates.Period)
 
 This makes a `Hermitian` matrix for the covariance matrix over some duration.
 ### Inputs
 * `cm` - A `CovarianceMatrix` struct.
-* `duration` - A duration. This should be in same units as used in estimating `cm`'s volatilities.
+* `duration` - A duration. This should be in a Dates.Period.
 ### Returns
 * A `Hermitian`.
 """
-function covariance(cm::CovarianceMatrix, duration::Real)
-    sds = sqrt.((cm.volatility.^2) .* duration)
+function covariance(cm::CovarianceMatrix, duration::Dates.Period = cm.time_period_per_unit)
+    sds = convert_vol(cm.volatility, cm.time_period_per_unit, duration)
     return cor2cov(cm.correlation, sds)
 end
 
@@ -128,17 +153,23 @@ is_missing_nan_inf(x) = (ismissing(x) | isnan(x)) | isinf(x)
 """
     combine_covariance_matrices(vect::Vector{CovarianceMatrix{T}},
                                 cor_weights::Vector{<:Real} = repeat([1.0], length(vect)),
-                                vol_weights::Vector{<:Real} = cor_weights) where T<:Real
+                                vol_weights::Vector{<:Real} = cor_weights,
+                                time_period_per_unit::Union{Missing,Dates.Period} = vect[1].time_period_per_unit) where T<:Real
 
 Combines a vector of `CovarianceMatrix` structs into one `CovarianceMatrix` struct.
 ### Inputs
 * `vect` - A vector of `CovarianceMatrix` structs.
 * `cor_weights` - A vector for how much to weight the correlations from each covariance matrix (by default they will be equalweighted).
 * `vol_weights` - A vector for how much to weight the volatilities from each covariance matrix (by default they will be equalweighted).
+* `time_period_per_unit` - What time period should the volatilities be scaled to.
 ### Returns
 * A matrix and a vector of labels for each row/column of the matrix.
 """
-function combine_covariance_matrices(vect::Vector{CovarianceMatrix{T}}, cor_weights::Vector{<:Real} = repeat([1.0], length(vect)), vol_weights::Vector{<:Real} = cor_weights) where T<:Real
+function combine_covariance_matrices(vect::Vector{CovarianceMatrix{T}}, cor_weights::Vector{<:Real} = repeat([1.0], length(vect)), vol_weights::Vector{<:Real} = cor_weights,
+                                     time_period_per_unit::Union{Missing,Dates.Period} = vect[1].time_period_per_unit) where T<:Real
+    if length(vect) < 1
+        error("An empty vector of covariance matrices was input. So not possible to combine.")
+    end
     all_labels = union(map(x -> x.labels, vect)...)
     dims = length(all_labels)
     R = promote_type(map(x -> eltype(x.correlation), vect)...)
@@ -152,13 +183,14 @@ function combine_covariance_matrices(vect::Vector{CovarianceMatrix{T}}, cor_weig
             valid_entries = setdiff(1:length(correls), findall(is_missing_nan_inf.(correls)))
             new_mat[row,col] = weighted_mean(correls[valid_entries], cor_weights[valid_entries])
         end
-        vols = map(i -> get_volatility(vect[i], row_label),  1:length(vect))
+        vols = map(i -> convert_vol(get_volatility(vect[i], row_label), vect[i].time_period_per_unit, time_period_per_unit )             ,  1:length(vect))
+
         valid_entries = setdiff(1:length(vols), findall(is_missing_nan_inf.(vols)))
         new_vols[row] = weighted_mean(vols[valid_entries], vol_weights[valid_entries])
     end
     new_mat[diagind(new_mat)] .= 1
     hermitian_new_mat = Hermitian(new_mat)
-    return CovarianceMatrix(hermitian_new_mat, new_vols, all_labels)
+    return CovarianceMatrix(hermitian_new_mat, new_vols, all_labels, time_period_per_unit)
 end
 
 """
@@ -171,12 +203,13 @@ Rearrange the order of labels in a `CovarianceMatrix`.
 ### Returns
 * A `CovarianceMatrix`.
 """
-function rearrange(cm::CovarianceMatrix, labels::Vector{Symbol})
+function rearrange(cm::CovarianceMatrix, labels::Vector{Symbol},
+                   time_period_per_unit::Union{Missing,Dates.Period} = cm.time_period_per_unit)
   if length(symdiff(labels, cm.labels)) > 0 error("You have either put in labels that are not in the covariance matrix or you have not put in all the labels that are in the covariance matrix") end
   reordering = map(x -> findfirst(x .== cm.labels)[1], labels)
   Acor = Hermitian(cm.correlation[reordering,reordering])
-  Avol = cm.volatility[reordering]
-  return CovarianceMatrix(Acor, Avol, labels)
+  Avol = convert_vol(cm.volatility[reordering], cm.time_period_per_unit, time_period_per_unit)
+  return CovarianceMatrix(Acor, Avol, labels, time_period_per_unit)
 end
 
 """

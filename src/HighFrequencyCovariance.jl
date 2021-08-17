@@ -1,6 +1,7 @@
 module HighFrequencyCovariance
 
 using DataFrames
+using Dates
 using LinearAlgebra
 using Distributions
 using Random

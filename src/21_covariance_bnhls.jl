@@ -134,21 +134,21 @@ function bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_asse
 
     if m >= nrow(dd)/2
        @warn string("Cannot estimate the correlation matrix with the bnhls method with only ", nrow(ts.df), " ticks.")
-       return make_nan_covariance_matrix(assets)
+       return make_nan_covariance_matrix(assets, ts.time_period_per_unit)
    end
 
     returns = Matrix(dd[:, assets])
-    covariance = bnhls_covariance_estimate_given_returns(returns; kernel = kernel, H = H, m = m)
+    cov_mat = bnhls_covariance_estimate_given_returns(returns; kernel = kernel, H = H, m = m)
 
     # Regularisation
-    dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(covariance))
-    covariance = dont_regulise ? covariance : regularise(covariance, ts, assets, regularisation; regularisation_params... )
+    dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(cov_mat))
+    cov_mat = dont_regulise ? cov_mat : regularise(cov_mat, ts, assets, regularisation; regularisation_params... )
 
     # In some cases we get negative terms on the diagonal with this algorithm.
-    negative_diagonals = findall(diag(covariance) .< eps())
-    covar = make_nan_covariance_matrix(assets)
+    negative_diagonals = findall(diag(cov_mat) .< eps())
+    covar = make_nan_covariance_matrix(assets, ts.time_period_per_unit)
     if length(negative_diagonals) == 0
-        cor, vols = cov2cor_and_vol(covariance, duration(ts))
+        cor, vols = cov2cor_and_vol(cov_mat, duration(ts; in_dates_period = false))
         covar.correlation = cor
         covar.volatility = vols
      end

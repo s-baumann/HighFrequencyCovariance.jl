@@ -14,12 +14,17 @@ Convert a CovarianceMatrix to a `DataFrame` format.
 """
 function to_dataframe(covar::CovarianceMatrix, othercols::Dict = Dict{Symbol,Any}(); delete_duplicate_correlations::Bool = true)
     d = size(covar.correlation)[1]
-    corrs = DataFrame(asset1 = vcat(map(a -> repeat([a], d), covar.labels  )...),asset2 = Array{Union{Symbol,Missing}}(repeat(covar.labels, d)),value = vec(covar.correlation))
-    corrs[!,:variable] = repeat([:correlation], nrow(corrs))
+    corrs = DataFrame(asset1    = vcat(map(a -> repeat([a], d), covar.labels  )...),asset2 = Array{Union{Symbol,Missing}}(repeat(covar.labels, d)),value = vec(covar.correlation))
+    corrs[!,:variable]          = repeat([:correlation], nrow(corrs))
+    corrs[!,:vol_period_units]  = Array{Union{String,Missing}}(repeat([missing], nrow(corrs)))
+    corrs[!,:vol_period]        = Array{Union{Integer,Missing}}(repeat([missing], nrow(corrs)))
     if delete_duplicate_correlations corrs = corrs[findall(map(a -> findfirst(covar.labels .== a), corrs[:,:asset1]) .< map(a -> findfirst(covar.labels .== a), corrs[:,:asset2])),:] end
-    vols = DataFrame(asset1 = covar.labels, value = covar.volatility)
-    vols[!,:variable] = repeat([:volatility], nrow(vols))
-    vols[!,:asset2]   = repeat([missing], nrow(vols))
+    vols                        = DataFrame(asset1 = covar.labels, value = covar.volatility)
+    vols[!,:variable]           = repeat([:volatility], nrow(vols))
+    vols[!,:asset2]             = repeat([missing], nrow(vols))
+    vols[!,:vol_period_units]   = Array{Union{String,Missing}}(repeat([string(typeof(covar.time_period_per_unit))], nrow(vols)))
+    vols[!,:vol_period]         = Array{Union{Integer,Missing}}(repeat([covar.time_period_per_unit.value], nrow(vols)))
+
     result = append!(corrs, vols)
     for k in keys(othercols)
         result[!,k] = repeat([othercols[k]], nrow(result))
@@ -66,5 +71,10 @@ function dataframe_to_covariancematrix(dd::DataFrame)
             end
         end
     end
-    return CovarianceMatrix(Hermitian(mat), vols, assets)
+
+    # Vol Period
+    volperiod = map( i ->  eval(Meta.parse(string(vol_dd[i,:vol_period_units] , "(", vol_dd[i,:vol_period], ")"))), 1:nrow(vol_dd))
+    chosen_volperiod = volperiod[1]
+    vols2 = convert_vol.(vols, volperiod, Ref(chosen_volperiod))
+    return CovarianceMatrix(Hermitian(mat), vols2, assets, chosen_volperiod)
 end

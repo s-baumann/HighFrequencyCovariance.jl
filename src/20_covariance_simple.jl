@@ -27,7 +27,7 @@ function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{S
     dd_compiled = latest_value(ts, time_grid; assets = assets)
     dd = get_returns(dd_compiled; rescale_for_duration = false)
 
-    if nrow(dd) < 1 return make_nan_covariance_matrix(assets) end
+    if nrow(dd) < 1 return make_nan_covariance_matrix(assets, ts.time_period_per_unit) end
 
     returns = Matrix(dd[:, assets])
     covariance = simple_covariance_given_returns(returns)
@@ -37,8 +37,8 @@ function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{S
     covariance = dont_regulise ? covariance : regularise(covariance, ts, assets, regularisation; regularisation_params... )
 
     # Packing into a CovarianceMatrix and returning.
-    cor, vols = cov2cor_and_vol(covariance, duration(ts))
-    return CovarianceMatrix(cor, vols, assets)
+    cor, vols = cov2cor_and_vol(covariance, ts.time_period_per_unit, ts.time_period_per_unit)
+    return CovarianceMatrix(cor, vols, assets, ts.time_period_per_unit)
 end
 
 """
@@ -80,7 +80,7 @@ function simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_ass
            n_grid = default_spacing(ts; rough_guess_number_of_intervals = rough_guess_number_of_intervals)
            vals = collect(values(n_grid))
            spacing = mean(vals[(isnan.(vals) .== false) .& (isinf.(vals) .== false)])
-           spacing = isnan(spacing) ? duration(ts)/20 : spacing
+           spacing = isnan(spacing) ? duration(ts; in_dates_period = false)/20 : spacing
            time_grid = collect(minimum(ts.df[:,ts.time]):spacing:maximum(ts.df[:,ts.time]))
        end
    end

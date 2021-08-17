@@ -91,10 +91,10 @@ end
 function eigenvalue_clean(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame;
                           apply_to_covariance::Bool = true)
     if apply_to_covariance
-        regularised_covariance = eigenvalue_clean(covariance(covariance_matrix,1), ts)
-        corr, vols = cov2cor_and_vol(regularised_covariance, 1)
-        return CovarianceMatrix(corr, vols, covariance_matrix.labels)
+        regularised_covariance = eigenvalue_clean(covariance(covariance_matrix), ts)
+        corr, vols = cov2cor_and_vol(regularised_covariance, covariance_matrix.time_period_per_unit, covariance_matrix.time_period_per_unit)
+        return CovarianceMatrix(corr, vols, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
     else
-        return CovarianceMatrix(Hermitian(eigenvalue_clean(covariance_matrix.correlation, ts)), covariance_matrix.volatility, covariance_matrix.labels)
+        return CovarianceMatrix(Hermitian(eigenvalue_clean(covariance_matrix.correlation, ts)), covariance_matrix.volatility, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
     end
 end

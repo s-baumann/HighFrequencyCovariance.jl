@@ -1,4 +1,5 @@
 using DataFrames
+using Dates
 using LinearAlgebra
 using Statistics: std, var, mean, cov
 using HighFrequencyCovariance
@@ -11,10 +12,11 @@ brownian_corr_matrix = Hermitian([1.0 0.75 0.5 0.0;
                                   0.0 0.0 0.0 1.0])
 assets = [:BARC, :HSBC, :VODL, :RYAL]
 twister = MersenneTwister(1)
+time_period_per_unit = Dates.Hour(1)
 
-ts0, true_covar, micro_noise, update_rates = generate_random_path(4, 4; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister), syncronous = true)
-ts1, true_covar, micro_noise, update_rates = generate_random_path(4, 2000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister), syncronous = true)
-ts2, true_covar, micro_noise, update_rates = generate_random_path(4, 50000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister), syncronous = true)
+ts0, true_covar, micro_noise, update_rates = generate_random_path(4, 4; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister), syncronous = true, time_period_per_unit = time_period_per_unit)
+ts1, true_covar, micro_noise, update_rates = generate_random_path(4, 2000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister), syncronous = true, time_period_per_unit = time_period_per_unit)
+ts2, true_covar, micro_noise, update_rates = generate_random_path(4, 50000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], twister = deepcopy(twister), syncronous = true, time_period_per_unit = time_period_per_unit)
 
 
 iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error + b.Volatility_error)
@@ -74,15 +76,9 @@ valid_correlation_matrix(two_scales_estimate2)
 
 #############################
 # Conversion to a covariance function
-dura = 1.0
-covarr = covariance(two_scales_estimate2, dura)
-corr, vols =  cov2cor_and_vol(covarr,dura)
-all(corr .< two_scales_estimate2.correlation) .< 10*eps()
-all(vols .< two_scales_estimate2.volatility) .< 10*eps()
-
-dura = 12.3
-covarr = covariance(two_scales_estimate2, dura)
-corr, vols =  cov2cor_and_vol(covarr,dura)
+dura = Dates.Minute(137)
+covarr = covariance(two_scales_estimate2, dura )
+corr, vols =  cov2cor_and_vol(covarr,   Nanosecond(dura).value / Nanosecond(two_scales_estimate2.time_period_per_unit).value     )
 all(corr .< two_scales_estimate2.correlation) .< 10*eps()
 all(vols .< two_scales_estimate2.volatility) .< 10*eps()
 

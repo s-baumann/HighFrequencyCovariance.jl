@@ -23,8 +23,7 @@ print(true_covar)
 show(true_covar)
 
 # Testing constructors of SortedDataFrames
-ts1 = SortedDataFrame(ts1)
-ts1 = SortedDataFrame(ts1.df, ts1.time, ts1.grouping, ts1.value,  ts1.groupingrows)
+ts1 = SortedDataFrame(ts1.df, ts1.time, ts1.grouping, ts1.value,  ts1.groupingrows, ts1.time_period_per_unit)
 # Subsetting to tick.
 ts1 = subset_to_time(ts1, 1670) # There is nothing special about 1670. It just gives us about 4000 ticks for the tests coming up.
 

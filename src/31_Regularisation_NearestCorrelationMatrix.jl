@@ -215,7 +215,7 @@ end
 function nearest_correlation_matrix(covariance_matrix::CovarianceMatrix; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
                              doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
     regularised_correl, counter, convergence = nearest_correlation_matrix(covariance_matrix.correlation, weighting_matrix; doDykstra = doDykstra, stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
-    return CovarianceMatrix(regularised_correl, covariance_matrix.volatility, covariance_matrix.labels)
+    return CovarianceMatrix(regularised_correl, covariance_matrix.volatility, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
 end
 function nearest_correlation_matrix(mat::Hermitian, ts::SortedDataFrame; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(mat).(I(size(mat)[1]))),
                              doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
@@ -281,11 +281,11 @@ function nearest_psd_matrix(mat::Hermitian)
 end
 function nearest_psd_matrix(covariance_matrix::CovarianceMatrix; apply_to_covariance::Bool = true)
     if apply_to_covariance
-        regularised_covariance = nearest_psd_matrix(covariance(covariance_matrix,1))
+        regularised_covariance = nearest_psd_matrix(covariance(covariance_matrix))
         corr, vols = cov2cor_and_vol(regularised_covariance, 1)
-        return CovarianceMatrix(corr, vols, covariance_matrix.labels)
+        return CovarianceMatrix(corr, vols, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
     else
-        return CovarianceMatrix(Hermitian(nearest_psd_matrix(covariance_matrix.correlation)), covariance_matrix.volatility, covariance_matrix.labels)
+        return CovarianceMatrix(Hermitian(nearest_psd_matrix(covariance_matrix.correlation)), covariance_matrix.volatility, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
     end
 end
 function nearest_psd_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; apply_to_covariance::Bool = true)
