@@ -1,12 +1,13 @@
-function row_row_prime(dd, i)
-    r = convert(Matrix, dd)[i,:]
+function row_row_prime(dd, i, type::Type = eltype(dd[1,1]))
+    r = Array{type}(dd[i,:])
     return Hermitian(r * r')
 end
 function b_bar(dd,S)
+    etype = eltype(dd[1,1])
     N = nrow(dd)
     total = 0.0
     for k in 1:N
-        total += sqrt(squared_frobenius_distance(row_row_prime.(Ref(dd), k), S))
+        total += sqrt(squared_frobenius_distance(row_row_prime.(Ref(dd), k, etype), S))
     end
     return total / (N^2)
 end

@@ -44,7 +44,6 @@ simple_estimate1 = simple_covariance(ts1, assets; refresh_times = true) # Testin
 simple_estimate1 = simple_covariance(ts1, assets; fixed_spacing = 10) # Testing fixed spacing
 simple_estimate1 = simple_covariance(ts1, assets)
 simple_estimate2 = simple_covariance(ts2, assets)
-iscloser(calculate_mean_abs_distance(simple_estimate2, true_covar), calculate_mean_abs_distance(simple_estimate1, true_covar))
 valid_correlation_matrix(simple_estimate1)
 valid_correlation_matrix(simple_estimate2)
 
