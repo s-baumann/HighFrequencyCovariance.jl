@@ -2,13 +2,12 @@ module HighFrequencyCovariance
 
 using DataFrames
 using Dates
-using LinearAlgebra
 using Distributions
+using LinearAlgebra
 using Random
 using Statistics
-
-# These are only used for the monte carlo estimations.
-using UnivariateFunctions, StochasticIntegrals
+using StochasticIntegrals # Used for Monte Carlo Functions
+using UnivariateFunctions # Used for Monte Carlo Functions
 
 # Preliminary functions
 include("00_Structs.jl")

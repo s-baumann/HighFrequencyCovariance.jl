@@ -16,12 +16,6 @@ ts2, true_covar, micro_noise, update_rates = generate_random_path(4, 50000; brow
 ts3 = deepcopy(ts2)
 ts3.df.Value = exp.(ts3.df.Value)
 
-# Testing printing
-print(ts1)
-show(ts1)
-print(true_covar)
-show(true_covar)
-
 # Testing constructors of SortedDataFrames
 ts1 = SortedDataFrame(ts1.df, ts1.time, ts1.grouping, ts1.value,  ts1.groupingrows, ts1.time_period_per_unit)
 # Subsetting to tick.
@@ -131,3 +125,13 @@ noise = estimate_microstructure_noise(ts1, assets)
 noise_from_2s = two_scales_volatility(ts1, assets)[2]
 C = merge(-, noise, noise_from_2s)
 maximum(collect(values(C))) < 1E-13
+
+
+
+# Testing print functions
+print(ts1)
+show(ts1)
+print(true_covar)
+show(true_covar)
+print(preav_estimate2, 3, 6)
+show(preav_estimate2, 3, 6)

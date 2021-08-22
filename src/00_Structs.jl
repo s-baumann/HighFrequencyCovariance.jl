@@ -156,10 +156,13 @@ end
 
 """
     show(cm::CovarianceMatrix)
+    show(cm::CovarianceMatrix, decimal_places_volatility::Integer, decimal_places_correlation::Integer)
 
 This prints the `CovarianceMatrix` in a nice format.
 ### Inputs
 * `cm` - The `CovarianceMatrix` you want to print.
+* `decimal_places_volatility`  - The number of digits you want to show for volatilities. If not input then all digits are shown.
+* `decimal_places_correlation` - The number of digits you want to show. If not input then all digits are shown.
 """
 function show(cm::CovarianceMatrix)
     println("Volatilities per time interval of ", cm.time_period_per_unit)
@@ -167,9 +170,17 @@ function show(cm::CovarianceMatrix)
     Base.print_matrix(stdout, vcat(flat_labels, cm.volatility'))
     println("\n")
     println("Correlations")
-    corr = vcat(flat_labels, cm.correlation)
+    corr = cm.correlation
+    corr = vcat(flat_labels, corr)
     corr = hcat([:___, cm.labels...], corr)
     Base.print_matrix(stdout, corr)
+    println("\n")
+end
+function show(cm::CovarianceMatrix, decimal_places_volatility::Integer, decimal_places_correlation::Integer)
+    cm2 = deepcopy(cm)
+    cm2.volatility  = round.(cm2.volatility , digits = decimal_places_volatility)
+    cm2.correlation = Hermitian(round.(cm2.correlation, digits = decimal_places_correlation))
+    show(cm2)
 end
 
 """
@@ -191,9 +202,14 @@ convert_vol(vol::Missing, vol_period::Dates.Period, new_vol_period::Dates.Period
 This prints the `CovarianceMatrix` in a nice format.
 ### Inputs
 * `cm` - The `CovarianceMatrix` you want to print.
+* `decimal_places_volatility`  - The number of digits you want to show for volatilities. If not input then all digits are shown.
+* `decimal_places_correlation` - The number of digits you want to show. If not input then all digits are shown.
 """
 function print(cm::CovarianceMatrix)
     show(cm)
+end
+function print(cm::CovarianceMatrix, decimal_places_volatility::Integer, decimal_places_correlation::Integer)
+    show(cm, decimal_places_volatility, decimal_places_correlation)
 end
 
 """
