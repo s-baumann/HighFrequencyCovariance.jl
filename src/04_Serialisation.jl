@@ -19,9 +19,8 @@ function to_dataframe(covar::CovarianceMatrix, othercols::Dict = Dict{Symbol,Any
     corrs[!,:vol_period_units]  = Array{Union{String,Missing}}(repeat([missing], nrow(corrs)))
     corrs[!,:vol_period]        = Array{Union{Integer,Missing}}(repeat([missing], nrow(corrs)))
     if delete_duplicate_correlations corrs = corrs[findall(map(a -> findfirst(covar.labels .== a), corrs[:,:asset1]) .< map(a -> findfirst(covar.labels .== a), corrs[:,:asset2])),:] end
-    vols                        = DataFrame(asset1 = covar.labels, value = covar.volatility)
+    vols                        = DataFrame(asset1 = covar.labels, asset2 = covar.labels, value = covar.volatility)
     vols[!,:variable]           = repeat([:volatility], nrow(vols))
-    vols[!,:asset2]             = repeat([missing], nrow(vols))
     vols[!,:vol_period_units]   = Array{Union{String,Missing}}(repeat([string(typeof(covar.time_period_per_unit))], nrow(vols)))
     vols[!,:vol_period]         = Array{Union{Integer,Missing}}(repeat([covar.time_period_per_unit.value], nrow(vols)))
 
