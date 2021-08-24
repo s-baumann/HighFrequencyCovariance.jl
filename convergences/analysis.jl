@@ -5,10 +5,11 @@ using CSV
 using Glob
 using Cairo
 using Fontconfig
-plot_folder = "C:/Dropbox/Stuart/Papers/high_frequency_covariance/plots/"
 
-fldr = "C:/Dropbox/Stuart/Papers/high_frequency_covariance/convergences/"
-files = glob("*.csv",fldr)
+fldr = @__DIR__
+plot_folder =  joinpath(fldr, "plots")
+fpath = joinpath(fldr, "data")
+files = glob("*.csv",fpath)
 
 dd = CSV.read(files[1], DataFrame)
 for i in 2:length(files)
@@ -46,7 +47,7 @@ plt = plot(bb, xgroup=:dims, ygroup=:estimation, Geom.subplot_grid(layer(x=:tick
            layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.line)),
            Scale.x_log10, Scale.y_log10, Guide.xlabel("Average number of updates per asset"), Guide.ylabel("Mean Absolute Error in estimated correlations"), style(key_position = :bottom),
            Guide.ColorKey(title = ""), Guide.Title("Accuracy in estimating correlation matrices"))
-img = PDF(string(plot_folder, "correlation_imprecision.pdf"), 30cm, 30cm)
+img = PDF(joinpath(plot_folder, "correlation_imprecision.pdf"), 30cm, 30cm)
 draw(img, plt)
 
 
@@ -58,7 +59,7 @@ plt = plot(bb, xgroup=:dims, ygroup=:estimation, Geom.subplot_grid(layer(x=:tick
            layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.line)),
            Scale.x_log10, Scale.y_log10, Guide.xlabel("Average number of updates per asset"), Guide.ylabel("Mean Absolute Error in estimated volatilities"), style(key_position = :bottom),
            Guide.ColorKey(""), Guide.Title("Accuracy in estimating volatilities"))
-img = PDF(string(plot_folder, "volatility_imprecision.pdf"), 30cm, 30cm)
+img = PDF(joinpath(plot_folder, "volatility_imprecision.pdf"), 30cm, 30cm)
 draw(img, plt)
 
 yvar = :MAE_mean_ex_nans_mean_ex_nans
@@ -67,7 +68,7 @@ plt = plot(bb, xgroup=:variable, Geom.subplot_grid(layer(x=:ticks_per_asset,y = 
            layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.line)),
            Scale.x_log10, Scale.y_log10, Guide.xlabel("Average number of updates per asset"), Guide.ylabel("Mean Absolute Error in estimated volatilities"), style(key_position = :bottom),
            Guide.ColorKey(""))
-img = PDF(string(plot_folder, "both_imprecision.pdf"), 30cm, 15cm)
+img = PDF(joinpath(plot_folder, "both_imprecision.pdf"), 30cm, 15cm)
 draw(img, plt)
 
 
@@ -78,7 +79,7 @@ plt = plot(bb, ygroup=:variable, xgroup=:estimation, Geom.subplot_grid(layer(x=:
            layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.line), free_y_axis =true),
            Scale.x_log10, Scale.y_log10, Guide.xlabel("Average number of updates per asset"), Guide.ylabel("Mean Absolute Error in estimated volatilities"), style(key_position = :right),
            Guide.ColorKey(""))
-img = PDF(string(plot_folder, "both_imprecision23.pdf"), 30cm, 15cm)
+img = PDF(joinpath(plot_folder, "both_imprecision23.pdf"), 30cm, 15cm)
 draw(img, plt)
 
 
