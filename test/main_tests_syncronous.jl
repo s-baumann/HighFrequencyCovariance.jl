@@ -137,3 +137,6 @@ calculate_mean_abs_distance(psd_mat, reg4).Volatility_error .> 10*eps()
 reg4_cov = eigenvalue_clean(psd_mat, ts2; apply_to_covariance = false)
 calculate_mean_abs_distance(psd_mat, reg4_cov).Correlation_error .> 2*eps()
 calculate_mean_abs_distance(psd_mat, reg4_cov).Volatility_error .< 10*eps()
+
+# Testing the covariance Function
+all((covariance(true_covar, Hour(1)) * 24 .-   covariance(true_covar, Day(1))   ) .< 10*eps())
