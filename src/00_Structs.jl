@@ -48,11 +48,28 @@ end
 
 import Base.show, Base.print
 
-function show(sdf::SortedDataFrame)
-    show(sdf.df[1:10,[sdf.time, sdf.grouping, sdf.value]])
+"""
+    show(sdf::SortedDataFrame, number_of_rows = 10)
+Show a SortedDataFrame with a set number of rows.
+### Inputs
+* `sdf` - The `SortedDataFrame` to show.
+* `number_of_rows` - The number of rows to show.
+"""
+function show(sdf::SortedDataFrame, number_of_rows = 10)
+    println()
+    println("SortedDataFrame with " , nrow(sdf.df), " rows."  )
+    show(stdout, sdf.df[1:number_of_rows,[sdf.time, sdf.grouping, sdf.value]] ; summary = false)
+    println()
 end
-function print(sdf::SortedDataFrame)
-    print(sdf.df[1:10,[sdf.time, sdf.grouping, sdf.value]])
+"""
+    print(sdf::SortedDataFrame, number_of_rows = 10)
+Show a SortedDataFrame with a set number of rows.
+### Inputs
+* `sdf` - The `SortedDataFrame` to print.
+* `number_of_rows` - The number of rows to print.
+"""
+function print(sdf::SortedDataFrame, number_of_rows = 10)
+    show(sdf, number_of_rows)
 end
 
 """
@@ -165,6 +182,7 @@ This prints the `CovarianceMatrix` in a nice format.
 * `decimal_places_correlation` - The number of digits you want to show. If not input then all digits are shown.
 """
 function show(cm::CovarianceMatrix)
+    println()
     println("Volatilities per time interval of ", cm.time_period_per_unit)
     flat_labels = reshape( cm.labels , (1, length(cm.labels)))
     Base.print_matrix(stdout, vcat(flat_labels, cm.volatility'))
