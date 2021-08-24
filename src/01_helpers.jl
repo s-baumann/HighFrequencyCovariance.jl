@@ -78,12 +78,12 @@ end
 This makes a `Hermitian` matrix for the covariance matrix over some duration.
 ### Inputs
 * `cm` - A `CovarianceMatrix` struct.
-* `duration` - A duration. This should be in a Dates.Period.
+* `period` - A duration for which you want a covariance matrix. This should be in a Dates.Period.
 ### Returns
 * A `Hermitian`.
 """
-function covariance(cm::CovarianceMatrix, duration::Dates.Period = cm.time_period_per_unit)
-    sds = convert_vol(cm.volatility, cm.time_period_per_unit, duration)
+function covariance(cm::CovarianceMatrix, period::Dates.Period = cm.time_period_per_unit)
+    sds = convert_vol(cm.volatility, cm.time_period_per_unit, period)
     return cor2cov(cm.correlation, sds)
 end
 
@@ -205,7 +205,7 @@ Rearrange the order of labels in a `CovarianceMatrix`.
 """
 function rearrange(cm::CovarianceMatrix, labels::Vector{Symbol},
                    time_period_per_unit::Union{Missing,Dates.Period} = cm.time_period_per_unit)
-  if length(symdiff(labels, cm.labels)) > 0 error("You have either put in labels that are not in the covariance matrix or you have not put in all the labels that are in the covariance matrix") end
+  if length(setdiff(labels, cm.labels)) > 0 error("You put in labels that are not in the CovarianceMatrix") end
   reordering = map(x -> findfirst(x .== cm.labels)[1], labels)
   Acor = Hermitian(cm.correlation[reordering,reordering])
   Avol = convert_vol(cm.volatility[reordering], cm.time_period_per_unit, time_period_per_unit)
