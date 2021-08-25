@@ -251,13 +251,14 @@ function make_nan_covariance_matrix(labels::Vector{Symbol}, time_period_per_unit
 end
 
 """
-    calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix)
+    calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer)
 
 Calculates the mean absolute distance (elementwise in L1 norm) between two `CovarianceMatrix`s.
 Undefined if any labels differ between the two `CovarianceMatrix`s.
 ### Inputs
 * `cov1` - The first `CovarianceMatrix`
 * `cov2` - The second `CovarianceMatrix`
+* `decimal_places` - How many decimal places to show the result to.
 ### Returns
 * An `Tuple` with the distance for correlations in first entry and distance for volatilities in the second.
 
@@ -271,12 +272,12 @@ Calculates the mean absolute distance (elementwise in L1 norm) between two `Cova
 ### Returns
 * A scalar with the mean distance between matching elements.
 """
-function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix)
+function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 4)
     if length(symdiff(cov1.labels, cov2.labels)) != 0 return NaN, NaN end
     N = length(cov1.labels)
     cov11 = rearrange(cov1, cov2.labels)
-    cor_error = sum(abs.(cov11.correlation .- cov2.correlation)) / ((N^2-N)/2)
-    vol_error = mean(abs.(cov11.volatility  .- cov2.volatility))
+    cor_error = round(sum(abs.(cov11.correlation .- cov2.correlation)) / ((N^2-N)/2), digits = decimal_places)
+    vol_error = round(mean(abs.(cov11.volatility  .- cov2.volatility)), digits  = decimal_places)
     return (Correlation_error = cor_error, Volatility_error = vol_error)
 end
 function calculate_mean_abs_distance(d1::Dict{Symbol,<:Real}, d2::Dict{Symbol,<:Real})
