@@ -1,7 +1,6 @@
 
 function vol_given_values_and_times(vals::Vector, times::Vector, asset::Symbol)
     duration = maximum(times) - minimum(times)
-    time_diffs = Array(times[2:end] .- times[1:(end-1)])
     returns = simple_differencing(vals[2:end], vals[1:(end-1)])
     return sqrt(sum(returns .^ 2)/duration)
 end
@@ -62,6 +61,7 @@ function two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_g
     noise     = (1/(2*length(vals))) * ((all_vol^2)*dura - (pure_vol^2)*dura )
     return pure_vol, noise
 end
+
 function two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
                                num_grids::Real = default_num_grids(ts))
     vols = Dict{Symbol,eltype(ts.df[:,ts.value])}()

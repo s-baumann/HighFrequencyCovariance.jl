@@ -38,7 +38,7 @@ export two_scales_volatility, default_num_grids
 
 # Covariance Estimation techniques
 include("20_covariance_simple.jl")
-export simple_covariance, simple_covariance_given_returns
+export simple_covariance, simple_covariance_given_returns, default_spacing
 include("21_covariance_bnhls.jl")
 export HFC_Kernel, parzen, quadratic_spectral, fejer, tukey_hanning, bnhls_2008
 export bnhls_covariance, preaveraging_end_returns
