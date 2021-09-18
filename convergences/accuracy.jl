@@ -20,7 +20,6 @@ addprocs(num_cores)
 @everywhere using HighFrequencyCovariance, Random, DataFrames, Dates, Distributions
 @everywhere functions = [:bnhls_covariance, :two_scales_covariance, :spectral_covariance,  :simple_covariance, :preaveraged_covariance ]
 @everywhere pathnum = 1:200
-@everywhere grd = Int.(floor.(10 .^ (3.0:(1/4):6.0)))
 @everywhere time_period_per_unit = Dates.Hour(1)
 
 @everywhere function get_convergence_errors(functions, grd, dimensions, syncronous, with_noise, pathnum)
@@ -55,29 +54,40 @@ end
 
 
 
-@everywhere dimensions = 4
+@everywhere dims = 4
 @everywhere syncronous = false
 @everywhere with_noise = true
-@everywhere grd = Int.( (dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))  ) ) .* dimensions
-fname = joinpath(fpath,  string(dimensions,"-",syncronous,"-",with_noise,".csv"))
+@everywhere grd = Int.((dims/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0)))) .* dims
+fname = joinpath(fpath,  string(dims,"-",syncronous,"-",with_noise,".csv"))
 if isfile(fname) == false
     println("Currently doing the ", fname, " Monte Carlo." )
     ddd = @distributed (vcat) for path = pathnum
-        get_convergence_errors.(Ref(functions), Ref(grd), dimensions, syncronous, with_noise, path)
+        get_convergence_errors.(Ref(functions), Ref(grd), dims, syncronous, with_noise, path)
+    end
+    CSV.write(fname, ddd)
+end
+
+@everywhere dims = 16
+@everywhere syncronous = false
+@everywhere with_noise = true
+@everywhere grd = Int.((dims/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0)))) .* dims
+fname = joinpath(fpath,  string(dims,"-",syncronous,"-",with_noise,".csv"))
+if isfile(fname) == false
+    println("Currently doing the ", fname, " Monte Carlo." )
+    ddd = @distributed (vcat) for path = pathnum
+        get_convergence_errors.(Ref(functions), Ref(grd), dims, syncronous, with_noise, path)
     end
     CSV.write(fname, ddd)
 end
 
 
-@everywhere dimensions = 20
-@everywhere syncronous = false
-@everywhere with_noise = true
-@everywhere grd = Int.( (dimensions/4) .* Int.(floor.(10 .^ (3.0:(1/4):5.0))  ) ) .* dimensions
-fname = joinpath(fpath,  string(dimensions,"-",syncronous,"-",with_noise,".csv"))
-if isfile(fname) == false
-    println("Currently doing the ", fname, " Monte Carlo." )
-    ddd = @distributed (vcat) for path = pathnum
-        get_convergence_errors.(Ref(functions), Ref(grd), dimensions, syncronous, with_noise, path)
-    end
-    CSV.write(fname, ddd)
-end
+
+yvar = :MAE_mean_ex_nans_mean_ex_nans
+bb = combine(groupby(aa, [:ticks_per_asset, :method, :with_noise, :estimation, :variable]), :MAE_mean_ex_nans => mean_ex_nans)
+bb = bb[(bb.with_noise .!= "AR1") ,: ]
+plt = plot(bb, ygroup=:variable, xgroup=:estimation, Geom.subplot_grid(layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.point),
+           layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.line), free_y_axis =true),
+           Scale.x_log10, Scale.y_log10, Guide.xlabel("Average number of updates per asset"), Guide.ylabel("Mean Absolute Error"), style(key_position = :right),
+           Guide.ColorKey(""))
+img = PDF(joinpath(plot_folder, "both_imprecision23.pdf"), 30cm, 15cm)
+draw(img, plt)

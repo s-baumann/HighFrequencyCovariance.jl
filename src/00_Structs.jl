@@ -88,7 +88,11 @@ function get_assets(ts::SortedDataFrame, obs_to_include::Integer = 10)
     assets = Array{Symbol,1}(undef,0)
     for a in all_assets
         cond1 = length(ts.groupingrows[a]) >= obs_to_include
-        cond2 = (maximum(ts.df[ts.groupingrows[a], ts.value] ) - minimum(ts.df[ts.groupingrows[a], ts.value] ) > 1000*eps())
+        if sum(isnan.(ts.df[ts.groupingrows[a], ts.value])) > 0
+            @warn string("There are nan values for ", a)
+        end
+        vals = ts.df[ts.groupingrows[a], ts.value]
+        cond2 = (maximum(vals) - minimum(vals) > 1000*eps())
         if (cond1 & cond2) push!(assets, a) end
     end
     return sort(assets)
@@ -194,9 +198,9 @@ function show(cm::CovarianceMatrix)
     Base.print_matrix(stdout, corr)
     println("\n")
 end
-function show(cm::CovarianceMatrix, decimal_places_volatility::Integer, decimal_places_correlation::Integer)
+function show(cm::CovarianceMatrix, sig_figs_volatility::Integer, decimal_places_correlation::Integer)
     cm2 = deepcopy(cm)
-    cm2.volatility  = round.(cm2.volatility , digits = decimal_places_volatility)
+    cm2.volatility  = round.(cm2.volatility , sigdigits = sig_figs_volatility)
     cm2.correlation = Hermitian(round.(cm2.correlation, digits = decimal_places_correlation))
     show(cm2)
 end

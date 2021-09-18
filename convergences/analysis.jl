@@ -77,7 +77,7 @@ bb = combine(groupby(aa, [:ticks_per_asset, :method, :with_noise, :estimation, :
 bb = bb[(bb.with_noise .!= "AR1") ,: ]
 plt = plot(bb, ygroup=:variable, xgroup=:estimation, Geom.subplot_grid(layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.point),
            layer(x=:ticks_per_asset,y = yvar, color=:method, Geom.line), free_y_axis =true),
-           Scale.x_log10, Scale.y_log10, Guide.xlabel("Average number of updates per asset"), Guide.ylabel("Mean Absolute Error in estimated volatilities"), style(key_position = :right),
+           Scale.x_log10, Scale.y_log10, Guide.xlabel("Average number of updates per asset"), Guide.ylabel("Mean Absolute Error"), style(key_position = :right),
            Guide.ColorKey(""))
 img = PDF(joinpath(plot_folder, "both_imprecision23.pdf"), 30cm, 15cm)
 draw(img, plt)
