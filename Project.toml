@@ -17,6 +17,6 @@ UnivariateFunctions = "368b7869-440d-5a68-a3d1-bbc86b0a93b0"
 [compat]
 DataFrames = "^1.0"
 Distributions = "0.24 - 0.999999"
-StochasticIntegrals = "0.4 - 0.999999"
+StochasticIntegrals = "0.5 - 0.999999"
 UnivariateFunctions = "0.2 - 0.999999"
 julia = "1.5"
