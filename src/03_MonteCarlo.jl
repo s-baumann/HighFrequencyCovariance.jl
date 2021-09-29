@@ -15,7 +15,7 @@ Generate a random path of price updates with a specified number of dimensions an
 processes, the refresh rate on the (exponential) arrival times of price updates, the minimum and the maximum microstructure noises.
 
 Note the defaults are chosen to reflect a highcap stock with annualised volatility between 10% and 50%.
-Microstructure noise is equal to 15 minutes standard deviation of return. vol * sqrt(60*15)
+Microstructure noise is equal to 15 minutes standard deviation of return. `vol * sqrt(60*15)`
 Refreshed ticks every 0.5-5 seconds (in expectation).
 
 ### Inputs

@@ -47,8 +47,8 @@ end
     project_to_S(A::Diagonal, W_root::Union{Hermitian,Diagonal};
                  W_inv_sqrt::Union{Hermitian,Diagonal,Missing} = missing)
 
-This maps a matrix to the nearest psd matrix. W_root should be the principal square root of a psd Hermitian weighting matrix, W.
-`W_inv_sqrt` should be the corresponding square root of the inverse of W.
+This maps a matrix to the nearest psd matrix. `W_root` should be the principal square root of a psd Hermitian weighting matrix, `W`.
+`W_inv_sqrt` should be the corresponding square root of the inverse of `W`.
 `nearest_psd_matrix` is a simpler interface for this function however it does not allow weighting matrices to be specified.
 ### Inputs
 * `A` - The matrix you want to project to the S space. This can be a `Diagonal` or a `Hermitian`. Note that if you input a `Diagonal` matrix then it is already in the S space and so it will be returned without any calculation.
@@ -232,7 +232,7 @@ end
 """
     nearest_psd_matrix(mat::Hermitian)
 
-This function maps a Hermitian matrix to the nearest psd matrix. This uses the project_to_S
+This function maps a Hermitian matrix to the nearest psd matrix. This uses the `project_to_S`
 method in Higham (2001; Theorem 3.2). No special weighting is applied in this case.
 Advanced users can use the `project_to_S` directly if they want to use weights in
 order to decide what the `closest` pds matrix.
@@ -245,7 +245,7 @@ order to decide what the `closest` pds matrix.
     nearest_psd_matrix(covariance_matrix::CovarianceMatrix;
                        apply_to_covariance::Bool = true)
 
-This function maps a Hermitian matrix to the nearest psd matrix. This uses the project_to_S
+This function maps a Hermitian matrix to the nearest psd matrix. This uses the `project_to_S`
 method in Higham (2001; Theorem 3.2). No special weighting is applied in this case.
 Advanced users can use the `project_to_S` directly if they want to use weights in
 order to decide what the `closest` pds matrix.
@@ -259,7 +259,7 @@ order to decide what the `closest` pds matrix.
     nearest_psd_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame;
                        apply_to_covariance::Bool = true)
 
-This function maps a Hermitian matrix to the nearest psd matrix. This uses the project_to_S
+This function maps a Hermitian matrix to the nearest psd matrix. This uses the `project_to_S`
 method in Higham (2001; Theorem 3.2). No special weighting is applied in this case.
 Advanced users can use the `project_to_S` directly if they want to use weights in
 order to decide what the `closest` pds matrix.

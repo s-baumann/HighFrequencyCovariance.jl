@@ -20,7 +20,6 @@ end
 
 """
 Estimation of the covariance matrix in the standard simple way given a time grid.
-https://en.wikipedia.org/wiki/Sample_mean_and_covariance
 """
 function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Vector; regularisation::Union{Missing,Symbol} = :covariance_default,
                                            regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false)
@@ -63,7 +62,6 @@ Estimation of the covariance matrix in the standard textbook way.
 * A `CovarianceMatrix`.
 
 ### References
-https://en.wikipedia.org/wiki/Sample_mean_and_covariance
 """
 function simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
                            regularisation::Union{Missing,Symbol} = :covariance_default,

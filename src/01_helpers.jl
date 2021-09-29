@@ -215,7 +215,7 @@ end
 """
     squared_frobenius_distance(x1::AbstractMatrix, x2::AbstractMatrix = x1)
 
-Rearrange the squared frobenius distance between two matrices. Returns a real.
+Returns the squared frobenius distance between two matrices. This is a real.
 ### Inputs
 * `x1` The first matrix.
 * `x2` The second matrix.
@@ -228,7 +228,7 @@ end
 """
     squared_frobenius(x1::AbstractMatrix)
 
-Rearrange the squared frobenius norm of a matrix. Returns a real.
+Returns the squared frobenius norm of a matrix. This is a real.
 ### Inputs
 * `x1` The matrix that you want the squared frobenius norm for.
 ### Returns

@@ -33,8 +33,8 @@ greater of their average or eigenvalue_threshold/(4*number_of_small_eigens). The
 
     eigenvalue_clean(mat::Hermitian, eigenvalue_threshold::Real)
 
-This splits a matrix into its eigenvalues and eigenvectors. Then takes the small eigenvalues (with values below eigenvalue_threshold). It sets them to the
-greater of their average or eigenvalue_threshold/(4*number_of_small_eigens). Then the matrix is reconstructed and returned (as a `Hermitian`)
+This splits a matrix into its eigenvalues and eigenvectors. Then takes the small eigenvalues (with values below `eigenvalue_threshold`). It sets them to the
+greater of their average or `eigenvalue_threshold/(4*number_of_small_eigens)`. Then the matrix is reconstructed and returned (as a `Hermitian`)
 ### Inputs
 * `mat` - A matrix that you want to regularise with eigenvalue regularisation.
 * `eigenvalue_threshold` - The threshold for a eigenvalue to be altered.
