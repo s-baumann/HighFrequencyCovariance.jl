@@ -16,8 +16,12 @@ ts2, true_covar, micro_noise, update_rates = generate_random_path(4, 50000; brow
 
 # Testing constructors of SortedDataFrames
 ts1 = SortedDataFrame(ts1.df, ts1.time, ts1.grouping, ts1.value,  ts1.groupingrows, ts1.time_period_per_unit)
+# Subsetting to time.
+ts1 = subset_to_time(ts1, 1670) # Will not delete anything
+ts1 = subset_to_time(ts1, 1400) # Will delete some stuff.
 # Subsetting to tick.
-ts1 = subset_to_time(ts1, 1670) # There is nothing special about 1670. It just gives us about 4000 ticks for the tests coming up.
+ts2 = subset_to_tick(ts2, 49000)
+
 
 # Getting ticks per asset
 tpa = ticks_per_asset(ts1)
