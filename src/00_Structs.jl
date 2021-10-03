@@ -45,6 +45,10 @@ end
 function time_period_ratio(neww::Dates.Period, oldd::Dates.Period)
     return Nanosecond(neww) / Nanosecond(oldd)
 end
+function safe_multiply_period(scalar::Real, neww::Dates.Period)
+    vall = Nanosecond(neww).value * scalar
+    return Nanosecond(floor(vall))
+end
 
 import Base.show, Base.print
 
@@ -255,7 +259,7 @@ function make_nan_covariance_matrix(labels::Vector{Symbol}, time_period_per_unit
 end
 
 """
-    calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer)
+    calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8)
 
 Calculates the mean absolute distance (elementwise in L1 norm) between two `CovarianceMatrix`s.
 Undefined if any labels differ between the two `CovarianceMatrix`s.
@@ -276,7 +280,7 @@ Calculates the mean absolute distance (elementwise in L1 norm) between two `Cova
 ### Returns
 * A scalar with the mean distance between matching elements.
 """
-function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 4)
+function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8)
     if length(symdiff(cov1.labels, cov2.labels)) != 0 return NaN, NaN end
     N = length(cov1.labels)
     cov11 = rearrange(cov1, cov2.labels)

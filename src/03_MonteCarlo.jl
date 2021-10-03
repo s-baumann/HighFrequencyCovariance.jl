@@ -1,12 +1,13 @@
 import StochasticIntegrals.ItoSet
 
 """
-    generate_random_path(dimensions::Integer, ticks::Integer; syncronous::Bool = false,
+    generate_random_path(dimensions::Integer, ticks::Integer;
+                         syncronous::Bool = false,
                          twister::MersenneTwister = MersenneTwister(1),
                          vol_dist::Distribution = Uniform(0.1/sqrt(252 * 8 * 3600), 0.5/sqrt(252 * 8 * 3600)),
                          refresh_rate_dist::Distribution    = Uniform(0.5, 5.0),
                          time_period_per_unit::Dates.Period = Second(1),
-                         micro_noise_dist::Distribution     = Uniform(vol_dist.a * sqrt(time_period_ratio(Minute(15), time_period_per_unit)), vol_dist.b * sqrt(time_period_ratio(Minute(15), time_period_per_unit))),
+                         micro_noise_dist::Distribution     = Uniform(vol_dist.a * sqrt(time_period_ratio(Minute(5), time_period_per_unit)), vol_dist.b * sqrt(time_period_ratio(Minute(5), time_period_per_unit))),
                          assets::Union{Vector,Missing}      = missing,
                          brownian_corr_matrix::Union{Hermitian,Missing} = missing,
                          vols::Union{Vector,Missing}        = missing)
@@ -15,7 +16,8 @@ Generate a random path of price updates with a specified number of dimensions an
 processes, the refresh rate on the (exponential) arrival times of price updates, the minimum and the maximum microstructure noises.
 
 Note the defaults are chosen to reflect a highcap stock with annualised volatility between 10% and 50%.
-Microstructure noise is equal to 15 minutes standard deviation of return. `vol * sqrt(60*15)`
+The standard deviation of microstructure noise is of the same order of magnitude as
+5 minutes standard deviation of return. `vol * sqrt(60*5)` if vol is in seconds.
 Refreshed ticks every 0.5-5 seconds (in expectation).
 
 ### Inputs
@@ -26,7 +28,7 @@ Refreshed ticks every 0.5-5 seconds (in expectation).
 * `vol_dist` - The distribution to draw volatilities from (only used if vols is missing).
 * `refresh_rate_dist` - The distribution to draw refresh rates (exponential distribution rates) from.
 * `time_period_per_unit` - What time period should the time column correspond to.
-* `micro_noise_dist`  - The distribution to draw assetwise microstructure noise variances from.
+* `micro_noise_dist`  - The distribution to draw assetwise microstructure noise standard deviations are drawn from.
 * `assets` - The names of the assets that you want to use. The length of this must be equal to the `dimensions` input.
 * `brownian_corr_matrix` - The correlation matrix to use. This is sampled from the Inverse Wishart distribution if none is input.
 * `vols` - The volatilities to use. These are sampled  from the uniform distribution between `min_noise_var` and `max_noise_var`.
@@ -42,7 +44,7 @@ function generate_random_path(dimensions::Integer, ticks::Integer;
                               vol_dist::Distribution = Uniform(0.1/sqrt(252 * 8 * 3600), 0.5/sqrt(252 * 8 * 3600)),
                               refresh_rate_dist::Distribution    = Uniform(0.5, 5.0),
                               time_period_per_unit::Dates.Period = Second(1),
-                              micro_noise_dist::Distribution     = Uniform(vol_dist.a * sqrt(time_period_ratio(Minute(15), time_period_per_unit)), vol_dist.b * sqrt(time_period_ratio(Minute(15), time_period_per_unit))),
+                              micro_noise_dist::Distribution     = Uniform(vol_dist.a * sqrt(time_period_ratio(Minute(5), time_period_per_unit)), vol_dist.b * sqrt(time_period_ratio(Minute(5), time_period_per_unit))),
                               assets::Union{Vector,Missing}      = missing,
                               brownian_corr_matrix::Union{Hermitian,Missing} = missing,
                               vols::Union{Vector,Missing}        = missing)
@@ -55,7 +57,7 @@ function generate_random_path(dimensions::Integer, ticks::Integer;
         brownian_corr_matrix, _ = cov2cor(Hermitian(rand(twister, wish)))
     end
 
-    vols = ismissing(vols) ? rand(twister, vols, dimensions) : vols
+    vols = ismissing(vols) ? rand(twister, vol_dist, dimensions) : vols
     assets = ismissing(assets) ? Symbol.(:asset_, 1:dimensions) : assets
 
     ito_integrals = Dict(assets .=> map(i -> ItoIntegral(assets[i], PE_Function(vols[i], 0.0, 0.0, 0)  ), 1:dimensions))
@@ -64,7 +66,7 @@ function generate_random_path(dimensions::Integer, ticks::Integer;
     covar = StochasticIntegrals.SimpleCovariance(ito_set_, 0.0, 1.0; calculate_inverse = false, calculate_determinant = false)
     stock_processes = Dict(assets .=> map(a -> ItoProcess(0.0, 0.0, PE_Function(0.00, 0.0, 0.0, 0), ito_integrals[a]), assets))
     update_rates = Dict(assets .=> Exponential.(rand(twister, refresh_rate_dist, dimensions)))
-    microstructure_noise = Dict(assets .=> rand(twister, micro_noise_dist, dimensions))
+    microstructure_noise = Dict(assets .=> rand(twister, micro_noise_dist, dimensions) .^ 2)
     ts = syncronous ? StochasticIntegrals.make_ito_process_syncronous_time_series(stock_processes, covar, mean(a-> update_rates[a].θ, assets), Int(ceil(ticks/dimensions)); ito_twister = twister) : StochasticIntegrals.make_ito_process_non_syncronous_time_series(stock_processes, covar, update_rates, ticks; timing_twister = twister, ito_twister = twister)
     ts = SortedDataFrame(ts, :Time, :Name, :Value, time_period_per_unit)
 

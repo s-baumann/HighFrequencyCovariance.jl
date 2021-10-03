@@ -41,12 +41,12 @@ Converts a matrix (representing a covariance matrix) into a `Hermitian` correlat
 """
 function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Dates.Period, duration_for_desired_vols::Dates.Period)
     cor, sdevs = cov2cor(mat)
-    vols = sdevs / sqrt(  time_period_ratio(duration_for_desired_vols, duration_of_covariance_matrix)  )
+    vols = sdevs / sqrt(  time_period_ratio(duration_of_covariance_matrix, duration_for_desired_vols)  )
     return Hermitian(cor), vols
 end
 function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Real, duration_for_desired_vols::Real)
     cor, sdevs = cov2cor(mat)
-    vols = sdevs / sqrt(  duration_for_desired_vols / duration_of_covariance_matrix  )
+    vols = sdevs / sqrt(  duration_of_covariance_matrix / duration_for_desired_vols  )
     return Hermitian(cor), vols
 end
 function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix_in_natural_units::Real)
