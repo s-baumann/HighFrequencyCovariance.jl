@@ -73,18 +73,20 @@ function cor2cov(cor::AbstractMatrix, sdevs::Vector{<:Real})
 end
 
 """
-    covariance(cm::CovarianceMatrix, duration::Dates.Period)
+    covariance(cm::CovarianceMatrix, period::Dates.Period = cm.time_period_per_unit, assets::Vector{Symbol} = cm.labels)
 
 This makes a `Hermitian` matrix for the covariance matrix over some duration.
 ### Inputs
 * `cm` - A `CovarianceMatrix` struct.
 * `period` - A duration for which you want a covariance matrix. This should be in a Dates.Period.
+* `assets` - What assets in include in the covariance matrix.
 ### Returns
-* A `Hermitian`.
+* A `Hermitian`. The labelling of assets for each row/column is as per the input `assets` vector.
 """
-function covariance(cm::CovarianceMatrix, period::Dates.Period = cm.time_period_per_unit)
-    sds = convert_vol(cm.volatility, cm.time_period_per_unit, period)
-    return cor2cov(cm.correlation, sds)
+function covariance(cm::CovarianceMatrix, period::Dates.Period = cm.time_period_per_unit, assets::Vector{Symbol} = cm.labels)
+    cm2 = rearrange(cm, assets)
+    sds = convert_vol(cm2.volatility, cm2.time_period_per_unit, period)
+    return cor2cov(cm2.correlation, sds)
 end
 
 """
@@ -200,15 +202,19 @@ Rearrange the order of labels in a `CovarianceMatrix`.
 ### Takes
 * `cm` - A `CovarianceMatrix`.
 * `labels` - A `Vector` of labels.
+* `time_period_per_unit` - The time period you want for the resultant Covariance Matrix
 ### Returns
 * A `CovarianceMatrix`.
 """
 function rearrange(cm::CovarianceMatrix, labels::Vector{Symbol},
                    time_period_per_unit::Union{Missing,Dates.Period} = cm.time_period_per_unit)
   if length(setdiff(labels, cm.labels)) > 0 error("You put in labels that are not in the CovarianceMatrix") end
+  same_assets = (length(cm.labels) == length(labels)) && (all(cm.labels .== labels))
+  same_vol = (time_period_per_unit == cm.time_period_per_unit)
+  if (same_assets & same_vol) return cm end
   reordering = map(x -> findfirst(x .== cm.labels)[1], labels)
-  Acor = Hermitian(cm.correlation[reordering,reordering])
-  Avol = convert_vol(cm.volatility[reordering], cm.time_period_per_unit, time_period_per_unit)
+  Acor = same_assets ? cm.correlation[reordering,reordering] : Hermitian(cm.correlation[reordering,reordering])
+  Avol = same_vol ? cm.volatility[reordering] : convert_vol(cm.volatility[reordering], cm.time_period_per_unit, time_period_per_unit)
   return CovarianceMatrix(Acor, Avol, labels, time_period_per_unit)
 end
 

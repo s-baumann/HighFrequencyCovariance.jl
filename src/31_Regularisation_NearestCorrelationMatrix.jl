@@ -199,8 +199,7 @@ function nearest_correlation_matrix(mat::AbstractMatrix, weighting_matrix::Union
     while counter < max_iterates
         Y, Dykstra = doDykstra ? iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt) : iterate_higham(Y, ZeroDykstra, W_root, W_inv, W_inv_sqrt)
         if stop_at_first_correlation_matrix
-             valid_correlation_matrix
-             spd = valid_correlation_matrix(Y)
+             spd = valid_correlation_matrix(Y, 100*eps())
              if spd return Y, counter, :already_valid_correlation_matrix end
         end
         counter += 1
@@ -277,7 +276,12 @@ Higham NJ (2002). "Computing the nearest correlation matrix - a problem from fin
 function nearest_psd_matrix(mat::Hermitian)
     W = Diagonal(Float64.(I(size(mat)[1])))
     W_root = sqrt_psd(W)
-    return project_to_S(mat, W_root)
+    projected = project_to_S(mat, W_root)
+    # This is to avoid really slight negative eigenvalues like -1E-17 that happen due to computational rounding.
+    if !is_psd_matrix(projected)
+        projected = identity_regularisation(projected, 100*eps())
+    end
+    return projected
 end
 function nearest_psd_matrix(covariance_matrix::CovarianceMatrix; apply_to_covariance::Bool = true)
     if apply_to_covariance

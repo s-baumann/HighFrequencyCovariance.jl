@@ -333,20 +333,21 @@ function get_volatility(covar::CovarianceMatrix, asset1::Symbol, time_period_per
 end
 
 """
-    is_psd_matrix(mat::Hermitian)
-    is_psd_matrix(covar::CovarianceMatrix)
+    is_psd_matrix(mat::Hermitian, min_eigen_threshold::Real = 0.0)
+    is_psd_matrix(covar::CovarianceMatrix, min_eigen_threshold::Real = 0.0)
 
 Test if a matrix is psd (Positive Semi-Definite). This is done by seeing if all eigenvalues are positive.
 If a `Hermitian` is input then it will be tested. If a `CovarianceMatrix` is input then its correlation matrix will be tested.
 ### Inputs
-* A `Hermitian` matrix or a `CovarianceMatrix`
+* `mat` - A `Hermitian` matrix or a `CovarianceMatrix`
+* `min_eigen_threshold` - How big does the smallest eigenvalue have to be.
 ### Returns
 * A `Bool` that is true if mat is psd and false if not.
 """
-function is_psd_matrix(mat::Hermitian)
+function is_psd_matrix(mat::Hermitian, min_eigen_threshold::Real = 0.0)
     eig = eigen(mat).values
     if length(eig) == 0 return false end # There is no eigenvalue decomposition.
-    return minimum(eig) >= 0 # is it PSD
+    return minimum(eig) > 0 # is it PSD
 end
 is_psd_matrix(covar::CovarianceMatrix) = is_psd_matrix(covar.correlation)
 
@@ -357,17 +358,18 @@ is_psd_matrix(covar::CovarianceMatrix) = is_psd_matrix(covar.correlation)
 Test if a `Hermitian` matrix is a valid correlation matrix. This is done by testing if it is psd, if it has a unit diagonal and if all other elements are less than one.
 If a `Hermitian` is input then it will be tested. If a `CovarianceMatrix` is input then its correlation matrix will be tested.
 ### Inputs
-* A `Hermitian` matrix or a `CovarianceMatrix`
+* `mat` - A `Hermitian` matrix or a `CovarianceMatrix`
+* `min_eigen_threshold` - How big does the smallest eigenvalue have to be.
 ### Returns
 * A `Bool` that is true if mat is a valid correlation matrix and false if not.
 """
-function valid_correlation_matrix(mat::Hermitian)
-    A = is_psd_matrix(mat)
+function valid_correlation_matrix(mat::Hermitian, min_eigen_threshold::Real = 0.0)
+    A = is_psd_matrix(mat, min_eigen_threshold)
     B = all(abs.(diag(mat) .- 1) .< 10*eps()) # does it have a unit diagonal
     C = all(abs.(mat) .<= 1 + 10*eps())       # all all off diagonals less than one in absolute value
     return all([A,B,C])
 end
-valid_correlation_matrix(covar::CovarianceMatrix) = valid_correlation_matrix(covar.correlation)
+valid_correlation_matrix(covar::CovarianceMatrix, min_eigen_threshold::Real = 0.0) = valid_correlation_matrix(covar.correlation, min_eigen_threshold)
 
 """
     ticks_per_asset(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts))
