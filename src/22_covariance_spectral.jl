@@ -118,7 +118,7 @@ function spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_a
                              microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2])
     corrected_matrices = spectral_lmm_array(ts, assets; regularisation = regularisation, regularisation_params = regularisation_params, only_regulise_if_not_PSD = only_regulise_if_not_PSD, numJ = numJ, num_blocks = num_blocks,
                                             block_width = block_width, microstructure_noise_var = microstructure_noise_var)
-    cor_weights = repeat([1.0], length(corrected_matrices))
-    spectral_estimate = combine_covariance_matrices(corrected_matrices, cor_weights)
+    weights = repeat([1.0], length(corrected_matrices))
+    spectral_estimate = combine_covariance_matrices(corrected_matrices, weights, weights)
     return spectral_estimate
 end
