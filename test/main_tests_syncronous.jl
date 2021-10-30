@@ -32,7 +32,7 @@ simple_vol = simple_volatility(ts1; fixed_spacing = Dict(assets .=> repeat([20],
 all(values(simple_vol) .< 0.1)
 
 # Preav Convergence
-@test_logs (:warn,"Cannot estimate the correlation matrix with 4 ticks. There are insufficient ticks for [:BARC, :HSBC, :VODL, :RYAL]") preaveraged_covariance(ts0, assets) # This will not work due to insufficient data.
+@test_logs (:warn,"Cannot estimate the correlation matrix with the preaveraging technique with 4 ticks. There are insufficient ticks for [:BARC, :HSBC, :VODL, :RYAL]") preaveraged_covariance(ts0, assets) # This will not work due to insufficient data.
 preav_estimate1 = preaveraged_covariance(ts1, assets)
 preav_estimate2 = preaveraged_covariance(ts2, assets; regularisation = missing)
 iscloser(calculate_mean_abs_distance(preav_estimate2, true_covar), calculate_mean_abs_distance(preav_estimate1, true_covar))

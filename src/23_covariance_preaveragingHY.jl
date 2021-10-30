@@ -46,6 +46,7 @@ Estimation of the CovarianceMatrix using preaveraging method.
 * `ts` - The tick data.
 * `assets` - The assets you want to estimate volatilities for.
 * `regularisation` - A symbol representing what regularisation technique should be used. If missing no regularisation is performed.
+* `drop_assets_if_not_enough_data` - If we do not have enough data to estimate for all the input `assets` should we just calculate the correlation/volatilities for those assets we do have?
 * `regularisation_params` - keyword arguments to be consumed in the regularisation algorithm.
 * `only_regulise_if_not_PSD` - Should regularisation only be attempted if the matrix is not psd already.
 * `theta` - A theta value. See paper for details.
@@ -57,7 +58,7 @@ Estimation of the CovarianceMatrix using preaveraging method.
 Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for multivariate continuous Itô semimartingales with noise in non-synchronous observation schemes.” Journal of Multivariate Analysis, 120, 59–84. doi:10.1016/j.jmva.2013.05.002.
 """
 function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                                regularisation::Union{Missing,Symbol} = :covariance_default,
+                                regularisation::Union{Missing,Symbol} = :covariance_default, drop_assets_if_not_enough_data::Bool = false,
                                 regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
                                 theta::Real = 0.15, g::NamedTuple = g)
    # The defaults are from the paper (Christensen et al 2013). theta and the formula for k_n is from halfway down page 67. g is from page 64.
@@ -66,11 +67,16 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
    gs = g.f.( collect(1:1:(k_n-1)) ./ k_n )
    prev_prices = get_preaveraged_prices.(Ref(ts), assets, k_n, Ref(gs))
 
-  lens = findall(map(i -> ismissing(prev_prices[i][1]), 1:length(prev_prices)))
-  if length(lens) > 0
-     @warn string("Cannot estimate the correlation matrix with ", number_of_ticks, " ticks. There are insufficient ticks for ", assets[lens])
-     return make_nan_covariance_matrix(assets, ts.time_period_per_unit)
-  end
+   lens = findall(map(i -> ismissing(prev_prices[i][1]), 1:length(prev_prices)))
+   if length(lens) > 0
+      if drop_assets_if_not_enough_data
+          @warn string("We are going to drop ", assets[lens] , " as we do not have enough ticks with the preaveraging method. We will then proceeed with the estimation.")
+          assets = setdiff(assets, assets[lens])
+      else
+          @warn string("Cannot estimate the correlation matrix with the preaveraging technique with ", number_of_ticks, " ticks. There are insufficient ticks for ", assets[lens])
+          return make_nan_covariance_matrix(assets, ts.time_period_per_unit)
+      end
+   end
 
    N = length(assets)
    # First doing HY_n from equation 2.5

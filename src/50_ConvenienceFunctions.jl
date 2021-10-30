@@ -94,6 +94,7 @@ This is a convenience wrapper for the regularisation techniques.
 * `block_width` - The width of each block to split the time frame into (`:spectral_covariance` method only).
 * `microstructure_noise_var` - Estimates of microstructure noise variance for each asset (`:spectral_covariance` method only).
 #### Inputs only used in `:preaveraged_covariance` method.
+* `drop_assets_if_not_enough_data` - If we do not have enough data to estimate for all the input `assets` should we just calculate the correlation/volatilities for those assets we do have?
 * `theta` - A theta value. See paper for details (`:preaveraged_covariance` method only).
 * `g` - A tuple containing a preaveraging method (with name "f") and a ψ value. See paper for details (`:preaveraged_covariance` method only).
 #### Inputs only used in `:two_scales_covariance` method.
@@ -109,7 +110,7 @@ function estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_a
                              fixed_spacing::Union{Missing,<:Real} = missing, refresh_times::Bool = false, rough_guess_number_of_intervals::Integer = 5, # General Inputs
                              kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6, m::Integer = 2, # BNHLS parameters
                              numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks, microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], # Spectral Covariance parameters
-                             theta::Real = 0.15, g::NamedTuple = g, # Preaveraging
+                             drop_assets_if_not_enough_data::Bool = false, theta::Real = 0.15, g::NamedTuple = g, # Preaveraging
                              equalweight::Bool = false, num_grids::Real = default_num_grids(ts)) # Two Scales parameters
     if (ismissing(regularisation) == false) && (regularisation == :default)
         regularisation = (method == :two_scales_covariance) ? :correlation_default : :covariance_default
@@ -128,7 +129,7 @@ function estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_a
                                      only_regulise_if_not_PSD = only_regulise_if_not_PSD, numJ = numJ, num_blocks = num_blocks, block_width = block_width,
                                      microstructure_noise_var = microstructure_noise_var)
     elseif method == :preaveraged_covariance
-        return preaveraged_covariance(ts, assets; regularisation = regularisation,
+        return preaveraged_covariance(ts, assets; regularisation = regularisation, drop_assets_if_not_enough_data = drop_assets_if_not_enough_data,
                                      only_regulise_if_not_PSD = only_regulise_if_not_PSD, theta = theta, g = g)
     elseif method == :two_scales_covariance
         return two_scales_covariance(ts, assets; regularisation = regularisation, only_regulise_if_not_PSD = only_regulise_if_not_PSD,
