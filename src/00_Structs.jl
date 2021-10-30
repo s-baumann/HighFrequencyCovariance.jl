@@ -267,6 +267,7 @@ Undefined if any labels differ between the two `CovarianceMatrix`s.
 * `cov1` - The first `CovarianceMatrix`
 * `cov2` - The second `CovarianceMatrix`
 * `decimal_places` - How many decimal places to show the result to.
+* `return_nans_if_symbols_dont_match` - If the symbols don't match should it be an error. Or if false we only compare common symbols in both `CovarianceMatrix`s
 ### Returns
 * An `Tuple` with the distance for correlations in first entry and distance for volatilities in the second.
 
@@ -280,12 +281,14 @@ Calculates the mean absolute distance (elementwise in L1 norm) between two `Cova
 ### Returns
 * A scalar with the mean distance between matching elements.
 """
-function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8)
-    if length(symdiff(cov1.labels, cov2.labels)) != 0 return NaN, NaN end
-    N = length(cov1.labels)
-    cov11 = rearrange(cov1, cov2.labels)
-    cor_error = round(sum(abs.(cov11.correlation .- cov2.correlation)) / ((N^2-N)/2), digits = decimal_places)
-    vol_error = round(mean(abs.(cov11.volatility  .- cov2.volatility)), digits  = decimal_places)
+function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8; return_nans_if_symbols_dont_match::Bool = true)
+    if return_nans_if_symbols_dont_match & (length(symdiff(cov1.labels, cov2.labels)) != 0) return (Correlation_error = NaN, Volatility_error = NaN) end
+    labels = intersect(cov1.labels, cov2.labels)
+    N = length(labels)
+    cov11 = rearrange(cov1, labels)
+    cov22 = rearrange(cov2, labels)
+    cor_error = round(sum(abs.(cov11.correlation .- cov22.correlation)) / ((N^2-N)/2), digits = decimal_places)
+    vol_error = round(mean(abs.(cov11.volatility  .- cov22.volatility)), digits  = decimal_places)
     return (Correlation_error = cor_error, Volatility_error = vol_error)
 end
 function calculate_mean_abs_distance(d1::Dict{Symbol,<:Real}, d2::Dict{Symbol,<:Real})
