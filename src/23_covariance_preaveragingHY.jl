@@ -72,6 +72,10 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
       if drop_assets_if_not_enough_data
           @warn string("We are going to drop ", assets[lens] , " as we do not have enough ticks with the preaveraging method. We will then proceeed with the estimation.")
           assets = setdiff(assets, assets[lens])
+          number_of_ticks = nrow(ts.df)
+          k_n = Int(ceil(min(number_of_ticks/2,theta * sqrt(number_of_ticks))))
+          gs = g.f.( collect(1:1:(k_n-1)) ./ k_n )
+          prev_prices = get_preaveraged_prices.(Ref(ts), assets, k_n, Ref(gs))
       else
           @warn string("Cannot estimate the correlation matrix with the preaveraging technique with ", number_of_ticks, " ticks. There are insufficient ticks for ", assets[lens])
           return make_nan_covariance_matrix(assets, ts.time_period_per_unit)
