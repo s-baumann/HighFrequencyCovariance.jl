@@ -32,13 +32,16 @@ Estimation of a CovarianceMatrix using the two scale covariance method.
 * `only_regulise_if_not_PSD` - Should regularisation only be attempted if the matrix is not psd already.
 * `equalweight` - Should we use equal weight for the two different linear combinations of assets. If false then an optimal weight is calculated (from volatilities).
 * `num_grids` - Number of grids used in order in two scales estimation.
+* `min_obs_for_estimation` - How many observations do we need for estimation. If less than this we use below fallback.
+* `if_dont_have_min_obs` - If we do not have sufficient observations to estimate a correlation then what should be used?
 ### Returns
 * A `CovarianceMatrix`.
 """
 function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
                                regularisation::Union{Missing,Symbol} = :correlation_default,
                                regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
-                               equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
+                               equalweight::Bool = false, num_grids::Real = default_num_grids(ts), min_obs_for_estimation::Integer = 10,
+                               if_dont_have_min_obs::Real = NaN)
 
     two_scales_vol, micro_noise = two_scales_volatility(ts, assets; num_grids = num_grids)
 
@@ -57,7 +60,12 @@ function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get
                     mat[i,j] = 0.0
                 else
                     prices, times = get_refresh_times_and_prices(ts, asseti, assetj)
-                    mat[i,j] = two_scales_correlation(prices, times, asseti, assetj, gamma, num_grids)
+                    if (nrow(prices) < min_obs_for_estimation)
+                        @warn string("There are only ", nrow(prices), " observations for correlation between ", asseti, " and ", assetj, ". So this correlation will be set as ", if_dont_have_min_obs )
+                        mat[i,j] = if_dont_have_min_obs
+                    else
+                        mat[i,j] = two_scales_correlation(prices, times, asseti, assetj, gamma, num_grids)
+                    end
                 end
             end
         end

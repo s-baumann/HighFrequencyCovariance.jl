@@ -100,6 +100,8 @@ This is a convenience wrapper for the regularisation techniques.
 #### Inputs only used in `:two_scales_covariance` method.
 * `equalweight` - Should we use equal weight for the two different linear combinations of assets. If false then an optimal weight is calculated (from volatilities) (`:two_scales_covariance` method only).
 * `num_grids` - Number of grids used in order in two scales estimation (`:two_scales_covariance` method only).
+* `min_obs_for_estimation` - How many observations do we need for estimation. If less than this we use below fallback.
+* `if_dont_have_min_obs` - If we do not have sufficient observations to estimate a correlation then what should be used?
 ### Returns
 * A `CovarianceMatrix`
 """
@@ -111,7 +113,7 @@ function estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_a
                              kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6, m::Integer = 2, # BNHLS parameters
                              numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks, microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], # Spectral Covariance parameters
                              drop_assets_if_not_enough_data::Bool = false, theta::Real = 0.15, g::NamedTuple = g, # Preaveraging
-                             equalweight::Bool = false, num_grids::Real = default_num_grids(ts)) # Two Scales parameters
+                             equalweight::Bool = false, num_grids::Real = default_num_grids(ts), min_obs_for_estimation::Integer = 10, if_dont_have_min_obs::Real = NaN) # Two Scales parameters
     if (ismissing(regularisation) == false) && (regularisation == :default)
         regularisation = (method == :two_scales_covariance) ? :correlation_default : :covariance_default
     end
@@ -133,7 +135,7 @@ function estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_a
                                      only_regulise_if_not_PSD = only_regulise_if_not_PSD, theta = theta, g = g)
     elseif method == :two_scales_covariance
         return two_scales_covariance(ts, assets; regularisation = regularisation, only_regulise_if_not_PSD = only_regulise_if_not_PSD,
-                                    equalweight = equalweight, num_grids = num_grids)
+                                    equalweight = equalweight, num_grids = num_grids, min_obs_for_estimation = min_obs_for_estimation, if_dont_have_min_obs = if_dont_have_min_obs)
     else
         error("The covariance method chosen must be :simple_covariance, :bnhls_covariance, :spectral_covariance, :preaveraged_covariance or :two_scales_covariance")
     end
