@@ -28,6 +28,7 @@ export squared_frobenius, squared_frobenius_distance
 export get_all_refresh_times, latest_value, time_between_refreshes, random_value_in_interval
 include("03_MonteCarlo.jl")
 export make_random_psd_matrix_from_wishart, generate_random_path, ItoSet
+export get_draws
 include("04_Serialisation.jl")
 export to_dataframe, dataframe_to_covariancematrix
 

@@ -49,6 +49,7 @@ Pages = ["helper_functions.md"]
 ```@docs
     generate_random_path
     ItoSet
+    get_draws
 ```
 
 ## For getting a DataFrame version of a CovarianceMatrix and vice versa.

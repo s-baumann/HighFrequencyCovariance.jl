@@ -103,6 +103,11 @@ Gaussian corresponding to the covariance matrix and other things.
 * `covariance_matrix` - The `CovarianceMatrix` that you want to convert into an `StochasticIntegrals.ItoSet`
 ### Returns
 * A `StochasticIntegrals.ItoSet` struct.
+### Example
+    using Dates
+    covar = CovarianceMatrix(make_random_psd_matrix_from_wishart(5), rand(5), [:A,:B,:C,:D,:E], Dates.Hour(1))
+    iset = ItoSet(covar)
+    # To see how this is used for something useful you can look at the get_draws function.
 """
 function ItoSet(covariance_matrix::CovarianceMatrix{<:Real})
     itos = Dict{Symbol,ItoIntegral}()
@@ -113,4 +118,26 @@ function ItoSet(covariance_matrix::CovarianceMatrix{<:Real})
     end
     ito_set_ = StochasticIntegrals.ItoSet(covariance_matrix.correlation , covariance_matrix.labels, itos)
     return ito_set_
+end
+
+import StochasticIntegrals.get_draws
+"""
+    get_draws(covariance_matrix::CovarianceMatrix{<:Real}, num::Integer; number_generator::NumberGenerator = Mersenne(MersenneTwister(1234), length(covar.covariance_labels_)), antithetic_variates = false)
+get pseudorandom draws from a `CovarianceMatrix` struct. This is basically a convenience wrapper over StochasticIntegrals.get_draws which does the necessary constructing of the structs of that package.
+If the `antithetic_variates` control is set to true then every second set of draws will be antithetic to the previous.
+If you want to do something like Sobol sampling you can change the number_generator. See StochasticIntegrals to see what is available (and feel free to make new ones and put in Pull Requests)
+### Inputs
+* `covar` - An `CovarianceMatrix` struct that you want to draw from.
+* `num`- The number of draws you want
+* `number_generator`  - A `NumberGenerator` struct that can be queried for a series of unit interval vectors that are then transformed by the covariance matrix into draws.
+* `antithetic_variates` - A boolean indicating if antithetic variates should be used (every second draw is made from 1 - uniformdraw of previous)
+### Returns
+* A `Vector` of `Dict`s of draws. Note you can convert this to a dataframe or array with to_dataframe or to_array.
+"""
+function get_draws(covariance_matrix::CovarianceMatrix{<:Real}, num::Integer; number_generator::NumberGenerator = Mersenne(MersenneTwister(1234), length(covariance_matrix.labels)), antithetic_variates = false)
+    iset = ItoSet(covariance_matrix)
+    # And below shows how this might be used to generate random draws.
+    scovar = StochasticIntegrals.SimpleCovariance(iset, 0.0, 1.0; calculate_inverse = false, calculate_determinant = false)
+    draws = StochasticIntegrals.get_draws(scovar, num)
+    return draws
 end
