@@ -1,6 +1,23 @@
 import StochasticIntegrals.ItoSet
 
 """
+    make_random_psd_matrix_from_wishart(num_assets::Integer, twister::MersenneTwister = MersenneTwister(1))
+
+Make a random psd matrix from the inverse wishart distribution.
+
+### Inputs
+* `num_assets` - The number of assets.
+* `twister` - The MersenneTwister used for RNG.
+### Returns
+* A `Hermitian`
+"""
+function make_random_psd_matrix_from_wishart(num_assets::Integer, twister::MersenneTwister = MersenneTwister(1))
+    wish = InverseWishart(num_assets, Matrix(Float64.(I(num_assets))))
+    newmat = Hermitian(rand(twister, wish))
+    return newmat
+end
+
+"""
     generate_random_path(dimensions::Integer, ticks::Integer;
                          syncronous::Bool = false,
                          twister::MersenneTwister = MersenneTwister(1),
@@ -53,8 +70,7 @@ function generate_random_path(dimensions::Integer, ticks::Integer;
     end
 
     if ismissing(brownian_corr_matrix)
-        wish = InverseWishart(dimensions, Matrix(Float64.(I(dimensions))))
-        brownian_corr_matrix, _ = cov2cor(Hermitian(rand(twister, wish)))
+        brownian_corr_matrix, _ = cov2cor(make_random_psd_matrix_from_wishart(dimensions, twister))
     end
 
     vols = ismissing(vols) ? rand(twister, vol_dist, dimensions) : vols

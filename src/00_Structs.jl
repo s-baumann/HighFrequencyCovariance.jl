@@ -259,7 +259,7 @@ function make_nan_covariance_matrix(labels::Vector{Symbol}, time_period_per_unit
 end
 
 """
-    calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8)
+    calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8; return_nans_if_symbols_dont_match::Bool = true)
 
 Calculates the mean absolute distance (elementwise in L1 norm) between two `CovarianceMatrix`s.
 Undefined if any labels differ between the two `CovarianceMatrix`s.
@@ -299,6 +299,36 @@ function calculate_mean_abs_distance(d1::Dict{Symbol,<:Real}, d2::Dict{Symbol,<:
     end
     return dist / length(common_labels)
 end
+
+"""
+    calculate_mean_abs_distance_covar(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8; return_nans_if_symbols_dont_match::Bool = true)
+
+Calculates the mean absolute distance (elementwise in L1 norm) between the covariance matrices (over the natural time unit) of two `CovarianceMatrix`s.
+Undefined if any labels differ between the two `CovarianceMatrix`s.
+
+Note that this is different from calculate_mean_abs_distance in that this function returns one real for the distance between actual covariance matrices
+rather than a tuple showing the distances in terms of correlation and volatility.
+
+### Inputs
+* `cov1` - The first `CovarianceMatrix`
+* `cov2` - The second `CovarianceMatrix`
+* `decimal_places` - How many decimal places to show the result to.
+* `return_nans_if_symbols_dont_match` - If the symbols don't match should it be an error. Or if false we only compare common symbols in both `CovarianceMatrix`s
+### Returns
+* A Real
+"""
+function calculate_mean_abs_distance_covar(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8; return_nans_if_symbols_dont_match::Bool = true)
+    if return_nans_if_symbols_dont_match & (length(symdiff(cov1.labels, cov2.labels)) != 0) return (Correlation_error = NaN, Volatility_error = NaN) end
+    labels = intersect(cov1.labels, cov2.labels)
+    N = length(labels)
+    cov11 = rearrange(cov1, labels)
+    cov22 = rearrange(cov2, labels)
+    covar1 = covariance(cov11, cov1.time_period_per_unit)
+    covar2 = covariance(cov22, cov2.time_period_per_unit)
+    error = round(mean(abs.(covar1 .- covar2)), digits = decimal_places)
+    return error
+end
+
 
 """
     get_correlation(covar::CovarianceMatrix, asset1::Symbol, asset2::Symbol)

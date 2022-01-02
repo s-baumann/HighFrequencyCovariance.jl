@@ -15,6 +15,7 @@ export SortedDataFrame, CovarianceMatrix, +, -
 export get_correlation, get_volatility
 export make_nan_covariance_matrix, duration
 export subset_to_tick, subset_to_time, calculate_mean_abs_distance
+export calculate_mean_abs_distance_covar
 export to_dataframe, valid_correlation_matrix, is_psd_matrix
 export ticks_per_asset, get_assets
 export show
@@ -26,7 +27,7 @@ export combine_covariance_matrices, rearrange
 export squared_frobenius, squared_frobenius_distance
 export get_all_refresh_times, latest_value, time_between_refreshes, random_value_in_interval
 include("03_MonteCarlo.jl")
-export generate_random_path, ItoSet
+export make_random_psd_matrix_from_wishart, generate_random_path, ItoSet
 include("04_Serialisation.jl")
 export to_dataframe, dataframe_to_covariancematrix
 
