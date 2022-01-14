@@ -418,3 +418,18 @@ function ticks_per_asset(ts::SortedDataFrame, assets::Vector{Symbol} = get_asset
     ticks_per_asset = map(a -> length(ts.groupingrows[a]), assets)
     return Dict{Symbol,eltype(ticks_per_asset)}(assets .=> ticks_per_asset)
 end
+
+"""
+    relabel(covar::CovarianceMatrix, mapping::Dict{Symbol,Symbol})
+
+This relabels a CovarianceMatrix struct to give all the assets alternative names.
+### Inputs
+* `covar` - The `CovarianceMatrix` object you want to relabel.
+* `mapping` - A dict mapping from the names you have to the names you want.
+### Returns
+* A `CovarianceMatrix` the same as the one you input but with new labels.
+"""
+function relabel(covar::CovarianceMatrix, mapping::Dict{Symbol,Symbol})
+    new_labels = map(x -> mapping[x], covar.labels)
+    return CovarianceMatrix(covar.correlation, covar.volatility, new_labels, covar.time_period_per_unit)
+end

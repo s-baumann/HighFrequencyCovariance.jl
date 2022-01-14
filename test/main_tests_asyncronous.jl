@@ -23,6 +23,12 @@ ts1 = subset_to_time(ts1, 1400) # Will delete some stuff.
 ts2 = subset_to_tick(ts2, 49000)
 
 
+# Relabelling
+relabelling = Dict{Symbol,Symbol}(assets .=> [:Barclays, :HSBC, :Vodafone, :Ryanair])
+true_relabelled = relabel(true_covar, relabelling)
+length(symdiff( [:Barclays, :HSBC, :Vodafone, :Ryanair] , true_relabelled.labels)) < 1
+
+
 # Getting ticks per asset
 tpa = ticks_per_asset(ts1)
 all(values(tpa) .> 1)

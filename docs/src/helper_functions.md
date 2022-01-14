@@ -35,6 +35,7 @@ Pages = ["helper_functions.md"]
     get_returns
     valid_correlation_matrix
     is_psd_matrix
+    relabel
 ```
 
 ## Blocking and Regularisation Functions
