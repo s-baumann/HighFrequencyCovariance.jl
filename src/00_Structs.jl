@@ -1,5 +1,5 @@
 """
-    SortedDataFrame(df::DataFrame, time::Symbol = :Time, grouping::Symbol = :Name, value::Symbol = :Value)
+    SortedDataFrame(df::DataFrame, time::Symbol = :Time, grouping::Symbol = :Name, value::Symbol = :Value, time_period_per_unit::Dates.Period)
 
 This struct wraps a `DataFrame`. In the constructor function for the dataframe
 we presort the data and create a mapping dict so that it is fast to subset the
