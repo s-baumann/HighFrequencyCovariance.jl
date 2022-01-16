@@ -51,7 +51,6 @@ function safe_multiply_period(scalar::Real, neww::Dates.Period)
 end
 
 import Base.show, Base.print
-
 """
     show(sdf::SortedDataFrame, number_of_rows = 10)
 Show a SortedDataFrame with a set number of rows.
@@ -75,6 +74,20 @@ Show a SortedDataFrame with a set number of rows.
 function print(sdf::SortedDataFrame, number_of_rows = 10)
     show(sdf, number_of_rows)
 end
+
+using Gadfly
+import Gadfly.plot
+"""
+    plot(ts::SortedDataFrame)
+This makes a basic plot of the assets in a `SortedDataFrame`.
+### Inputs
+* `ts` - The `SortedDataFrame` to plot.
+"""
+function plot(ts::SortedDataFrame)
+    plt = plot(ts.df, x=ts.time, y=ts.value, Geom.line, color=ts.grouping)
+    return plt
+end
+
 
 """
     get_assets(ts::SortedDataFrame, obs_to_include::Integer = 10)
