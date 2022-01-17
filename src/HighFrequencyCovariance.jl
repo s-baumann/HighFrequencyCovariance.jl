@@ -18,7 +18,7 @@ export subset_to_tick, subset_to_time, calculate_mean_abs_distance
 export calculate_mean_abs_distance_covar
 export to_dataframe, valid_correlation_matrix, is_psd_matrix
 export ticks_per_asset, get_assets
-export show, relabel, plot
+export show, relabel, plot, combine
 include("01_helpers.jl")
 export simple_differencing
 include("02_subsample_ticks.jl")

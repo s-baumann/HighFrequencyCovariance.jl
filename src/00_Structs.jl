@@ -40,6 +40,13 @@ struct SortedDataFrame
                              dic::Dict{Symbol,Vector{I}}, vol_unit::Dates.Period) where I<:Integer
         return new(df, timevar, groupingvar, valuevar, dic, vol_unit)
     end
+    function SortedDataFrame(ts::SortedDataFrame, timevar::Symbol, groupingvar::Symbol, valuevar::Symbol,
+                             vol_unit::Dates.Period)
+        dd = ts.df
+        dd[!, timevar] = time_period_ratio(vol_unit, ts.time_period_per_unit) .* dd[:, ts.time]
+        rename!(dd, Dict([ts.grouping, ts.value] .=> [groupingvar, valuevar]))
+        return new(dd[:,[timevar, groupingvar, valuevar]], timevar, groupingvar, valuevar, ts.groupingrows, vol_unit)
+    end
 end
 
 function time_period_ratio(neww::Dates.Period, oldd::Dates.Period)
@@ -49,6 +56,27 @@ function safe_multiply_period(scalar::Real, neww::Dates.Period)
     vall = Nanosecond(neww).value * scalar
     return Nanosecond(floor(vall))
 end
+
+import DataFrames.combine
+"""
+    combine(dfs::Vector{SortedDataFrame}; timevar::Symbol = dfs[1].time, groupingvar::Symbol = dfs[1].grouping,
+                 valuevar::Symbol = dfs[1].value, period::Dates.Period = dfs[1].time_period_per_unit)
+Show a SortedDataFrame with a set number of rows.
+### Inputs
+* `dfs` - A vector of SortedDataFrames
+* `timevar` - The desired name of the column representing time.
+* `groupingvar` - The desired name of the column representing the asset name
+* `valuevar` - The desired name of the column representing price/logprice/etc.
+* `period` - The desired period that one unit (in the time column) corresponds to.
+"""
+function combine(dfs::Vector{SortedDataFrame}; timevar::Symbol = dfs[1].time, groupingvar::Symbol = dfs[1].grouping,
+                 valuevar::Symbol = dfs[1].value, period::Dates.Period = dfs[1].time_period_per_unit)
+    dfs_newversion = SortedDataFrame.(dfs, timevar, groupingvar, valuevar, period)
+    dd = vcat(map(x -> x.df, dfs_newversion)...)
+    return SortedDataFrame(dd, timevar, groupingvar, valuevar, period)
+end
+
+
 
 import Base.show, Base.print
 """
