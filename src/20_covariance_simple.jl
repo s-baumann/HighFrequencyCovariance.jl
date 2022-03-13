@@ -65,26 +65,49 @@ Estimation of the covariance matrix in the standard textbook way.
 ### Returns
 * A `CovarianceMatrix`.
 
-### References
 """
 function simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
                            regularisation::Union{Missing,Symbol} = :covariance_default,
                            regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
                            time_grid::Union{Missing,Vector} = missing, fixed_spacing::Union{Missing,<:Real} = missing,
                            refresh_times::Bool = false, rough_guess_number_of_intervals::Integer = 5)
-   if ismissing(time_grid)
-       time_grid = Vector{eltype(ts.df[:,ts.time])}()
-       if refresh_times
-           time_grid = get_all_refresh_times(ts, assets)
-       elseif !ismissing(fixed_spacing)
-            time_grid = collect(minimum(ts.df[:,ts.time]):fixed_spacing:maximum(ts.df[:,ts.time]))
-       else
-           n_grid = default_spacing(ts; rough_guess_number_of_intervals = rough_guess_number_of_intervals)
-           vals = collect(values(n_grid))
-           spacing = min( mean(vals[(isnan.(vals) .== false) .& (isinf.(vals) .== false)]) , duration(ts; in_dates_period = false)/20   )
-           spacing = isnan(spacing) ? duration(ts; in_dates_period = false)/20 : spacing
-           time_grid = collect(minimum(ts.df[:,ts.time]):spacing:maximum(ts.df[:,ts.time]))
-       end
-   end
-   return simple_covariance_given_time_grid(ts, assets, time_grid; regularisation = regularisation, regularisation_params = regularisation_params, only_regulise_if_not_PSD = only_regulise_if_not_PSD)
+    time_grid = get_timegrid(ts, assets, time_grid , fixed_spacing, refresh_times, rough_guess_number_of_intervals)
+    return simple_covariance_given_time_grid(ts, assets, time_grid; regularisation = regularisation, regularisation_params = regularisation_params, only_regulise_if_not_PSD = only_regulise_if_not_PSD)
+end
+
+"""
+    get_timegrid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Missing , fixed_spacing::Union{Missing,<:Real},
+                      refresh_times::Bool, rough_guess_number_of_intervals::Integer)
+    get_timegrid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Vector, fixed_spacing::Union{Missing,<:Real},
+                      refresh_times::Bool, rough_guess_number_of_intervals::Integer)
+
+This returns a sequence of times at which the SortedDataFrame can be queried for prices. This is used in the simple_covariance method.
+### Inputs
+* `ts` - The tick data.
+* `time_grid` - The grid with which to calculate returns.
+* `fixed_spacing` - A spacing used to calculate a time grid. Not used if `refresh_times=true`.
+* `refresh_times` - Should refresh times be used to estimate covariance.
+* `rough_guess_number_of_intervals` - A rough number of intervals to calculate a default spacing. Not used if a `time_grid` or `fixed_spacing` is provided or if `refresh_times=true`.
+### Returns
+* A `Vector{<:Real}`.
+"""
+function get_timegrid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Missing , fixed_spacing::Union{Missing,<:Real},
+                      refresh_times::Bool, rough_guess_number_of_intervals::Integer)
+    time_grid = Vector{eltype(ts.df[:,ts.time])}()
+    if !ismissing(fixed_spacing)
+        time_grid = collect(minimum(ts.df[:,ts.time]):fixed_spacing:maximum(ts.df[:,ts.time]))
+    elseif refresh_times
+        time_grid = get_all_refresh_times(ts, assets)
+    else
+        n_grid = default_spacing(ts; rough_guess_number_of_intervals = rough_guess_number_of_intervals)
+        vals = collect(values(n_grid))
+        spacing = min( mean(vals[(isnan.(vals) .== false) .& (isinf.(vals) .== false)]) , duration(ts; in_dates_period = false)/20   )
+        spacing = isnan(spacing) ? duration(ts; in_dates_period = false)/20 : spacing
+        time_grid = collect(minimum(ts.df[:,ts.time]):spacing:maximum(ts.df[:,ts.time]))
+    end
+    return time_grid
+end
+function get_timegrid(ts::SortedDataFrame,  assets::Vector{Symbol}, time_grid::Vector, fixed_spacing::Union{Missing,<:Real},
+                      refresh_times::Bool, rough_guess_number_of_intervals::Integer)
+    return time_grid
 end

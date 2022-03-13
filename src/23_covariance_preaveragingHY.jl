@@ -70,11 +70,12 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
    lens = findall(map(i -> ismissing(prev_prices[i][1]), 1:length(prev_prices)))
    if length(lens) > 0
       if drop_assets_if_not_enough_data
-          @warn string("We are going to drop ", assets[lens] , " as we do not have enough ticks with the preaveraging method. We will then proceeed with the estimation.")
+          #@warn string("We are going to drop ", assets[lens] , " as we do not have enough ticks with the preaveraging method. We will then proceeed with the estimation.")
           assets = setdiff(assets, assets[lens])
           number_of_ticks = nrow(ts.df)
           k_n = Int(ceil(min(number_of_ticks/2,theta * sqrt(number_of_ticks))))
           gs = g.f.( collect(1:1:(k_n-1)) ./ k_n )
+          #@warn string("This is a warning")
           prev_prices = get_preaveraged_prices.(Ref(ts), assets, k_n, Ref(gs))
       else
           @warn string("Cannot estimate the correlation matrix with the preaveraging technique with ", number_of_ticks, " ticks. There are insufficient ticks for ", assets[lens])
@@ -96,6 +97,7 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
          end
       end
    end
+
    HYn = Hermitian(HYn)
    # Regularisation
    dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(HYn))

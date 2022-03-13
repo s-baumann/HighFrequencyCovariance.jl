@@ -41,17 +41,17 @@ Converts a matrix (representing a covariance matrix) into a `Hermitian` correlat
 """
 function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Dates.Period, duration_for_desired_vols::Dates.Period)
     cor, sdevs = cov2cor(mat)
-    vols = sdevs / sqrt(  time_period_ratio(duration_of_covariance_matrix, duration_for_desired_vols)  )
+    vols = sdevs / sqrt(time_period_ratio(duration_of_covariance_matrix, duration_for_desired_vols))
     return Hermitian(cor), vols
 end
 function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Real, duration_for_desired_vols::Real)
     cor, sdevs = cov2cor(mat)
-    vols = sdevs / sqrt(  duration_of_covariance_matrix / duration_for_desired_vols  )
+    vols = sdevs / sqrt(duration_of_covariance_matrix / duration_for_desired_vols)
     return Hermitian(cor), vols
 end
 function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix_in_natural_units::Real)
     cor, sdevs = cov2cor(mat)
-    vols = sdevs / sqrt( duration_of_covariance_matrix_in_natural_units  )
+    vols = sdevs / sqrt(duration_of_covariance_matrix_in_natural_units)
     return Hermitian(cor), vols
 end
 
@@ -133,7 +133,7 @@ function get_returns(dd::DataFrame; rescale_for_duration::Bool = false)
     N = nrow(dd)
     assets = setdiff(Symbol.(collect(names(dd))), [:Time])
     dd_mat = Array{Float64,2}(dd[1:N,assets])
-    diffs  = reduce(hcat, map(i -> simple_differencing(dd_mat[2:end,i] , dd_mat[1:(end-1),i]) , 1:length(assets)) )
+    diffs  = reduce(hcat, map(i -> simple_differencing(dd_mat[2:end,i] , dd_mat[1:(end-1),i]) , 1:length(assets)))
     dd_returns = diffs
     if rescale_for_duration
         time_diffs = dd[2:N,:Time] - dd[1:(N-1),:Time]
@@ -185,7 +185,7 @@ function combine_covariance_matrices(vect::Vector{CovarianceMatrix{T}}, cor_weig
             valid_entries = setdiff(1:length(correls), findall(is_missing_nan_inf.(correls)))
             new_mat[row,col] = weighted_mean(correls[valid_entries], cor_weights[valid_entries])
         end
-        vols = map(i -> convert_vol(get_volatility(vect[i], row_label), vect[i].time_period_per_unit, time_period_per_unit )             ,  1:length(vect))
+        vols = map(i -> convert_vol(get_volatility(vect[i], row_label), vect[i].time_period_per_unit, time_period_per_unit ),  1:length(vect))
 
         valid_entries = setdiff(1:length(vols), findall(is_missing_nan_inf.(vols)))
         new_vols[row] = weighted_mean(vols[valid_entries], vol_weights[valid_entries])

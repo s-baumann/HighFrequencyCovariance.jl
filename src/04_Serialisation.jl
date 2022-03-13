@@ -79,7 +79,7 @@ function dataframe_to_covariancematrix(dd::DataFrame, error_if_incomplete::Bool 
     end
 
     # Vol Period
-    volperiod = map( i ->  eval(Meta.parse(string(vol_dd[i,:vol_period_units] , "(", vol_dd[i,:vol_period], ")"))), 1:nrow(vol_dd))
+    volperiod = map(i ->  eval(Meta.parse(string(vol_dd[i,:vol_period_units] , "(", vol_dd[i,:vol_period], ")"))), 1:nrow(vol_dd))
     chosen_volperiod = volperiod[1]
     vols2 = convert_vol.(vols, volperiod, Ref(chosen_volperiod))
     return CovarianceMatrix(Hermitian(mat), vols2, assets, chosen_volperiod)

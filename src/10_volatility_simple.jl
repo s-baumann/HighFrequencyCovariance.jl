@@ -44,19 +44,21 @@ function simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_ass
                 time_grid[a] = ts.df[ts.groupingrows[a],ts.time]
             end
         elseif !ismissing(fixed_spacing)
+            minn, maxx = extrema(ts.df[:,ts.time])
             if isa(fixed_spacing, Dict)
                 for a in assets
-                    time_grid[a] = collect(minimum(ts.df[:,ts.time]):fixed_spacing[a]:maximum(ts.df[:,ts.time]))
+                    time_grid[a] = collect(minn:fixed_spacing[a]:maxx)
                 end
             else
                 for a in assets
-                    time_grid[a] = collect(minimum(ts.df[:,ts.time]):fixed_spacing:maximum(ts.df[:,ts.time]))
+                    time_grid[a] = collect(minn:fixed_spacing:maxx)
                 end
             end
         else
+            minn, maxx = extrema(ts.df[:,ts.time])
             n_grid = default_spacing(ts; rough_guess_number_of_intervals = rough_guess_number_of_intervals)
             for a in assets
-                time_grid[a] = collect(minimum(ts.df[:,ts.time]):n_grid[a]:maximum(ts.df[:,ts.time]))
+                time_grid[a] = collect(minn:n_grid[a]:maxx)
             end
         end
     end

@@ -1,6 +1,7 @@
 
 function vol_given_values_and_times(vals::Vector, times::Vector, asset::Symbol)
-    duration = maximum(times) - minimum(times)
+    minn, maxx = extrema(times)
+    duration = maxx - minn
     returns = simple_differencing(vals[2:end], vals[1:(end-1)])
     return sqrt(sum(returns .^ 2)/duration)
 end

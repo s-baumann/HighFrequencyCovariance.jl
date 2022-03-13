@@ -133,14 +133,14 @@ function get_assets(ts::SortedDataFrame, obs_to_include::Integer = 10)
     assets = Array{Symbol,1}(undef,0)
     for a in all_assets
         cond1 = length(ts.groupingrows[a]) >= obs_to_include
-        if sum(isnan.(ts.df[ts.groupingrows[a], ts.value])) > 0
+        if sum(isnan, ts.df[ts.groupingrows[a], ts.value]) > 0
             @warn string("There are nan values for ", a)
         end
         vals = ts.df[ts.groupingrows[a], ts.value]
         cond2 = (maximum(vals) - minimum(vals) > 1000*eps())
         if (cond1 & cond2) push!(assets, a) end
     end
-    return sort(assets)
+    return sort!(assets)
 end
 
 """
@@ -328,8 +328,8 @@ function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMat
     N = length(labels)
     cov11 = rearrange(cov1, labels)
     cov22 = rearrange(cov2, labels)
-    cor_error = round(sum(abs.(cov11.correlation .- cov22.correlation)) / ((N^2-N)/2), digits = decimal_places)
-    vol_error = round(mean(abs.(cov11.volatility  .- cov22.volatility)), digits  = decimal_places)
+    cor_error = round(sum(abs, cov11.correlation .- cov22.correlation) / ((N^2-N)/2), digits = decimal_places)
+    vol_error = round(mean(abs, cov11.volatility  .- cov22.volatility), digits  = decimal_places)
     return (Correlation_error = cor_error, Volatility_error = vol_error)
 end
 function calculate_mean_abs_distance(d1::Dict{Symbol,<:Real}, d2::Dict{Symbol,<:Real})
@@ -366,7 +366,7 @@ function calculate_mean_abs_distance_covar(cov1::CovarianceMatrix, cov2::Covaria
     cov22 = rearrange(cov2, labels)
     covar1 = covariance(cov11, cov1.time_period_per_unit)
     covar2 = covariance(cov22, cov2.time_period_per_unit)
-    error = round(mean(abs.(covar1 .- covar2)), digits = decimal_places)
+    error = round(mean(abs, covar1 .- covar2), digits = decimal_places)
     return error
 end
 

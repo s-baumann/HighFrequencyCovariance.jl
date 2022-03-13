@@ -21,6 +21,8 @@ ts3, true_covar, micro_noise, update_rates = generate_random_path(4, 2000; asset
 
 iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error + b.Volatility_error)
 
+get_assets(ts2)
+
 # Simple Volatility
 simple_vol = simple_volatility(ts1)
 all(values(simple_vol) .< 0.1)
