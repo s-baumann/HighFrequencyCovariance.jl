@@ -48,7 +48,7 @@ function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_as
     for block_num in 1:num_blocks
         hermitian_array = Array{Hermitian{R},1}(undef, numJ)
         for j in 1:numJ
-            hermitian_array[j] = Hermitian( SS[block_num,j,:] * transpose(SS[block_num,j,:])  )
+            hermitian_array[j] = Hermitian(SS[block_num,j,:] * transpose(SS[block_num,j,:]))
         end
         uncorrected_covar_matrices[block_num] = hermitian_array
     end

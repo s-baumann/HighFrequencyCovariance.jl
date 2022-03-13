@@ -1,7 +1,7 @@
 function two_scales_correlation(prices::DataFrame, times::Vector{<:Real}, asseti::Symbol, assetj::Symbol, gamma::Real, num_grids::Real)
     vol_plus_version  = two_scales_volatility(prices[:,asseti] * gamma + (1-gamma) * prices[:,assetj] , times, Symbol("CompoundAsset__",asseti,"__+__",assetj,"__",gamma), num_grids)[1]
     vol_minus_version = two_scales_volatility(prices[:,asseti] * gamma - (1-gamma) * prices[:,assetj] , times, Symbol("CompoundAsset__",asseti,"__-__",assetj,"__",gamma), num_grids)[1]
-    covv = (1/(4*gamma*(1-gamma))) * ( vol_plus_version^2 -  vol_minus_version^2 )
+    covv = (1/(4*gamma*(1-gamma))) * (vol_plus_version^2 -  vol_minus_version^2)
     # Note that we calculate these again rather than feeding in the ones calculated earlier because it is improtant the vols are calculated with the same data as the sums/differences.
     asseti_vol = two_scales_volatility(prices[:,asseti], times, Symbol("CompoundAsset__",asseti,"__ONLY"), num_grids)[1]
     assetj_vol = two_scales_volatility(prices[:,assetj], times, Symbol("CompoundAsset__",assetj,"__ONLY"), num_grids)[1]
@@ -10,10 +10,10 @@ function two_scales_correlation(prices::DataFrame, times::Vector{<:Real}, asseti
 end
 
 function get_refresh_times_and_prices(ts::SortedDataFrame, asset1::Symbol, asset2::Symbol)
-    assets = [asset1, asset2]
-    at_times    = get_all_refresh_times(ts, assets)
-    prices = random_value_in_interval(ts, at_times; assets = assets)
-    times = prices[:,:Time]
+    assets   = [asset1, asset2]
+    at_times = get_all_refresh_times(ts, assets)
+    prices   = random_value_in_interval(ts, at_times; assets = assets)
+    times    = prices[:,:Time]
     return prices, times
 end
 
@@ -42,9 +42,7 @@ function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get
                                regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
                                equalweight::Bool = false, num_grids::Real = default_num_grids(ts), min_obs_for_estimation::Integer = 10,
                                if_dont_have_min_obs::Real = NaN)
-
     two_scales_vol, micro_noise = two_scales_volatility(ts, assets; num_grids = num_grids)
-
     N = length(assets)
     mat = zeros(N,N)
     for i in 1:N
@@ -61,7 +59,7 @@ function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get
                 else
                     prices, times = get_refresh_times_and_prices(ts, asseti, assetj)
                     if (nrow(prices) < min_obs_for_estimation)
-                        @warn string("There are only ", nrow(prices), " observations for correlation between ", asseti, " and ", assetj, ". So this correlation will be set as ", if_dont_have_min_obs )
+                        @warn string("There are only ", nrow(prices), " observations for correlation between ", asseti, " and ", assetj, ". So this correlation will be set as ", if_dont_have_min_obs)
                         mat[i,j] = if_dont_have_min_obs
                     else
                         mat[i,j] = two_scales_correlation(prices, times, asseti, assetj, gamma, num_grids)

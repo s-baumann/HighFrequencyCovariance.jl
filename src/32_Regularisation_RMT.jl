@@ -1,6 +1,6 @@
 function mean_sqrt_of_positive_diagonals(x)
     vals = diag(x)
-    return mean(sqrt.(vals[vals .> 0]))^2
+    return mean(sqrt, vals[vals .> 0]   )^2
 end
 
 """
@@ -78,7 +78,7 @@ function eigenvalue_clean(eigenvalues::Vector{<:Real},
     return regularised_mat
 end
 function eigenvalue_clean(mat::Hermitian, eigenvalue_threshold::Real)
-    if sum(isnan.(mat)) > 0 return mat end # If someone inputs a matrix involving a NaN
+    if sum(isnan, mat) > 0 return mat end # If someone inputs a matrix involving a NaN
     eigenvalues, eigenvectors = eigen(mat)
     return eigenvalue_clean(eigenvalues, eigenvectors, eigenvalue_threshold)
 end

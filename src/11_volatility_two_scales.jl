@@ -54,8 +54,8 @@ Zhang L, Mykland PA, Aït-Sahalia Y (2005). "A Tale of Two Time Scales: Determin
 function two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_grids::Real)
     dura  = maximum(times) - minimum(times)
     if (dura < eps()) | (length(vals) < 10) return NaN, NaN end
-    num_grids = Int(  min( floor(length(times)/4),   max( 2,  floor(num_grids)  ) ))
-    avg_vol   = mean(map(i ->  vol_given_values_and_times(vals[i:num_grids:end], times[i:num_grids:end], asset), 1:num_grids ))
+    num_grids = Int(min(floor(length(times)/4), max(2, floor(num_grids))))
+    avg_vol   = mean(i ->  vol_given_values_and_times(vals[i:num_grids:end], times[i:num_grids:end], asset), 1:num_grids)
     all_vol   = vol_given_values_and_times(vals, times, asset)
 
     pure_vol  = ((1- 1/num_grids)^(-1)) * ( avg_vol - (1/num_grids) *all_vol   )

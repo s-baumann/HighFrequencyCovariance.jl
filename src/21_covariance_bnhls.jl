@@ -88,7 +88,7 @@ This calculates covariance with the multivariate realised kernel of BNHLS(2011).
 function bnhls_covariance_estimate_given_returns(returns::Array{R,2}; kernel::HFC_Kernel{T}, H::Real, m::Integer) where R<:Real where T<:Real
     returns_end_averaged  = preaveraging_end_returns(returns, m)
     N = size(returns)[1]
-    termination = Integer(floor(min(N, maximum(abs.(kernel.domain))*H)))
+    termination = Integer(floor(min(N, maximum(abs, kernel.domain)*H )))
     summed = realised_autocovariance(returns,0) # as kernel.f(0) is always 1.
     for h in 1:termination
         kern = kernel.f(h/H)

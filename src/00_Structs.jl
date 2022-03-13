@@ -137,7 +137,8 @@ function get_assets(ts::SortedDataFrame, obs_to_include::Integer = 10)
             @warn string("There are nan values for ", a)
         end
         vals = ts.df[ts.groupingrows[a], ts.value]
-        cond2 = (maximum(vals) - minimum(vals) > 1000*eps())
+        minn, maxx = extrema(vals)
+        cond2 = (maxx - minn > 1000*eps())
         if (cond1 & cond2) push!(assets, a) end
     end
     return sort!(assets)
@@ -233,7 +234,7 @@ This prints the `CovarianceMatrix` in a nice format.
 function show(cm::CovarianceMatrix)
     println()
     println("Volatilities per time interval of ", cm.time_period_per_unit)
-    flat_labels = reshape( cm.labels , (1, length(cm.labels)))
+    flat_labels = reshape(cm.labels ,(1, length(cm.labels)))
     Base.print_matrix(stdout, vcat(flat_labels, cm.volatility'))
     println("\n")
     println("Correlations")

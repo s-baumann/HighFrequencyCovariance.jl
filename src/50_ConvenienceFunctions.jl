@@ -110,7 +110,7 @@ function estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_a
                              only_regulise_if_not_PSD::Bool = false,
                              time_grid::Union{Missing,Vector} = missing,
                              fixed_spacing::Union{Missing,<:Real} = missing, refresh_times::Bool = false, rough_guess_number_of_intervals::Integer = 5, # General Inputs
-                             kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6, m::Integer = 2, # BNHLS parameters
+                             kernel::HFC_Kernel{<:Real} = parzen, H::Real = kernel.c_star * mean(a -> length(ts.groupingrows[a]), assets)^0.6, m::Integer = 2, # BNHLS parameters
                              numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks, microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], # Spectral Covariance parameters
                              drop_assets_if_not_enough_data::Bool = false, theta::Real = 0.15, g::NamedTuple = g, # Preaveraging
                              equalweight::Bool = false, num_grids::Real = default_num_grids(ts), min_obs_for_estimation::Integer = 10, if_dont_have_min_obs::Real = NaN) # Two Scales parameters

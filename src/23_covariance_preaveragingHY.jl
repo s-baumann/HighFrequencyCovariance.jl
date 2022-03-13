@@ -30,10 +30,10 @@ function HY_n(A::Tuple{Vector{<:Real},Vector{<:Real}}, B::Tuple{Vector{<:Real},V
 end
 
 # This is the 3rd equation in the aymptotic theory section of the paper.
-univariate_HYn(vect::Vector, k_n::Real, psi::Real) = sum(map(i -> vect[i] * sum( map(j -> vect[i-j], (1-k_n):(k_n-1)  ) ), k_n:(length(vect)-2k_n+1)))/((psi*k_n)^2)
+univariate_HYn(vect::Vector, k_n::Real, psi::Real) = sum(map(i -> vect[i] * sum(j -> vect[i-j], (1-k_n):(k_n-1)), k_n:(length(vect)-2k_n+1)))/((psi*k_n)^2)
 
 
-g = (f = x-> min(x, 1-x), psi = 0.25)
+const g = (f = x-> min(x, 1-x), psi = 0.25)
 
 """
     preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
@@ -64,7 +64,7 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
    # The defaults are from the paper (Christensen et al 2013). theta and the formula for k_n is from halfway down page 67. g is from page 64.
    number_of_ticks = nrow(ts.df)
    k_n = Int(ceil(min(number_of_ticks/2,theta * sqrt(number_of_ticks))))
-   gs = g.f.( collect(1:1:(k_n-1)) ./ k_n )
+   gs = g.f.(collect(1:1:(k_n-1)) ./ k_n )
    prev_prices = get_preaveraged_prices.(Ref(ts), assets, k_n, Ref(gs))
 
    lens = findall(map(i -> ismissing(prev_prices[i][1]), 1:length(prev_prices)))

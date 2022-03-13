@@ -37,7 +37,7 @@ function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{S
 
     # av_spacing
     N = length(time_grid)
-    spacing = safe_multiply_period(Statistics.mean(time_grid[2:N] .- time_grid[1:(N-1)]), ts.time_period_per_unit)
+    spacing = safe_multiply_period(mean(time_grid[2:N] .- time_grid[1:(N-1)]), ts.time_period_per_unit)
 
     # Packing into a CovarianceMatrix and returning.
     cor, vols = cov2cor_and_vol(covariance, spacing, ts.time_period_per_unit)
@@ -95,7 +95,8 @@ function get_timegrid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Mi
                       refresh_times::Bool, rough_guess_number_of_intervals::Integer)
     time_grid = Vector{eltype(ts.df[:,ts.time])}()
     if !ismissing(fixed_spacing)
-        time_grid = collect(minimum(ts.df[:,ts.time]):fixed_spacing:maximum(ts.df[:,ts.time]))
+        minn, maxx = extrema(ts.df[:,ts.time])
+        time_grid = collect(minn:fixed_spacing:maxx)
     elseif refresh_times
         time_grid = get_all_refresh_times(ts, assets)
     else
@@ -103,7 +104,8 @@ function get_timegrid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Mi
         vals = collect(values(n_grid))
         spacing = min( mean(vals[(isnan.(vals) .== false) .& (isinf.(vals) .== false)]) , duration(ts; in_dates_period = false)/20   )
         spacing = isnan(spacing) ? duration(ts; in_dates_period = false)/20 : spacing
-        time_grid = collect(minimum(ts.df[:,ts.time]):spacing:maximum(ts.df[:,ts.time]))
+        minn, maxx = extrema(ts.df[:,ts.time])
+        time_grid = collect(minn:spacing:maxx)
     end
     return time_grid
 end

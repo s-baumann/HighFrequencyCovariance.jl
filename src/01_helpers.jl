@@ -259,7 +259,8 @@ Get a `DataFrame` showing how many time is between each refresh and how many tic
 * A `DataFrame` summarising the average number of time between ticks for each asset.
 """
 function time_between_refreshes(ts::SortedDataFrame; assets::Vector{Symbol} = get_assets(ts))
-    total_secs = maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])
+    minn, maxx = extrema(ts.df[:,ts.time])
+    total_secs = maxx - minn
     R = eltype(ts.df[:,ts.value])
     N = nrow(ts.df)
     dd = DataFrame(Asset = Array{Symbol,1}([]), time_between_ticks = Array{R,1}([]), number_of_ticks = Array{Int64,1}([]))
