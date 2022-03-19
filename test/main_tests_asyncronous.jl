@@ -137,11 +137,8 @@ maximum(collect(values(C))) < 1E-13
 
 
 
-# Testing print functions
-print(ts1)
+# Testing show functions
 show(ts1)
-print(true_covar)
 show(true_covar)
-print(preav_estimate2, 3, 6)
 show(preav_estimate2, 3, 6)
 true # Otherwise it tends to throw from not evaluating to Bool in testing.

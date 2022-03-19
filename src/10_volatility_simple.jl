@@ -12,7 +12,8 @@ function simple_volatility_with_grid(ts::SortedDataFrame, assets::Vector{Symbol}
         dd_compiled = latest_value(ts, at_times; assets = Array{Symbol}([a]))
         returns = get_returns(dd_compiled)
         vol = simple_volatility_given_returns(Array(returns[:,a]))
-        av_tick_duration = (maximum(at_times) - minimum(at_times)) / (length(at_times) - 1)
+        minn, maxx = extrema(at_times)
+        av_tick_duration = (maxx - minn) / (length(at_times) - 1)
         voldict[a] = vol / sqrt(av_tick_duration)
     end
     return voldict

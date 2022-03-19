@@ -78,7 +78,7 @@ end
 
 
 
-import Base.show, Base.print
+import Base.show
 """
     show(sdf::SortedDataFrame, number_of_rows = 10)
 Show a SortedDataFrame with a set number of rows.
@@ -91,16 +91,6 @@ function show(sdf::SortedDataFrame, number_of_rows = 10)
     println("SortedDataFrame with " , nrow(sdf.df), " rows."  )
     show(stdout, sdf.df[1:number_of_rows,[sdf.time, sdf.grouping, sdf.value]] ; summary = false)
     println()
-end
-"""
-    print(sdf::SortedDataFrame, number_of_rows = 10)
-Show a SortedDataFrame with a set number of rows.
-### Inputs
-* `sdf` - The `SortedDataFrame` to print.
-* `number_of_rows` - The number of rows to print.
-"""
-function print(sdf::SortedDataFrame, number_of_rows = 10)
-    show(sdf, number_of_rows)
 end
 
 using Gadfly
@@ -225,9 +215,9 @@ end
     show(cm::CovarianceMatrix)
     show(cm::CovarianceMatrix, decimal_places_volatility::Integer, decimal_places_correlation::Integer)
 
-This prints the `CovarianceMatrix` in a nice format.
+This shoes the `CovarianceMatrix` in a nice format.
 ### Inputs
-* `cm` - The `CovarianceMatrix` you want to print.
+* `cm` - The `CovarianceMatrix` you want to show.
 * `decimal_places_volatility`  - The number of digits you want to show for volatilities. If not input then all digits are shown.
 * `decimal_places_correlation` - The number of digits you want to show. If not input then all digits are shown.
 """
@@ -263,22 +253,6 @@ function convert_vol(vol::Union{Vector{<:Real},Real}, vol_period::Dates.Period, 
     return vol .* sqrt( time_period_ratio(new_vol_period, vol_period) )
 end
 convert_vol(vol::Missing, vol_period::Dates.Period, new_vol_period::Dates.Period) = missing
-
-"""
-    print(cm::CovarianceMatrix)
-
-This prints the `CovarianceMatrix` in a nice format.
-### Inputs
-* `cm` - The `CovarianceMatrix` you want to print.
-* `decimal_places_volatility`  - The number of digits you want to show for volatilities. If not input then all digits are shown.
-* `decimal_places_correlation` - The number of digits you want to show. If not input then all digits are shown.
-"""
-function print(cm::CovarianceMatrix)
-    show(cm)
-end
-function print(cm::CovarianceMatrix, decimal_places_volatility::Integer, decimal_places_correlation::Integer)
-    show(cm, decimal_places_volatility, decimal_places_correlation)
-end
 
 """
     make_nan_covariance_matrix(labels::Vector{Symbol}, time_period_per_unit::Dates.Period)
