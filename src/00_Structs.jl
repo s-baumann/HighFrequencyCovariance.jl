@@ -17,12 +17,12 @@ For the constructor pass in the dataframe, name of time column, name of grouping
 ### Returns
 * A `SortedDataFrame`.
 """
-struct SortedDataFrame
+struct SortedDataFrame{I<:Integer}
     df::DataFrame
     time::Symbol
     grouping::Symbol
     value::Symbol
-    groupingrows::Dict{Symbol,Array{Int64,1}}
+    groupingrows::Dict{Symbol,Vector{I}}
     time_period_per_unit::Dates.Period
     function SortedDataFrame(df::DataFrame, time::Symbol, grouping::Symbol,
                              value::Symbol, time_period_per_unit::Dates.Period)
@@ -69,7 +69,7 @@ Show a SortedDataFrame with a set number of rows.
 * `valuevar` - The desired name of the column representing price/logprice/etc.
 * `period` - The desired period that one unit (in the time column) corresponds to.
 """
-function combine(dfs::Vector{SortedDataFrame}; timevar::Symbol = dfs[1].time, groupingvar::Symbol = dfs[1].grouping,
+function combine(dfs::Vector{SortedDataFrame{<:Integer}}; timevar::Symbol = dfs[1].time, groupingvar::Symbol = dfs[1].grouping,
                  valuevar::Symbol = dfs[1].value, period::Dates.Period = dfs[1].time_period_per_unit)
     dfs_newversion = SortedDataFrame.(dfs, timevar, groupingvar, valuevar, period)
     dd = vcat(map(x -> x.df, dfs_newversion)...)
