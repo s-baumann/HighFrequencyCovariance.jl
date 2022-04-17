@@ -4,7 +4,9 @@ using DataFrames
 using Dates
 using Distributions
 using LinearAlgebra
+using Gadfly
 using Random
+using StableRNGs
 using Statistics
 using StochasticIntegrals # Used for Monte Carlo Functions
 using UnivariateFunctions # Used for Monte Carlo Functions

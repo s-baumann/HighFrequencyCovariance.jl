@@ -34,18 +34,18 @@ struct SortedDataFrame{I<:Integer}
        if typeof(time_period_per_unit) in [Year, Quarter, Month]
            error("time_period_per_unit cannot be a Year, Quarter or Month as it is undefined how many seconds/days/etc exist per Year, Quarter or Month.")
        end
-       return new(df2, time, grouping, value, dic, time_period_per_unit)
+       return new{Int64}(df2, time, grouping, value, dic, time_period_per_unit)
     end
     function SortedDataFrame(df::DataFrame, timevar::Symbol, groupingvar::Symbol, valuevar::Symbol,
                              dic::Dict{Symbol,Vector{I}}, vol_unit::Dates.Period) where I<:Integer
-        return new(df, timevar, groupingvar, valuevar, dic, vol_unit)
+        return new{I}(df, timevar, groupingvar, valuevar, dic, vol_unit)
     end
-    function SortedDataFrame(ts::SortedDataFrame, timevar::Symbol, groupingvar::Symbol, valuevar::Symbol,
-                             vol_unit::Dates.Period)
+    function SortedDataFrame(ts::SortedDataFrame{I}, timevar::Symbol, groupingvar::Symbol, valuevar::Symbol,
+                             vol_unit::Dates.Period) where I<:Integer
         dd = ts.df
         dd[!, timevar] = time_period_ratio(vol_unit, ts.time_period_per_unit) .* dd[:, ts.time]
         rename!(dd, Dict([ts.grouping, ts.value] .=> [groupingvar, valuevar]))
-        return new(dd[:,[timevar, groupingvar, valuevar]], timevar, groupingvar, valuevar, ts.groupingrows, vol_unit)
+        return new{I}(dd[:,[timevar, groupingvar, valuevar]], timevar, groupingvar, valuevar, ts.groupingrows, vol_unit)
     end
 end
 
@@ -93,7 +93,7 @@ function show(sdf::SortedDataFrame, number_of_rows = 10)
     println()
 end
 
-using Gadfly
+
 import Gadfly.plot
 """
     plot(ts::SortedDataFrame)
