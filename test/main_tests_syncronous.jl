@@ -22,7 +22,6 @@ using Test
     ts1, true_covar, micro_noise, update_rates = generate_random_path(4, 2000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], rng = deepcopy(rng), syncronous = true, time_period_per_unit = time_period_per_unit)
     ts2, true_covar, micro_noise, update_rates = generate_random_path(4, 50000; brownian_corr_matrix = brownian_corr_matrix, assets = assets, vols = [0.02,0.03,0.04,0.05], rng = deepcopy(rng), syncronous = true, time_period_per_unit = time_period_per_unit)
 
-
     iscloser(a,b) = (a.Correlation_error + a.Volatility_error < b.Correlation_error + b.Volatility_error)
 
     # Simple Volatility
@@ -89,13 +88,13 @@ using Test
     #############################
      # Serialisation and deserialisation
 
-    true_df = to_dataframe(true_covar, Dict([:estimation] .=> ["True Covariance Matrix"]))
-    reconstituted_df = dataframe_to_covariancematrix(true_df)
+    true_df = DataFrame(true_covar, Dict([:estimation] .=> ["True Covariance Matrix"]))
+    reconstituted_df = CovarianceMatrix(true_df)
     @test calculate_mean_abs_distance(true_covar, reconstituted_df).Correlation_error .< 10*eps()
     @test calculate_mean_abs_distance(true_covar, reconstituted_df).Volatility_error .< 10*eps()
     # Reshuffling rows to make sure it still works.
     true_df2 = true_df[randperm(MersenneTwister(1234), nrow(true_df)),:]
-    reconstituted_df = dataframe_to_covariancematrix(true_df2)
+    reconstituted_df = CovarianceMatrix(true_df2)
     @test calculate_mean_abs_distance(true_covar, reconstituted_df).Correlation_error .< 10*eps()
     @test calculate_mean_abs_distance(true_covar, reconstituted_df).Volatility_error .< 10*eps()
 

@@ -56,6 +56,6 @@ Pages = ["helper_functions.md"]
 ## For getting a DataFrame version of a CovarianceMatrix and vice versa.
 
 ```@docs
-    HighFrequencyCovariance.to_dataframe
-    dataframe_to_covariancematrix
+    HighFrequencyCovariance.DataFrame
+    HighFrequencyCovariance.CovarianceMatrix
 ```

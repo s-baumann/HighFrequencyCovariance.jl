@@ -81,8 +81,8 @@ using Test
     #############################
      # Serialisation and deserialisation
 
-    true_df = to_dataframe(true_covar)
-    reconstituted_df = dataframe_to_covariancematrix(true_df)
+    true_df = DataFrame(true_covar)
+    reconstituted_df = CovarianceMatrix(true_df)
     @test calculate_mean_abs_distance(true_covar, reconstituted_df).Correlation_error .< 10*eps()
     @test calculate_mean_abs_distance(true_covar, reconstituted_df).Volatility_error .< 10*eps()
 

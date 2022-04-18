@@ -1,11 +1,11 @@
 using Test
 
 @testset "Test getting draws" begin
-
     using DataFrames
     using Dates
     using LinearAlgebra
     using Statistics: std, var, mean, cov, cor
+    using StochasticIntegrals
     using HighFrequencyCovariance
     using Random
     using Test
@@ -20,7 +20,7 @@ using Test
 
     covar = CovarianceMatrix(brownian_corr_matrix, vols, assets, time_period_per_unit)
 
-    draws = to_dataframe(get_draws(covar, 100000))
+    draws = StochasticIntegrals.to_dataframe(get_draws(covar, 100000))
 
     distancefrom(x, tol) = (abs(x) < tol)
 

@@ -145,7 +145,7 @@ If you want to do something like Sobol sampling you can change the number_genera
 * `number_generator`  - A `NumberGenerator` struct that can be queried for a series of unit interval vectors that are then transformed by the covariance matrix into draws.
 * `antithetic_variates` - A boolean indicating if antithetic variates should be used (every second draw is made from 1 - uniformdraw of previous)
 ### Returns
-* A `Vector` of `Dict`s of draws. Note you can convert this to a dataframe or array with to_dataframe or to_array.
+* A `Vector` of `Dict`s of draws. Note you can convert this to a dataframe or array with `StochasticIntegrals.to_dataframe` or `StochasticIntegrals.to_array`.
 """
 function get_draws(covariance_matrix::CovarianceMatrix{<:Real}, num::Integer; number_generator::NumberGenerator = Mersenne(MersenneTwister(1234), length(covariance_matrix.labels)), antithetic_variates = false)
     iset = ItoSet(covariance_matrix)

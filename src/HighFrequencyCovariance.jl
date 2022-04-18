@@ -12,13 +12,14 @@ using StochasticIntegrals # Used for Monte Carlo Functions
 using UnivariateFunctions # Used for Monte Carlo Functions
 
 # Preliminary functions
-include("00_Structs.jl")
+include("00_SortedDataFrame.jl")
+include("00_CovarianceMatrix.jl")
 export SortedDataFrame, CovarianceMatrix, +, -
 export get_correlation, get_volatility
 export make_nan_covariance_matrix, duration
 export subset_to_tick, subset_to_time, calculate_mean_abs_distance
 export calculate_mean_abs_distance_covar
-export to_dataframe, valid_correlation_matrix, is_psd_matrix
+export valid_correlation_matrix, is_psd_matrix
 export ticks_per_asset, get_assets
 export show, relabel, plot, combine
 include("01_helpers.jl")
@@ -32,7 +33,7 @@ include("03_MonteCarlo.jl")
 export make_random_psd_matrix_from_wishart, generate_random_path, ItoSet
 export get_draws
 include("04_Serialisation.jl")
-export to_dataframe, dataframe_to_covariancematrix
+export DataFrame, CovarianceMatrix
 
 # Volatility estimation techniques
 include("10_volatility_simple.jl")
