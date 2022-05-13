@@ -14,14 +14,14 @@ using UnivariateFunctions # Used for Monte Carlo Functions
 # Preliminary functions
 include("00_SortedDataFrame.jl")
 include("00_CovarianceMatrix.jl")
-export SortedDataFrame, CovarianceMatrix, +, -
+export SortedDataFrame, CovarianceMatrix
 export get_correlation, get_volatility
 export make_nan_covariance_matrix, duration
 export subset_to_tick, subset_to_time, calculate_mean_abs_distance
 export calculate_mean_abs_distance_covar
 export valid_correlation_matrix, is_psd_matrix
 export ticks_per_asset, get_assets
-export show, relabel, plot, combine
+export relabel, plot, combine
 include("01_helpers.jl")
 export simple_differencing
 include("02_subsample_ticks.jl")

@@ -57,9 +57,8 @@ function safe_multiply_period(scalar::Real, neww::Dates.Period)
     return Nanosecond(floor(vall))
 end
 
-import DataFrames.combine
 """
-    combine(dfs::Vector{SortedDataFrame}; timevar::Symbol = dfs[1].time, groupingvar::Symbol = dfs[1].grouping,
+    DataFrames.combine(dfs::Vector{SortedDataFrame}; timevar::Symbol = dfs[1].time, groupingvar::Symbol = dfs[1].grouping,
                  valuevar::Symbol = dfs[1].value, period::Dates.Period = dfs[1].time_period_per_unit)
 Show a SortedDataFrame with a set number of rows.
 ### Inputs
@@ -69,40 +68,38 @@ Show a SortedDataFrame with a set number of rows.
 * `valuevar` - The desired name of the column representing price/logprice/etc.
 * `period` - The desired period that one unit (in the time column) corresponds to.
 """
-function combine(dfs::Vector{SortedDataFrame{<:Integer}}; timevar::Symbol = dfs[1].time, groupingvar::Symbol = dfs[1].grouping,
+function DataFrames.combine(dfs::Vector{SortedDataFrame{<:Integer}}; timevar::Symbol = dfs[1].time, groupingvar::Symbol = dfs[1].grouping,
                  valuevar::Symbol = dfs[1].value, period::Dates.Period = dfs[1].time_period_per_unit)
     dfs_newversion = SortedDataFrame.(dfs, timevar, groupingvar, valuevar, period)
     dd = vcat(map(x -> x.df, dfs_newversion)...)
     return SortedDataFrame(dd, timevar, groupingvar, valuevar, period)
 end
 
-
-
-import Base.show
 """
-    show(sdf::SortedDataFrame, number_of_rows = 10)
+    Base.show(sdf::SortedDataFrame, number_of_rows = 10)
 Show a SortedDataFrame with a set number of rows.
 ### Inputs
 * `sdf` - The `SortedDataFrame` to show.
 * `number_of_rows` - The number of rows to show.
 """
-function show(sdf::SortedDataFrame, number_of_rows = 10)
+function Base.show(sdf::SortedDataFrame, number_of_rows = 10)
     println()
     println("SortedDataFrame with " , nrow(sdf.df), " rows."  )
-    show(stdout, sdf.df[1:number_of_rows,[sdf.time, sdf.grouping, sdf.value]] ; summary = false)
+    show(sdf.df[1:number_of_rows,[sdf.time, sdf.grouping, sdf.value]])
+    #show(stdout, sdf.df[1:number_of_rows,[sdf.time, sdf.grouping, sdf.value]] ; summary = false)
     println()
 end
 
 
-import Gadfly.plot
+using Gadfly
 """
-    plot(ts::SortedDataFrame)
+    Gadfly.plot(ts::SortedDataFrame)
 This makes a basic plot of the assets in a `SortedDataFrame`.
 ### Inputs
 * `ts` - The `SortedDataFrame` to plot.
 """
-function plot(ts::SortedDataFrame)
-    plt = plot(ts.df, x=ts.time, y=ts.value, Geom.line, color=ts.grouping)
+function Gadfly.plot(ts::SortedDataFrame)
+    plt = Gadfly.plot(ts.df, x=ts.time, y=ts.value, Geom.line, color=ts.grouping)
     return plt
 end
 

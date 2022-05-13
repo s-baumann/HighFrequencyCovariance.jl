@@ -1,3 +1,5 @@
+const NUMERICAL_TOL = 10*eps()
+
 
 """
     CovarianceMatrix(correlation::Hermitian{R}, volatility::Vector{R},
@@ -23,8 +25,8 @@ mutable struct CovarianceMatrix{R<:Real}
 end
 
 """
-    show(cm::CovarianceMatrix)
-    show(cm::CovarianceMatrix, decimal_places_volatility::Integer, decimal_places_correlation::Integer)
+    Base.show(cm::CovarianceMatrix)
+    Base.show(cm::CovarianceMatrix, decimal_places_volatility::Integer, decimal_places_correlation::Integer)
 
 This shoes the `CovarianceMatrix` in a nice format.
 ### Inputs
@@ -32,7 +34,7 @@ This shoes the `CovarianceMatrix` in a nice format.
 * `decimal_places_volatility`  - The number of digits you want to show for volatilities. If not input then all digits are shown.
 * `decimal_places_correlation` - The number of digits you want to show. If not input then all digits are shown.
 """
-function show(cm::CovarianceMatrix)
+function Base.show(cm::CovarianceMatrix)
     println()
     println("Volatilities per time interval of ", cm.time_period_per_unit)
     flat_labels = reshape(cm.labels ,(1, length(cm.labels)))
@@ -45,7 +47,7 @@ function show(cm::CovarianceMatrix)
     Base.print_matrix(stdout, corr)
     println("\n")
 end
-function show(cm::CovarianceMatrix, sig_figs_volatility::Integer, decimal_places_correlation::Integer)
+function Base.show(cm::CovarianceMatrix, sig_figs_volatility::Integer, decimal_places_correlation::Integer)
     cm2 = deepcopy(cm)
     cm2.volatility  = round.(cm2.volatility , sigdigits = sig_figs_volatility)
     cm2.correlation = Hermitian(round.(cm2.correlation, digits = decimal_places_correlation))
@@ -225,8 +227,8 @@ If a `Hermitian` is input then it will be tested. If a `CovarianceMatrix` is inp
 """
 function valid_correlation_matrix(mat::Hermitian, min_eigen_threshold::Real = 0.0)
     A = is_psd_matrix(mat, min_eigen_threshold)
-    B = all(abs.(diag(mat) .- 1) .< 10*eps()) # does it have a unit diagonal
-    C = all(abs.(mat) .<= 1 + 10*eps())       # all all off diagonals less than one in absolute value
+    B = all(abs.(diag(mat) .- 1) .< NUMERICAL_TOL) # does it have a unit diagonal
+    C = all(abs.(mat) .<= 1 + NUMERICAL_TOL)       # all all off diagonals less than one in absolute value
     return all([A,B,C])
 end
 valid_correlation_matrix(covar::CovarianceMatrix, min_eigen_threshold::Real = 0.0) = valid_correlation_matrix(covar.correlation, min_eigen_threshold)
