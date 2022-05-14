@@ -71,7 +71,7 @@ function generate_random_path(dimensions::Integer, ticks::Integer;
     end
 
     if ismissing(brownian_corr_matrix)
-        brownian_corr_matrix, _ = cov2cor(make_random_psd_matrix_from_wishart(dimensions, rng))
+        brownian_corr_matrix, _ = cov_to_cor(make_random_psd_matrix_from_wishart(dimensions, rng))
     end
 
     vols = ismissing(vols) ? rand(rng, vol_dist, dimensions) : vols

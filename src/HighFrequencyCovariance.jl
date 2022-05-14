@@ -25,7 +25,7 @@ export relabel, plot, combine
 include("01_helpers.jl")
 export simple_differencing
 include("02_subsample_ticks.jl")
-export cov2cor, cor2cov, cov2cor_and_vol, covariance, construct_matrix_from_eigen, get_returns
+export cov_to_cor, cor_to_cov, cov_to_cor_and_vol, covariance, construct_matrix_from_eigen, get_returns
 export combine_covariance_matrices, rearrange
 export squared_frobenius, squared_frobenius_distance
 export get_all_refresh_times, latest_value, time_between_refreshes, random_value_in_interval

@@ -107,7 +107,7 @@ function preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = ge
    negative_diagonals = findall(diag(HYn) .< eps())
    covar = make_nan_covariance_matrix(assets, ts.time_period_per_unit)
    if length(negative_diagonals) == 0
-       corr, _ = cov2cor_and_vol(HYn, ts.time_period_per_unit, ts.time_period_per_unit)
+       corr, _ = cov_to_cor_and_vol(HYn, ts.time_period_per_unit, ts.time_period_per_unit)
        covar.correlation = corr
    end
 

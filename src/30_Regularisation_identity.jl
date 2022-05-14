@@ -100,7 +100,7 @@ function identity_regularisation(covariance_matrix::CovarianceMatrix, ts::Sorted
          actual_covariance = covariance(covariance_matrix)
          regularised_covariance = identity_regularisation(actual_covariance,
                                            ts, covariance_matrix.labels; spacing = spacing)
-         corr, vols = cov2cor_and_vol(regularised_covariance, 1)
+         corr, vols = cov_to_cor_and_vol(regularised_covariance, 1)
          return CovarianceMatrix(corr, vols, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
      else
          return CovarianceMatrix(Hermitian(identity_regularisation(covariance_matrix.correlation, ts, covariance_matrix.labels; spacing = spacing)),
@@ -110,7 +110,7 @@ end
 function identity_regularisation(covariance_matrix::CovarianceMatrix, identity_weight::Real; apply_to_covariance = false)
      if apply_to_covariance
          regularised_covariance = identity_regularisation(covariance(covariance_matrix,1),identity_weight)
-         corr, vols = cov2cor_and_vol(regularised_covariance, 1)
+         corr, vols = cov_to_cor_and_vol(regularised_covariance, 1)
          return CovarianceMatrix(corr, vols, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
      else
          return CovarianceMatrix(Hermitian(identity_regularisation(covariance_matrix.correlation, identity_weight)),

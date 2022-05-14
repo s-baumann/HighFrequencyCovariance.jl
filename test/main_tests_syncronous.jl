@@ -80,8 +80,8 @@ using Test
     # Conversion to a covariance function
     dura = Dates.Minute(137)
     covarr = covariance(two_scales_estimate2, dura )
-    corr, vols =  cov2cor_and_vol(covarr, Nanosecond(two_scales_estimate2.time_period_per_unit).value, Nanosecond(dura).value     )
-    corr, vols =  cov2cor_and_vol(covarr,   Nanosecond(dura).value / Nanosecond(two_scales_estimate2.time_period_per_unit).value     )
+    corr, vols =  cov_to_cor_and_vol(covarr, Nanosecond(two_scales_estimate2.time_period_per_unit).value, Nanosecond(dura).value     )
+    corr, vols =  cov_to_cor_and_vol(covarr,   Nanosecond(dura).value / Nanosecond(two_scales_estimate2.time_period_per_unit).value     )
     @test all(corr .< two_scales_estimate2.correlation) .< 10*eps()
     @test all(vols .< two_scales_estimate2.volatility) .< 10*eps()
 

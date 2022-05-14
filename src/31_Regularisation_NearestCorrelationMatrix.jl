@@ -286,7 +286,7 @@ end
 function nearest_psd_matrix(covariance_matrix::CovarianceMatrix; apply_to_covariance::Bool = true)
     if apply_to_covariance
         regularised_covariance = nearest_psd_matrix(covariance(covariance_matrix))
-        corr, vols = cov2cor_and_vol(regularised_covariance, 1)
+        corr, vols = cov_to_cor_and_vol(regularised_covariance, 1)
         return CovarianceMatrix(corr, vols, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
     else
         return CovarianceMatrix(Hermitian(nearest_psd_matrix(covariance_matrix.correlation)), covariance_matrix.volatility, covariance_matrix.labels, covariance_matrix.time_period_per_unit)

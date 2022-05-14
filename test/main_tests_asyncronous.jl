@@ -27,6 +27,14 @@ using Test
     # Subsetting to tick.
     ts2 = subset_to_tick(ts2, 49000)
 
+    # Testing constructor of SortedDataFrame
+    newdict = Dict{Symbol,Vector{UInt64}}()
+    for k in keys(ts2.groupingrows)
+        newdict[k] = UInt64.(ts2.groupingrows[k])
+    end
+    ts3 = SortedDataFrame(ts2.df, ts2.time, ts2.grouping, ts2.value,
+                                  newdict, ts2.time_period_per_unit)
+    isa(ts3, SortedDataFrame{UInt64})
 
     # Relabelling
     relabelling = Dict{Symbol,Symbol}(assets .=> [:Barclays, :HSBC, :Vodafone, :Ryanair])

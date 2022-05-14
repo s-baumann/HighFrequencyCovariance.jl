@@ -40,7 +40,7 @@ function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{S
     spacing = safe_multiply_period(mean(time_grid[2:N] .- time_grid[1:(N-1)]), ts.time_period_per_unit)
 
     # Packing into a CovarianceMatrix and returning.
-    cor, vols = cov2cor_and_vol(covariance, spacing, ts.time_period_per_unit)
+    cor, vols = cov_to_cor_and_vol(covariance, spacing, ts.time_period_per_unit)
     return CovarianceMatrix(cor, vols, assets, ts.time_period_per_unit)
 end
 

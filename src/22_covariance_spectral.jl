@@ -76,7 +76,7 @@ function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_as
         negative_diagonals = findall(diag(mat) .< eps())
         covar = make_nan_covariance_matrix(assets, ts.time_period_per_unit)
         if length(negative_diagonals) < 1
-            corr, vols = cov2cor_and_vol(mat, 1) # No adjustment for duration as we already have the spot matrix.
+            corr, vols = cov_to_cor_and_vol(mat, 1) # No adjustment for duration as we already have the spot matrix.
             covar.correlation = corr
             covar.volatility = vols
          end

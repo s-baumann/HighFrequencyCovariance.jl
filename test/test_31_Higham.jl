@@ -126,7 +126,7 @@ using Test
 
     # A valid correlation matrix case
     N = 3
-    A, _ = cov2cor(Hermitian(rand(twister, IW_dist(N)  )))
+    A, _ = cov_to_cor(Hermitian(rand(twister, IW_dist(N)  )))
     W_root = Hermitian(rand(twister, IW_dist(N)  ))
     Dykstra = Hermitian(zeros(N,N))
     W_inv = inv(W_root^2)
@@ -142,7 +142,7 @@ using Test
     # A Slightly non psd case
     N = 3
     A = Hermitian([1.02 0.5 0.9; 0.5 0.98 0.9; 0.9 0.9 1.01])
-    W = Hermitian(abs.(cov2cor(Hermitian(rand(twister, IW_dist(N)  )))[1]))
+    W = Hermitian(abs.(cov_to_cor(Hermitian(rand(twister, IW_dist(N)  )))[1]))
     updated_matrix, counter, convergence = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
     updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = false, max_iterates = 10000)
     updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(A, W; doDykstra = false, stop_at_first_correlation_matrix = true, max_iterates = 10000)
@@ -170,7 +170,7 @@ using Test
 
     # A really non psd case
     A = Hermitian([1.02 0.5 0.9; 0.5 0.98 -0.9; 0.9 -0.9 1.01])
-    W = Hermitian(abs.(cov2cor(Hermitian(rand(twister, IW_dist(N)  )))[1]))
+    W = Hermitian(abs.(cov_to_cor(Hermitian(rand(twister, IW_dist(N)  )))[1]))
     updated_matrix, counter, convergence = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 100000)
     updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = false, max_iterates = 10000)
     updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(A, W; doDykstra = false, stop_at_first_correlation_matrix = true, max_iterates = 10000)

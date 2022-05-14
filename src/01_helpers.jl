@@ -1,6 +1,6 @@
 
 """
-    cov2cor(mat::AbstractMatrix)
+    cov_to_cor(mat::AbstractMatrix)
 
 Converts a matrix (representing a covariance matrix) into a `Hermitian` correlation matrix and a vector of standard deviations.
 ### Inputs
@@ -9,16 +9,18 @@ Converts a matrix (representing a covariance matrix) into a `Hermitian` correlat
 * A `Hermitian`.
 * A `Vector` of standard deviations (not volatilities).
 """
-function cov2cor(mat::AbstractMatrix)
+function cov_to_cor(mat::AbstractMatrix)
     sdevs = sqrt.(diag(mat))
     cor = mat ./ (sdevs * transpose(sdevs))
     cor[diagind(cor)] .= 1
     return Hermitian(cor), sdevs
 end
 
+
+
 """
-    cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Dates.Period, duration_for_desired_vols::Dates.Period)
-    cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Real, duration_for_desired_vols::Real)
+    cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Dates.Period, duration_for_desired_vols::Dates.Period)
+    cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Real, duration_for_desired_vols::Real)
 
 Converts a matrix (representing a covariance matrix) into a `Hermitian` correlation matrix and a vector of volatilities.
 ### Inputs
@@ -30,7 +32,7 @@ Converts a matrix (representing a covariance matrix) into a `Hermitian` correlat
 * A `Vector` of volatilities.
 
 
-    cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix_in_nanoseconds::Real, duration_for_desired_vols::Dates.Period)
+    cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix_in_nanoseconds::Real, duration_for_desired_vols::Dates.Period)
 
 ### Inputs
 * `cor` - A correlation matrix.
@@ -39,18 +41,18 @@ Converts a matrix (representing a covariance matrix) into a `Hermitian` correlat
 * A `Hermitian`.
 * A `Vector` of volatilities.
 """
-function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Dates.Period, duration_for_desired_vols::Dates.Period)
-    cor, sdevs = cov2cor(mat)
+function cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Dates.Period, duration_for_desired_vols::Dates.Period)
+    cor, sdevs = cov_to_cor(mat)
     vols = sdevs / sqrt(time_period_ratio(duration_of_covariance_matrix, duration_for_desired_vols))
     return Hermitian(cor), vols
 end
-function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Real, duration_for_desired_vols::Real)
-    cor, sdevs = cov2cor(mat)
+function cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Real, duration_for_desired_vols::Real)
+    cor, sdevs = cov_to_cor(mat)
     vols = sdevs / sqrt(duration_of_covariance_matrix / duration_for_desired_vols)
     return Hermitian(cor), vols
 end
-function cov2cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix_in_natural_units::Real)
-    cor, sdevs = cov2cor(mat)
+function cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix_in_natural_units::Real)
+    cor, sdevs = cov_to_cor(mat)
     vols = sdevs / sqrt(duration_of_covariance_matrix_in_natural_units)
     return Hermitian(cor), vols
 end
@@ -58,7 +60,7 @@ end
 
 
 """
-    cor2cov(cor::AbstractMatrix,sdevs::Vector{<:Real})
+    cor_to_cov(cor::AbstractMatrix,sdevs::Vector{<:Real})
 
 Converts a correlation matrix and some standard deviations into a `Hermitian` covariance matrix.
 ### Inputs
@@ -67,7 +69,7 @@ Converts a correlation matrix and some standard deviations into a `Hermitian` co
 ### Returns
 * A `Hermitian`.
 """
-function cor2cov(cor::AbstractMatrix, sdevs::Vector{<:Real})
+function cor_to_cov(cor::AbstractMatrix, sdevs::Vector{<:Real})
     mat = cor .* (sdevs * transpose(sdevs))
     return Hermitian(mat)
 end
@@ -86,7 +88,7 @@ This makes a `Hermitian` matrix for the covariance matrix over some duration.
 function covariance(cm::CovarianceMatrix, period::Dates.Period = cm.time_period_per_unit, assets::Vector{Symbol} = cm.labels)
     cm2 = rearrange(cm, assets)
     sds = convert_vol(cm2.volatility, cm2.time_period_per_unit, period)
-    return cor2cov(cm2.correlation, sds)
+    return cor_to_cov(cm2.correlation, sds)
 end
 
 """

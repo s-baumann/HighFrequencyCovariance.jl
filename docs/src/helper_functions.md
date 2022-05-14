@@ -28,9 +28,9 @@ Pages = ["helper_functions.md"]
     make_nan_covariance_matrix
     combine_covariance_matrices
     rearrange
-    cov2cor
-    cor2cov
-    cov2cor_and_vol
+    cov_to_cor
+    cor_to_cov
+    cov_to_cor_and_vol
     construct_matrix_from_eigen
     get_returns
     valid_correlation_matrix
