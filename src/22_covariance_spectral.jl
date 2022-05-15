@@ -1,11 +1,38 @@
-#apply_weights(A::Array, W::Array) = sum(A .* W)
-apply_weights(A::Array, W::Missing) = sum(A .* (1/length(A)))
-
+"""
+     orthogonal_sine(t::Real, j::Real, block_num::Integer, block_width::Real)
+This is the orthogonal sine funcion from the paper.
+### References
+Bibinger M, Hautsch N, Malec P, Reiss M (2014). “Estimating the quadratic covariation matrix from noisy observations: Local method of moments and efficiency.” The Annals of Statistics, 42(4), 1312–1346. doi:10.1214/14-AOS1224.
+"""
 @inline function orthogonal_sine(t::Real, j::Real, block_num::Integer, block_width::Real)
     # Note for simplicity and speed I am going to assume that we will never call this after (k+1)h_n. This is due to the way it will be calculated in the loop.
     start_of_block = block_num*block_width
     return  t > start_of_block ? ((sqrt(2 * block_width))/(j*pi)) *sin((j * pi * (t-start_of_block))/block_width) : 0.0
 end
+
+
+"""
+    spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
+                          only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time])) / num_blocks,
+                          microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2])
+
+Estimation of a CovarianceMatrix using the spectral covariance method.
+### Inputs
+* `ts` - The tick data.
+* `assets` - The assets you want to estimate volatilities for.
+* `regularisation` - A symbol representing what regularisation technique should be used. If missing no regularisation is performed.
+* `regularisation_params` - keyword arguments to be consumed in the regularisation algorithm.
+* `only_regulise_if_not_PSD` - Should regularisation only be attempted if the matrix is not psd already.
+* `numJ` - The number of J values. See the paper for details.
+* `num_blocks` - The number of blocks to split the time frame into. See the paper for details.
+* `block_width` - The width of each block to split the time frame into.
+* `microstructure_noise_var` - Estimates of microstructure noise variance for each asset.
+### Returns
+* A `CovarianceMatrix`.
+
+### References
+Bibinger M, Hautsch N, Malec P, Reiss M (2014). “Estimating the quadratic covariation matrix from noisy observations: Local method of moments and efficiency.” The Annals of Statistics, 42(4), 1312–1346. doi:10.1214/14-AOS1224.
+"""
 
 function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
                           only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time])) / num_blocks,
@@ -56,17 +83,15 @@ function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_as
     # The efficient weights (see page 1324 of Bibinger, Hautsch, Malec & Reiss 2014) are not implemented here. It is highly error proone as
     # many inversions are required which is 1) computationally intensive and 2) can cause singularity errors as there is no guarantee of psd.
     # So going to fall back to equal weighting.
-    weights = repeat([missing],num_blocks)
 
     corrected_matrices = Array{CovarianceMatrix{R},1}(undef,num_blocks)
     for block_num in 1:num_blocks
-        weights_for_block = weights[block_num]
         block_H = Diagonal(H_kn[block_num,:])
         adjustments = ((pi .*  collect(1:numJ)) ./block_width).^2
         block_adjustments = Array{Diagonal,1}(undef,numJ)
         for nn in 1:numJ block_adjustments[nn] = adjustments[nn] * block_H end
         corrected_mats = uncorrected_covar_matrices[block_num] .- block_adjustments
-        mat = Hermitian(apply_weights(corrected_mats, weights_for_block))
+        mat = Hermitian(sum(corrected_mats .* (1/length(corrected_mats))))
 
         # Regularisation
         dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(mat))

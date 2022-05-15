@@ -1,7 +1,23 @@
+
+"""
+    row_row_prime(dd, i, type::Type = eltype(dd[1,1]))
+This multiplies row i of dataframe dd by its inverse. Then returns that as a Hermitian.
+### Inputs
+* `dd` - A dataframe
+* `i` - The row of the dataframe
+* `type` - The numeric type of the dataframe.
+### Returns
+* A `Hermitian`.
+"""
 function row_row_prime(dd, i, type::Type = eltype(dd[1,1]))
     r = Array{type}(dd[i,:])
     return Hermitian(r * r')
 end
+
+"""
+    b_bar(dd,S)
+This calculates the \bar{b} expression for the Ledoit-Wolf paper
+"""
 function b_bar(dd,S)
     etype = eltype(dd[1,1])
     N = nrow(dd)

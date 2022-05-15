@@ -1,14 +1,26 @@
 function two_scales_correlation(prices::DataFrame, times::Vector{<:Real}, asseti::Symbol, assetj::Symbol, gamma::Real, num_grids::Real)
-    vol_plus_version  = two_scales_volatility(prices[:,asseti] * gamma + (1-gamma) * prices[:,assetj] , times, Symbol("CompoundAsset__",asseti,"__+__",assetj,"__",gamma), num_grids)[1]
-    vol_minus_version = two_scales_volatility(prices[:,asseti] * gamma - (1-gamma) * prices[:,assetj] , times, Symbol("CompoundAsset__",asseti,"__-__",assetj,"__",gamma), num_grids)[1]
+    vol_plus_version  = two_scales_volatility(prices[:,asseti] * gamma + (1-gamma) * prices[:,assetj] , times, num_grids)[1]
+    vol_minus_version = two_scales_volatility(prices[:,asseti] * gamma - (1-gamma) * prices[:,assetj] , times, num_grids)[1]
     covv = (1/(4*gamma*(1-gamma))) * (vol_plus_version^2 -  vol_minus_version^2)
     # Note that we calculate these again rather than feeding in the ones calculated earlier because it is improtant the vols are calculated with the same data as the sums/differences.
-    asseti_vol = two_scales_volatility(prices[:,asseti], times, Symbol("CompoundAsset__",asseti,"__ONLY"), num_grids)[1]
-    assetj_vol = two_scales_volatility(prices[:,assetj], times, Symbol("CompoundAsset__",assetj,"__ONLY"), num_grids)[1]
+    asseti_vol = two_scales_volatility(prices[:,asseti], times, num_grids)[1]
+    assetj_vol = two_scales_volatility(prices[:,assetj], times, num_grids)[1]
     correl = covv/(asseti_vol * assetj_vol)
     return correl
 end
 
+"""
+    get_refresh_times_and_prices(ts::SortedDataFrame, asset1::Symbol, asset2::Symbol)
+
+This returns a vector of prices and refresh times given two input symbols
+### Inputs
+* `ts` - The tick data.
+* `asset1` - The first asset's name.
+* `asset2` - The second asset's name.
+### Returns
+* A `Vector` of prices
+* A `Vector` of times corresponding to these prices.
+"""
 function get_refresh_times_and_prices(ts::SortedDataFrame, asset1::Symbol, asset2::Symbol)
     assets   = [asset1, asset2]
     at_times = get_all_refresh_times(ts, assets)

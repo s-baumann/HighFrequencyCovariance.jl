@@ -21,6 +21,7 @@ function latest_value(ts::SortedDataFrame, at_times::Vector{<:Real};
 end
 
 """
+    searchsortedlast_both(reference::Vector, indices::Vector)
 If you have two sorted vectors. You want to find the index of each "indices" in
 the vector "reference". then this is much faster than doing something like
 map( x -> searchsortedlast(reference, x), indices) as it only goes once through
@@ -71,11 +72,24 @@ function random_value_in_interval(ts::SortedDataFrame, at_times::Vector{<:Real};
     return dd
 end
 
+"""
+    next_tick(ts::SortedDataFrame, from_index::I; assets::Vector{Symbol} = get_assets(ts)) where R<:Real where I<:Integer
+
+This gets the next tick by which every asset has a refreshed price after a certain row index.
+
+### Inputs
+* `ts` - The tick data.
+* `from_index` - The index in your ts.df to start looking from.
+* `assets` - The vector of assets that you want to get a refresh time by which each has a refreshed price.
+### Returns
+* A `Real` or `Missing` for the refresh time. If it is a real it is the time. If one asset did not update in your data then a missing is returned.
+* An `Integer` or `Missing` for the refresh tick. for what index in your data the refresh happened by. If one asset did not refresh this will be a missing.
+"""
 function next_tick(ts::SortedDataFrame, from_index::I; assets::Vector{Symbol} = get_assets(ts)) where R<:Real where I<:Integer
     inds = Array{I,1}()
     for a in assets
         ind = searchsortedfirst(ts.groupingrows[a], from_index)
-        if (ind > length(ts.groupingrows[a])) return missing, -10 end
+        if (ind > length(ts.groupingrows[a])) return missing, missing end
         push!(inds, ts.groupingrows[a][ind])
     end
     refresh_index = maximum(inds)

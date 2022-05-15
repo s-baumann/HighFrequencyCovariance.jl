@@ -100,6 +100,13 @@ function generate_random_path(dimensions::Integer, ticks::Integer;
     return ts, CovarianceMatrix(brownian_corr_matrix, vols, assets, time_period_per_unit), microstructure_noise, update_rates
 end
 
+"""
+    convert_to_stochastic_integrals_type(x::MersenneTwister, num::Integer)
+    convert_to_stochastic_integrals_type(x::StableRNG, num::Integer)
+
+This makes either a StochasticIntegrals.Mersenne or StochasticIntegrals.Stable_RNG
+type depending on what random number generator is input.
+"""
 function convert_to_stochastic_integrals_type(x::MersenneTwister, num::Integer)
     return StochasticIntegrals.Mersenne(x, num)
 end

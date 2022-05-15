@@ -21,21 +21,25 @@ end
 A parzen kernel used in the bnhls covariance method.
 """
 const parzen = HFC_Kernel(parzen_func, 12.0, 0.269, 3.51, 0.97, (-1.0,1.0))
+
 fqs(x)   = abs(x) < 0.001 ? 1.0 : (3/(x^2))*(sin(x)/x - cos(x))
 """
 A quadratic_spectral kernel used in the bnhls covariance method.
 """
 const quadratic_spectral = HFC_Kernel(fqs, 0.2, 3*pi/5, 0.46, 0.93)
+
 f_fejer(x)   = abs(x) < 0.001 ? 1.0 : (sin(x)/x)^2
 """
 A fejer kernel used in the bnhls covariance method.
 """
 const fejer  = HFC_Kernel(f_fejer, 2/3, pi/3, 0.84, 0.94)
+
 f_tukey(x)   = (sin(exp(-x)*(pi/2)))^2
 """
 A tukey_hanning kernel used in the bnhls covariance method.
 """
 const tukey_hanning  = HFC_Kernel(f_tukey, (pi^2)/2, 0.52, 2.16, 1.06)
+
 f_bnhls(x) = (1+x)*exp(-x)
 """
 A bnhls_2008 kernel used in the bnhls covariance method.

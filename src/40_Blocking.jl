@@ -25,8 +25,16 @@ function put_assets_into_blocks(ts::SortedDataFrame, new_group_mult::Real)
     end
     if length(this_group) > 0 push!(group_stack, this_group) end
 end
-#blocks = put_assets_into_blocks(ts, obs_multiple_for_new_block)
 
+"""
+    make_adjacent_block_sequence(blocks::Vector{Vector{Symbol}})
+
+This makes a sequence of adjacent blocks.
+### Inputs
+* `blocks` - The blocks for blockwise estimation.
+### Returns
+* A `Vector`.
+"""
 function make_adjacent_block_sequence(blocks::Vector{Vector{Symbol}})
     len = length(blocks)
     if len == 1 return [blocks...] end
@@ -35,6 +43,16 @@ function make_adjacent_block_sequence(blocks::Vector{Vector{Symbol}})
     bigblock = [(blocks...)...]
     return [bigblock, left..., right...]
 end
+
+"""
+    make_sorted_adjacent_block_sequence(blocks::Vector{Vector{Symbol}})
+
+This makes a sequence of adjacent blocks and then sort them by length.
+### Inputs
+* `blocks` - The blocks for blockwise estimation.
+### Returns
+* A `Vector`.
+"""
 function make_sorted_adjacent_block_sequence(blocks::Vector{Vector{Symbol}})
     unsorted = make_adjacent_block_sequence(blocks)
     lens = length.(unsorted)

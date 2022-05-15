@@ -29,6 +29,14 @@ Pages = ["internals.md"]
     latest_value
     time_between_refreshes
     random_value_in_interval
+    g
+    get_refresh_times_and_prices
+    time_period_ratio
+    safe_multiply_period
+    weighted_mean
+    is_missing_nan_inf
+    next_tick
+    simple_volatility_given_returns
 ```
 
 ### Kernels used in the BNHLS method

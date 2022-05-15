@@ -226,6 +226,9 @@ If a `Hermitian` is input then it will be tested. If a `CovarianceMatrix` is inp
 * A `Bool` that is true if mat is a valid correlation matrix and false if not.
 """
 function valid_correlation_matrix(mat::Hermitian, min_eigen_threshold::Real = 0.0)
+    if sum(isnan.(mat)) +  sum(isinf.(mat)) > 0
+        return false
+    end
     A = is_psd_matrix(mat, min_eigen_threshold)
     B = all(abs.(diag(mat) .- 1) .< NUMERICAL_TOL) # does it have a unit diagonal
     C = all(abs.(mat) .<= 1 + NUMERICAL_TOL)       # all all off diagonals less than one in absolute value

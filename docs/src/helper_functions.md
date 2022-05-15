@@ -43,6 +43,9 @@ Pages = ["helper_functions.md"]
 ```@docs
     put_assets_into_blocks_by_trading_frequency
     blockwise_estimation
+    make_adjacent_block_sequence
+    make_sorted_adjacent_block_sequence
+    put_assets_into_blocks
 ```
 
 ## Monte Carlo
@@ -51,6 +54,7 @@ Pages = ["helper_functions.md"]
     generate_random_path
     ItoSet
     get_draws
+    convert_to_stochastic_integrals_type
 ```
 
 ## For getting a DataFrame version of a CovarianceMatrix and vice versa.

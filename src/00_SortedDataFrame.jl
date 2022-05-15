@@ -49,11 +49,39 @@ struct SortedDataFrame{I<:Integer}
     end
 end
 
+
+"""
+    time_period_ratio(neww::Dates.Period, oldd::Dates.Period)
+
+This calculates the ratio of the interval length between two periods. So if neww is
+twice as long a period as oldd it will return a 2.0.
+
+### Inputs
+* `neww` - A time period
+* `oldd` - A time period
+
+### Returns
+* A real number.
+"""
 function time_period_ratio(neww::Dates.Period, oldd::Dates.Period)
     return Nanosecond(neww) / Nanosecond(oldd)
 end
-function safe_multiply_period(scalar::Real, neww::Dates.Period)
-    vall = Nanosecond(neww).value * scalar
+
+"""
+    safe_multiply_period(scalar::Real, period::Dates.Period)
+
+This multiplies a time period by a scalar. So if period is Dates.Hour(1) and we multiply
+by 2 we will get two hours (although that will be expressed in Nanosecond units).
+
+### Inputs
+* `scalar` - A real number
+* `period` - A time period
+
+### Returns
+* A time period expressed in Nanosecond units.
+"""
+function safe_multiply_period(scalar::Real, period::Dates.Period)
+    vall = Nanosecond(period).value * scalar
     return Nanosecond(floor(vall))
 end
 

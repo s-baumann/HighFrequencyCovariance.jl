@@ -1,3 +1,9 @@
+"""
+    get_preaveraged_prices(ts::SortedDataFrame, asset::Symbol, k_n::Real, gs::Vector)
+This returns the prices that have been preaveraged as per the paper.
+### References
+Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for multivariate continuous Itô semimartingales with noise in non-synchronous observation schemes.” Journal of Multivariate Analysis, 120, 59–84. doi:10.1016/j.jmva.2013.05.002.
+"""
 function get_preaveraged_prices(ts::SortedDataFrame, asset::Symbol, k_n::Real, gs::Vector)
    prices = Array(ts.df[ts.groupingrows[asset],ts.value])
    times = Array(ts.df[ts.groupingrows[asset],ts.time])
@@ -13,6 +19,12 @@ function get_preaveraged_prices(ts::SortedDataFrame, asset::Symbol, k_n::Real, g
    return preaveraged_returns, times
 end
 
+"""
+    HY_n(A::Tuple{Vector{<:Real},Vector{<:Real}}, B::Tuple{Vector{<:Real},Vector{<:Real}}, k_n::Integer, psi::Real)
+See top of page 62 of Christensen et al.
+### References
+Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for multivariate continuous Itô semimartingales with noise in non-synchronous observation schemes.” Journal of Multivariate Analysis, 120, 59–84. doi:10.1016/j.jmva.2013.05.002.
+"""
 function HY_n(A::Tuple{Vector{<:Real},Vector{<:Real}}, B::Tuple{Vector{<:Real},Vector{<:Real}}, k_n::Integer, psi::Real)
    # See top of page 62 of Christensen et al.
    cov_sum = 0.0
@@ -29,10 +41,26 @@ function HY_n(A::Tuple{Vector{<:Real},Vector{<:Real}}, B::Tuple{Vector{<:Real},V
    return cov_sum / ((psi * k_n)^2)
 end
 
-# This is the 3rd equation in the aymptotic theory section of the paper.
+
+"""
+    univariate_HYn(vect::Vector, k_n::Real, psi::Real)
+This is the 3rd equation in the aymptotic theory section of the paper.
+
+### References
+Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for multivariate continuous Itô semimartingales with noise in non-synchronous observation schemes.” Journal of Multivariate Analysis, 120, 59–84. doi:10.1016/j.jmva.2013.05.002.
+"""
 univariate_HYn(vect::Vector, k_n::Real, psi::Real) = sum(map(i -> vect[i] * sum(j -> vect[i-j], (1-k_n):(k_n-1)), k_n:(length(vect)-2k_n+1)))/((psi*k_n)^2)
 
 
+"""
+    const g = (f = x-> min(x, 1-x), psi = 0.25)
+This named tuple gives the preaveraging kernel function and integral over the unit interval
+   that was used in the paper. It is used by default in the preaveraged_covariance method
+   but can be overwritten with alternative kernels.
+
+### References
+Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for multivariate continuous Itô semimartingales with noise in non-synchronous observation schemes.” Journal of Multivariate Analysis, 120, 59–84. doi:10.1016/j.jmva.2013.05.002.
+"""
 const g = (f = x-> min(x, 1-x), psi = 0.25)
 
 """
@@ -50,7 +78,8 @@ Estimation of the CovarianceMatrix using preaveraging method.
 * `regularisation_params` - keyword arguments to be consumed in the regularisation algorithm.
 * `only_regulise_if_not_PSD` - Should regularisation only be attempted if the matrix is not psd already.
 * `theta` - A theta value. See paper for details.
-* `g` - A tuple containing a preaveraging method (with name "f") and a ψ value. See paper for details.
+* `g` - A tuple containing a preaveraging method function (with name "f") and a ψ (with name "psi") value.
+    psi here should be the integral of the function over the interval between zero and one.
 ### Returns
 * A `CovarianceMatrix`.
 

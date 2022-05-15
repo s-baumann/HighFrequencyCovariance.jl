@@ -145,6 +145,18 @@ function get_returns(dd::DataFrame; rescale_for_duration::Bool = false)
     return dd2
 end
 
+"""
+    weighted_mean(x::Vector, w::Vector)
+
+This calculates a weighted mean given vectors for values and for weights.
+    If the sum of the absolute values of the weights is close to zero a simple mean
+    of x is returned instead.
+### Inputs
+* `x` - A `Vector` of the values you want to average.
+* `w` - A `Vector` of the weights you want to use.
+### Returns
+* A `Real` number for the weighted mean.
+"""
 function weighted_mean(x::Vector, w::Vector)
     if length(x) == 0 return NaN end
     if length(x) == 1 return x[1] end
@@ -152,6 +164,16 @@ function weighted_mean(x::Vector, w::Vector)
     return sum(x .* w) / sum(w)
 end
 
+
+"""
+    is_missing_nan_inf(x) = (ismissing(x) | isnan(x)) | isinf(x)
+
+This tests if a value is missing, nan or inf and returns true if one of these things is true.
+### Inputs
+* `x` - The object to test for missing, inf, nan.
+### Returns
+* A `Bool` for whether or not one of these conditions is true.
+"""
 is_missing_nan_inf(x) = (ismissing(x) | isnan(x)) | isinf(x)
 
 """

@@ -1,8 +1,14 @@
-function simple_volatility_given_returns(returns::Array{R,1}) where R<:Real
-    sqrt(mean(returns .^ 2))
+
+"""
+    simple_volatility_given_returns(returns::Vector{R}) where R<:Real
+Calculates volatility using a vector of returns using the square root of squared returns.
+"""
+function simple_volatility_given_returns(returns::Vector{R}) where R<:Real
+    return sqrt(mean(returns .^ 2))
 end
 
 """
+    simple_volatility_with_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid)
 Calculates volatility with the simple method with a specified time grid.
 """
 function simple_volatility_with_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid)

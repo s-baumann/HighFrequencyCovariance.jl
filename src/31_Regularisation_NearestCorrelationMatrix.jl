@@ -1,12 +1,20 @@
-function set_diagonal_to_one(A::Diagonal)
+"""
+    set_diagonal_to_one(A::Diagonal)
+    set_diagonal_to_one(A::Hermitian)
+This returns the matrix square root of an input matrix.
+"""
+function set_diagonal_to_one!(A::Diagonal)
       A[diagind(A)] .= 1
-      return Diagonal(A)
 end
-function set_diagonal_to_one(A::Hermitian)
+function set_diagonal_to_one!(A::Hermitian)
       A[diagind(A)] .= 1
-      return Hermitian(A)
 end
 
+"""
+    sqrt_psd(A::Hermitian)
+    sqrt_psd(A::Diagonal)
+This returns the matrix square root of an input matrix.
+"""
 function sqrt_psd(A::Hermitian)
     eigenvalues, eigenvectors = eigen(A)
     return Hermitian(construct_matrix_from_eigen(sqrt.(eigenvalues), eigenvectors))
@@ -37,8 +45,8 @@ function project_to_U(A::Union{Diagonal,Hermitian}, invW::Hermitian)
     return newA
 end
 function project_to_U(A::Union{Diagonal,Hermitian}, invW::Diagonal)
-      newA = set_diagonal_to_one(A)
-      return newA
+      set_diagonal_to_one!(A)
+      return A
 end
 
 """
