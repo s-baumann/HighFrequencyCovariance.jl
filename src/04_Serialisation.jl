@@ -10,7 +10,7 @@ Convert a CovarianceMatrix to a `DataFrame` format.
 ### Returns
 * A `DataFrame`.
 """
-function DataFrame(covar::CovarianceMatrix, othercols::Dict = Dict{Symbol,Any}(); delete_duplicate_correlations::Bool = true)
+function DataFrames.DataFrame(covar::CovarianceMatrix, othercols::Dict = Dict{Symbol,Any}(); delete_duplicate_correlations::Bool = true)
     d = size(covar.correlation)[1]
     corrs = DataFrame(asset1    = vcat(map(a -> repeat([a], d), covar.labels  )...),asset2 = Array{Union{Symbol,Missing}}(repeat(covar.labels, d)),value = vec(covar.correlation))
     corrs[!,:variable]          = repeat([:correlation], nrow(corrs))
