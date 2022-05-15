@@ -166,7 +166,7 @@ end
 
 
 """
-    is_missing_nan_inf(x) = (ismissing(x) | isnan(x)) | isinf(x)
+    is_missing_nan_inf(x) = (ismissing(x) || isnan(x)) || isinf(x)
 
 This tests if a value is missing, nan or inf and returns true if one of these things is true.
 ### Inputs
@@ -174,7 +174,7 @@ This tests if a value is missing, nan or inf and returns true if one of these th
 ### Returns
 * A `Bool` for whether or not one of these conditions is true.
 """
-is_missing_nan_inf(x) = (ismissing(x) | isnan(x)) | isinf(x)
+is_missing_nan_inf(x) = (ismissing(x) || isnan(x)) || isinf(x)
 
 """
     combine_covariance_matrices(vect::Vector{CovarianceMatrix{T}},
@@ -235,7 +235,7 @@ function rearrange(cm::CovarianceMatrix, labels::Vector{Symbol},
   if length(setdiff(labels, cm.labels)) > 0 error("You put in labels that are not in the CovarianceMatrix") end
   same_assets = (length(cm.labels) == length(labels)) && (all(cm.labels .== labels))
   same_vol = (time_period_per_unit == cm.time_period_per_unit)
-  if (same_assets & same_vol) return cm end
+  if (same_assets && same_vol) return cm end
   reordering = map(x -> findfirst(x .== cm.labels)[1], labels)
   Acor = same_assets ? cm.correlation[reordering,reordering] : Hermitian(cm.correlation[reordering,reordering])
   Avol = same_vol ? cm.volatility[reordering] : convert_vol(cm.volatility[reordering], cm.time_period_per_unit, time_period_per_unit)

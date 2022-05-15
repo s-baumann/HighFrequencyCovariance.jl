@@ -65,7 +65,7 @@ function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get
             if (i == j)
                 mat[i,j] = 1
             else
-                zero_vol = (two_scales_vol[asseti] < 2*eps()) |  (two_scales_vol[assetj] < 2*eps())
+                zero_vol = (two_scales_vol[asseti] < 2*eps()) ||  (two_scales_vol[assetj] < 2*eps())
                 if zero_vol
                     mat[i,j] = 0.0
                 else

@@ -102,7 +102,7 @@ function get_timegrid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Mi
     else
         n_grid = default_spacing(ts; rough_guess_number_of_intervals = rough_guess_number_of_intervals)
         vals = collect(values(n_grid))
-        spacing = min( mean(vals[(isnan.(vals) .== false) .& (isinf.(vals) .== false)]) , duration(ts; in_dates_period = false)/20   )
+        spacing = min( mean(vals[is_missing_nan_inf.(vals) .== false]), duration(ts; in_dates_period = false)/20   )
         spacing = isnan(spacing) ? duration(ts; in_dates_period = false)/20 : spacing
         minn, maxx = extrema(ts.df[:,ts.time])
         time_grid = collect(minn:spacing:maxx)

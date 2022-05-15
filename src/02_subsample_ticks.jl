@@ -42,7 +42,7 @@ function searchsortedlast_both(reference::Vector, indices::Vector)
         else
             j += 1
         end
-        if (i > len) | (j == lenj) return inds end
+        if (i > len) || (j == lenj) return inds end
     end
 end
 

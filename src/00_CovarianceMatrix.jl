@@ -111,7 +111,7 @@ Calculates the mean absolute distance (elementwise in L1 norm) between two `Cova
 * A scalar with the mean distance between matching elements.
 """
 function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8; return_nans_if_symbols_dont_match::Bool = true)
-    if return_nans_if_symbols_dont_match & (length(symdiff(cov1.labels, cov2.labels)) != 0) return (Correlation_error = NaN, Volatility_error = NaN) end
+    if return_nans_if_symbols_dont_match && (length(symdiff(cov1.labels, cov2.labels)) != 0) return (Correlation_error = NaN, Volatility_error = NaN) end
     labels = intersect(cov1.labels, cov2.labels)
     N = length(labels)
     cov11 = rearrange(cov1, labels)
@@ -147,7 +147,7 @@ rather than a tuple showing the distances in terms of correlation and volatility
 * A Real
 """
 function calculate_mean_abs_distance_covar(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8; return_nans_if_symbols_dont_match::Bool = true)
-    if return_nans_if_symbols_dont_match & (length(symdiff(cov1.labels, cov2.labels)) != 0) return (Correlation_error = NaN, Volatility_error = NaN) end
+    if return_nans_if_symbols_dont_match && (length(symdiff(cov1.labels, cov2.labels)) != 0) return (Correlation_error = NaN, Volatility_error = NaN) end
     labels = intersect(cov1.labels, cov2.labels)
     N = length(labels)
     cov11 = rearrange(cov1, labels)
@@ -173,7 +173,7 @@ Extract the correlation between two assets stored in a CovarianceMatrix.
 function get_correlation(covar::CovarianceMatrix, asset1::Symbol, asset2::Symbol)
     index1 = findfirst(asset1 .== covar.labels)
     index2 = findfirst(asset2 .== covar.labels)
-    if isnothing(index1) | isnothing(index2) return missing end
+    if isnothing(index1) || isnothing(index2) return missing end
     return covar.correlation[index1, index2]
 end
 

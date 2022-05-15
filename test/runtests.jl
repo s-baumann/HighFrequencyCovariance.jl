@@ -20,3 +20,5 @@ include("main_tests_convenienceFunctions.jl")
 
 println("Test on Generating Random Draws")
 include("test_getting_draws.jl")
+
+println("Done")
