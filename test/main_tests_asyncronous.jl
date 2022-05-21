@@ -27,6 +27,23 @@ using Test
     # Subsetting to tick.
     ts2 = subset_to_tick(ts2, 49000)
 
+    # Checking that it does not throw
+    using Gadfly
+    plt = plot(ts1)
+    @test isa(plt, Gadfly.Plot)
+
+    # Testing combining of SortedDataFrames
+    ts4 = combine(Vector{SortedDataFrame}([ts1,ts2]))
+    @test isa(ts4, HighFrequencyCovariance.SortedDataFrame)
+
+    # Testing conversions
+    sdf = SortedDataFrame(ts1, :time_column, :grouping_column, :value_column, Minute(1))
+    @test "time_column" in names(sdf.df)
+    @test "grouping_column" in names(sdf.df)
+    @test "value_column" in names(sdf.df)
+    @test sdf.time_period_per_unit == Minute(1)
+
+
     # Testing constructor of SortedDataFrame
     newdict = Dict{Symbol,Vector{UInt64}}()
     for k in keys(ts2.groupingrows)
@@ -34,7 +51,7 @@ using Test
     end
     ts3 = SortedDataFrame(ts2.df, ts2.time, ts2.grouping, ts2.value,
                                   newdict, ts2.time_period_per_unit)
-    isa(ts3, SortedDataFrame{UInt64})
+    @test isa(ts3, SortedDataFrame{UInt64})
 
     # Relabelling
     relabelling = Dict{Symbol,Symbol}(assets .=> [:Barclays, :HSBC, :Vodafone, :Ryanair])
@@ -133,6 +150,7 @@ using Test
     reg4_cov = eigenvalue_clean(psd_mat, ts2; apply_to_covariance = false)
     @test calculate_mean_abs_distance(psd_mat, reg4_cov).Correlation_error .< 2*eps()
     @test calculate_mean_abs_distance(psd_mat, reg4_cov).Volatility_error .< 10*eps()
+    @test calculate_mean_abs_distance_covar(psd_mat, reg4_cov) < 10*eps()
 
     # Testing blocking and regularisation.
     blocking_dd = put_assets_into_blocks_by_trading_frequency(ts2, 1.3, :spectral_covariance)
