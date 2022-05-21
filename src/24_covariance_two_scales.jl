@@ -65,7 +65,10 @@ function two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get
             if (i == j)
                 mat[i,j] = 1
             else
-                zero_vol = (two_scales_vol[asseti] < 2*eps()) ||  (two_scales_vol[assetj] < 2*eps())
+                # We do not try to calculate covariances in cases where one asset has zero volatility.
+                # covariance is zero in this case but trying to estimate wastes time and can lead
+                # to confusing errors for the user.
+                zero_vol = (two_scales_vol[asseti] < eps()) ||  (two_scales_vol[assetj] < eps())
                 if zero_vol
                     mat[i,j] = 0.0
                 else

@@ -85,7 +85,8 @@ This gets the next tick by which every asset has a refreshed price after a certa
 * A `Real` or `Missing` for the refresh time. If it is a real it is the time. If one asset did not update in your data then a missing is returned.
 * An `Integer` or `Missing` for the refresh tick. for what index in your data the refresh happened by. If one asset did not refresh this will be a missing.
 """
-function next_tick(ts::SortedDataFrame, from_index::I; assets::Vector{Symbol} = get_assets(ts)) where R<:Real where I<:Integer
+function next_tick(ts::SortedDataFrame, from_index::I;
+                   assets::Vector{Symbol} = get_assets(ts)) where R<:Real where I<:Integer
     inds = Array{I,1}()
     for a in assets
         ind = searchsortedfirst(ts.groupingrows[a], from_index)

@@ -11,7 +11,8 @@ Make a random psd matrix from the inverse wishart distribution.
 ### Returns
 * A `Hermitian`
 """
-function make_random_psd_matrix_from_wishart(num_assets::Integer, rng::Union{MersenneTwister,StableRNG} = MersenneTwister(1))
+function make_random_psd_matrix_from_wishart(num_assets::Integer,
+                                             rng::Union{MersenneTwister,StableRNG} = MersenneTwister(1))
     wish = InverseWishart(num_assets, Matrix(Float64.(I(num_assets))))
     newmat = Hermitian(rand(rng, wish))
     return newmat
@@ -154,7 +155,9 @@ If you want to do something like Sobol sampling you can change the number_genera
 ### Returns
 * A `Vector` of `Dict`s of draws. Note you can convert this to a dataframe or array with `StochasticIntegrals.to_dataframe` or `StochasticIntegrals.to_array`.
 """
-function StochasticIntegrals.get_draws(covariance_matrix::CovarianceMatrix{<:Real}, num::Integer; number_generator::NumberGenerator = Mersenne(MersenneTwister(1234), length(covariance_matrix.labels)), antithetic_variates = false)
+function StochasticIntegrals.get_draws(covariance_matrix::CovarianceMatrix{<:Real}, num::Integer;
+                                       number_generator::NumberGenerator = Mersenne(MersenneTwister(1234),
+                                       length(covariance_matrix.labels)), antithetic_variates = false)
     iset = ItoSet(covariance_matrix)
     # And below shows how this might be used to generate random draws.
     scovar = StochasticIntegrals.SimpleCovariance(iset, 0.0, 1.0; calculate_inverse = false, calculate_determinant = false)

@@ -1,3 +1,5 @@
+const NUMERICAL_TOL = 10*eps()
+
 """
     set_diagonal_to_one(A::Diagonal)
     set_diagonal_to_one(A::Hermitian)
@@ -207,7 +209,7 @@ function nearest_correlation_matrix(mat::AbstractMatrix, weighting_matrix::Union
     while counter < max_iterates
         Y, Dykstra = doDykstra ? iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt) : iterate_higham(Y, ZeroDykstra, W_root, W_inv, W_inv_sqrt)
         if stop_at_first_correlation_matrix
-             spd = valid_correlation_matrix(Y, 100*eps())
+             spd = valid_correlation_matrix(Y)
              if spd return Y, counter, :already_valid_correlation_matrix end
         end
         counter += 1
@@ -286,6 +288,8 @@ function nearest_psd_matrix(mat::Hermitian)
     W_root = sqrt_psd(W)
     projected = project_to_S(mat, W_root)
     # This is to avoid really slight negative eigenvalues like -1E-17 that happen due to computational rounding.
+    # At this is s a numerical issue we adjust by a multiple of the machine epsilon. In tests 100 times was
+    # a small miltiple of epsilon that prevented the issue.
     if !is_psd_matrix(projected)
         projected = identity_regularisation(projected, 100*eps())
     end

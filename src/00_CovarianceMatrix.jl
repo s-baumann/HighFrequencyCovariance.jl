@@ -147,7 +147,9 @@ rather than a tuple showing the distances in terms of correlation and volatility
 * A Real
 """
 function calculate_mean_abs_distance_covar(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8; return_nans_if_symbols_dont_match::Bool = true)
-    if return_nans_if_symbols_dont_match && (length(symdiff(cov1.labels, cov2.labels)) != 0) return (Correlation_error = NaN, Volatility_error = NaN) end
+    if return_nans_if_symbols_dont_match && (length(symdiff(cov1.labels, cov2.labels)) != 0)
+        return (Correlation_error = NaN, Volatility_error = NaN)
+    end
     labels = intersect(cov1.labels, cov2.labels)
     N = length(labels)
     cov11 = rearrange(cov1, labels)
@@ -209,7 +211,7 @@ If a `Hermitian` is input then it will be tested. If a `CovarianceMatrix` is inp
 function is_psd_matrix(mat::Hermitian, min_eigen_threshold::Real = 0.0)
     eig = eigen(mat).values
     if length(eig) == 0 return false end # There is no eigenvalue decomposition.
-    return minimum(eig) > 0 # is it PSD
+    return minimum(eig) > min_eigen_threshold # is it PSD
 end
 is_psd_matrix(covar::CovarianceMatrix) = is_psd_matrix(covar.correlation)
 
@@ -263,5 +265,6 @@ This relabels a CovarianceMatrix struct to give all the assets alternative names
 """
 function relabel(covar::CovarianceMatrix, mapping::Dict{Symbol,Symbol})
     new_labels = map(x -> mapping[x], covar.labels)
-    return CovarianceMatrix(covar.correlation, covar.volatility, new_labels, covar.time_period_per_unit)
+    return CovarianceMatrix(covar.correlation, covar.volatility,
+                            new_labels, covar.time_period_per_unit)
 end

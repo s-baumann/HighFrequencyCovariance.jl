@@ -41,9 +41,12 @@ Calculates volatility with the simple method.
 ### Returns
 * A `Dict` with an estimated volatility for each asset.
 """
-function simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                           time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
-                           use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
+function simple_volatility(ts::SortedDataFrame,
+                           assets::Vector{Symbol} = get_assets(ts);
+                           time_grid::Union{Missing,Dict} = missing,
+                           fixed_spacing::Union{Missing,Dict,<:Real} = missing,
+                           use_all_obs::Bool = false,
+                           rough_guess_number_of_intervals::Integer = 5)
     if ismissing(time_grid)
         time_grid = Dict{Symbol,Vector{eltype(ts.df[:,ts.time])}}()
         if use_all_obs
@@ -90,9 +93,13 @@ function default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::I
     rough_vol_guess, rough_micro_guess  = two_scales_volatility(ts; num_grids = rough_guess_number_of_intervals)
     n_guess = Dict{Symbol,eltype(ts.df[:,ts.value])}()
     for a in keys(rough_vol_guess)
-        n_guess[a] = ( (T/(4* rough_micro_guess[a]^2)) * T * rough_vol_guess[a]^4 )^(1/3)
+        # Note that if opur guess is that there is no microstructure noise then the formula from this
+        # paper gives an infinite number of intervals. So in this case we will just choose 20 which is
+        # an arbitrary choice but seems sensible. Advanced users can choose their own spacing to avoid this.
         if (rough_micro_guess[a] < 0.0000001)
-            n_guess[a] = duration(ts; in_dates_period = false)/20
+            n_guess[a] = 20
+        else
+            n_guess[a] = ( (T/(4* rough_micro_guess[a]^2)) * T * rough_vol_guess[a]^4)^(1/3)
         end
     end
     return n_guess

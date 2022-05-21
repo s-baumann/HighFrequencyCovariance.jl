@@ -114,7 +114,6 @@ function Base.show(sdf::SortedDataFrame, number_of_rows = 10)
     println()
     println("SortedDataFrame with " , nrow(sdf.df), " rows."  )
     show(sdf.df[1:number_of_rows,[sdf.time, sdf.grouping, sdf.value]])
-    #show(stdout, sdf.df[1:number_of_rows,[sdf.time, sdf.grouping, sdf.value]] ; summary = false)
     println()
 end
 
@@ -131,6 +130,9 @@ function Gadfly.plot(ts::SortedDataFrame)
     return plt
 end
 
+
+
+const MEANINGFUL_PRICE_DIFFERENCE = 1000*eps()
 
 """
     get_assets(ts::SortedDataFrame, obs_to_include::Integer = 10)
@@ -153,7 +155,11 @@ function get_assets(ts::SortedDataFrame, obs_to_include::Integer = 10)
         end
         vals = ts.df[ts.groupingrows[a], ts.value]
         minn, maxx = extrema(vals)
-        cond2 = (maxx - minn > 1000*eps())
+        # If there is no variation in price then we cannot estimate the covariance.
+        # So we will drop cases with less than 1000 epsilons worth of price difference.
+        # Users can avoid this behaviour by passing in assets directly rather than
+        # using this get_assets function.
+        cond2 = (maxx - minn) > MEANINGFUL_PRICE_DIFFERENCE
         if (cond1 && cond2) push!(assets, a) end
     end
     return sort!(assets)

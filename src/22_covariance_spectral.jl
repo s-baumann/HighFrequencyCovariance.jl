@@ -49,7 +49,7 @@ function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_as
         assetslot = indices[asset]
         newtime = ts.df[i, ts.time]
         newval  = ts.df[i, ts.value]
-        if lasttimes[assetslot] < eps()
+        if lasttimes[assetslot] <= 0
             lasttimes[assetslot]  = newtime
             lastvalues[assetslot] = newval
             continue
@@ -98,9 +98,9 @@ function spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_as
         mat = dont_regulise ? mat : regularise(mat, ts, assets, regularisation; regularisation_params... )
 
         # In some cases we get negative terms on the diagonal with this algorithm.
-        negative_diagonals = findall(diag(mat) .< eps())
+        non_positive_diagonals = findall(diag(mat) .<= 0 )
         covar = make_nan_covariance_matrix(assets, ts.time_period_per_unit)
-        if length(negative_diagonals) < 1
+        if length(non_positive_diagonals) < 1
             corr, vols = cov_to_cor_and_vol(mat, 1) # No adjustment for duration as we already have the spot matrix.
             covar.correlation = corr
             covar.volatility = vols

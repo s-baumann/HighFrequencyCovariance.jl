@@ -160,6 +160,9 @@ This calculates a weighted mean given vectors for values and for weights.
 function weighted_mean(x::Vector, w::Vector)
     if length(x) == 0 return NaN end
     if length(x) == 1 return x[1] end
+    # We revert to calculating a simple mean in cases where the sum of absolute
+    # values of weights is less than 100 epsilons. This is to avoid issues with
+    # dividing a number that is close to zero.
     if sum(abs.(w)) < 100*eps() return mean(x) end
     return sum(x .* w) / sum(w)
 end

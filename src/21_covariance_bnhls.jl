@@ -149,9 +149,9 @@ function bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_asse
     cov_mat = dont_regulise ? cov_mat : regularise(cov_mat, ts, assets, regularisation; regularisation_params... )
 
     # In some cases we get negative terms on the diagonal with this algorithm.
-    negative_diagonals = findall(diag(cov_mat) .< eps())
+    non_positive_diagonals = findall(diag(cov_mat) .<= 0)
     covar = make_nan_covariance_matrix(assets, ts.time_period_per_unit)
-    if length(negative_diagonals) == 0
+    if length(non_positive_diagonals) == 0
         cor, vols = cov_to_cor_and_vol(cov_mat, duration(ts; in_dates_period = false))
         covar.correlation = cor
         covar.volatility = vols

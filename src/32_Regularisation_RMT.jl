@@ -5,7 +5,7 @@ This returns the mean square root of the positive elements on the diagonal.
 """
 function mean_sqrt_of_positive_diagonals(x)
     vals = diag(x)
-    return mean(sqrt, vals[vals .> 0]   )^2
+    return mean(sqrt, vals[vals .> 0])^2
 end
 
 """
