@@ -42,7 +42,7 @@ struct SortedDataFrame{I<:Integer}
     end
     function SortedDataFrame(ts::SortedDataFrame{I}, timevar::Symbol, groupingvar::Symbol, valuevar::Symbol,
                              vol_unit::Dates.Period) where I<:Integer
-        dd = ts.df
+        dd = copy(ts.df)
         dd[!, timevar] = time_period_ratio(vol_unit, ts.time_period_per_unit) .* dd[:, ts.time]
         rename!(dd, Dict([ts.grouping, ts.value] .=> [groupingvar, valuevar]))
         return new{I}(dd[:,[timevar, groupingvar, valuevar]], timevar, groupingvar, valuevar, ts.groupingrows, vol_unit)
