@@ -7,7 +7,7 @@ We do this two times, once for 4 assets and once for 16 assets. In each case and
 We measure the accuracy of each algorithm by the mean absolute difference between the corresponding elements of the estimated and the true correlation matrices and volatilities.
 The results are presented below where each point gives the average accuracy from the 4 asset and the 16 asset Monte Carlo samples. The top panels show accuracy in estimating correlations while the bottom panels show accuracy in estimating volatilities. In each panel, the x axis shows how many ticks of data are used and the y axis shows the average (across 100 generated paths) mean absolute error for each estimated volatility and correlation.
 
-![Performance Comparison](PerformanceComparison.png)
+![Performance Comparison](performance_comparison.png)
 
 We can see that the `simple_covariance` method generally performs poorly. While it does improve with more data, it is generally always outperformed by the other methods both in volatility and correlation estimation.
 
