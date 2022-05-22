@@ -10,10 +10,12 @@ using Test
     using Random
     using Test
 
-    brownian_corr_matrix = Hermitian([1.0 0.75 0.5 0.0;
-                                      0.0 1.0 0.5 0.25;
-                                      0.0 0.0 1.0 0.25;
-                                      0.0 0.0 0.0 1.0])
+    brownian_corr_matrix = Hermitian([
+        1.0 0.75 0.5 0.0
+        0.0 1.0 0.5 0.25
+        0.0 0.0 1.0 0.25
+        0.0 0.0 0.0 1.0
+    ])
     assets = [:BARC, :HSBC, :VODL, :RYAL]
     vols = [0.5, 0.6, 0.7, 0.8]
     time_period_per_unit = Dates.Hour(1)
@@ -38,9 +40,9 @@ using Test
 
     # Testing Correlations.
     @test distancefrom(cor(draws.BARC, draws.HSBC) - 0.75, 0.005)
-    @test distancefrom(cor(draws.BARC, draws.RYAL) - 0.0 , 0.005)
-    @test distancefrom(cor(draws.BARC, draws.VODL) - 0.5 , 0.005)
-    @test distancefrom(cor(draws.HSBC, draws.VODL) - 0.5 , 0.005)
+    @test distancefrom(cor(draws.BARC, draws.RYAL) - 0.0, 0.005)
+    @test distancefrom(cor(draws.BARC, draws.VODL) - 0.5, 0.005)
+    @test distancefrom(cor(draws.HSBC, draws.VODL) - 0.5, 0.005)
     @test distancefrom(cor(draws.HSBC, draws.RYAL) - 0.25, 0.005)
     @test distancefrom(cor(draws.VODL, draws.RYAL) - 0.25, 0.005)
 end

@@ -12,7 +12,7 @@ function vol_given_values_and_times(vals::Vector, times::Vector)
     minn, maxx = extrema(times)
     duration = maxx - minn
     returns = simple_differencing(vals[2:end], vals[1:(end-1)])
-    return sqrt(sum(returns .^ 2)/duration)
+    return sqrt(sum(returns .^ 2) / duration)
 end
 
 """
@@ -25,7 +25,8 @@ This gives a default number of intervals to divide a series of ticks over for th
 * An integer for the number of intervals.
 """
 function default_num_grids(ts::SortedDataFrame)
-    min_ticks = minimum(map( a -> length(ts.groupingrows[a]) , collect(keys(ts.groupingrows)) ))
+    min_ticks =
+        minimum(map(a -> length(ts.groupingrows[a]), collect(keys(ts.groupingrows))))
     return Int(max(floor(min_ticks / 100), 3))
 end
 
@@ -61,23 +62,31 @@ Zhang L, Mykland PA, Aït-Sahalia Y (2005). "A Tale of Two Time Scales: Determin
 """
 function two_scales_volatility(vals::Vector, times::Vector, num_grids::Real)
     minn, maxx = extrema(times)
-    dura  = maxx - minn
-    if (dura <= 0) || (length(vals) < 10) return NaN, NaN end
-    num_grids = Int(min(floor(length(times)/4), max(2, floor(num_grids))))
-    avg_vol   = mean(i ->  vol_given_values_and_times(vals[i:num_grids:end], times[i:num_grids:end]), 1:num_grids)
-    all_vol   = vol_given_values_and_times(vals, times)
+    dura = maxx - minn
+    if (dura <= 0) || (length(vals) < 10)
+        return NaN, NaN
+    end
+    num_grids = Int(min(floor(length(times) / 4), max(2, floor(num_grids))))
+    avg_vol = mean(
+        i -> vol_given_values_and_times(vals[i:num_grids:end], times[i:num_grids:end]),
+        1:num_grids,
+    )
+    all_vol = vol_given_values_and_times(vals, times)
 
-    pure_vol  = ((1- 1/num_grids)^(-1)) * ( avg_vol - (1/num_grids) *all_vol   )
-    noise     = (1/(2*length(vals))) * ((all_vol^2)*dura - (pure_vol^2)*dura )
+    pure_vol = ((1 - 1 / num_grids)^(-1)) * (avg_vol - (1 / num_grids) * all_vol)
+    noise = (1 / (2 * length(vals))) * ((all_vol^2) * dura - (pure_vol^2) * dura)
     return pure_vol, noise
 end
-function two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                               num_grids::Real = default_num_grids(ts))
-    vols = Dict{Symbol,eltype(ts.df[:,ts.value])}()
-    micro_noise_var = Dict{Symbol,eltype(ts.df[:,ts.value])}()
+function two_scales_volatility(
+    ts::SortedDataFrame,
+    assets::Vector{Symbol} = get_assets(ts);
+    num_grids::Real = default_num_grids(ts),
+)
+    vols = Dict{Symbol,eltype(ts.df[:, ts.value])}()
+    micro_noise_var = Dict{Symbol,eltype(ts.df[:, ts.value])}()
     for a in assets
-        vals = ts.df[ts.groupingrows[a],ts.value]
-        times = ts.df[ts.groupingrows[a],ts.time]
+        vals = ts.df[ts.groupingrows[a], ts.value]
+        times = ts.df[ts.groupingrows[a], ts.time]
         if length(vals) < 10
             @warn "There was not enough data to use the two_scales_volatility method. Returning NaN."
             vols[a] = NaN
@@ -85,7 +94,7 @@ function two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get
         else
             pure_vol, noise = two_scales_volatility(vals, times, num_grids)
             vols[a] = pure_vol
-            micro_noise_var[a] = max(0.0,noise)
+            micro_noise_var[a] = max(0.0, noise)
         end
     end
     return vols, micro_noise_var

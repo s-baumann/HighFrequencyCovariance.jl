@@ -16,20 +16,20 @@ using Test
     W_root = Diagonal(rand(twister, size(A)[1]))
     invW = inv(W_root^2)
     U_ed = project_to_U(A, invW)
-    @test all( abs.(diag(U_ed) .- 1.0) .< 100*eps())
+    @test all(abs.(diag(U_ed) .- 1.0) .< 100 * eps())
     @test isa(U_ed, Hermitian)
     S_ed = project_to_S(A, W_root)
-    @test all(eigen(S_ed).values .> -100*eps())
+    @test all(eigen(S_ed).values .> -100 * eps())
 
 
     # hermitian weighting.
-    W_root = Hermitian(rand(twister, IW_dist(3)  ))
+    W_root = Hermitian(rand(twister, IW_dist(3)))
     invW = inv(W_root^2)
     U_ed = project_to_U(A, invW)
-    @test all( abs.(diag(U_ed) .- 1.0) .< 100*eps())
+    @test all(abs.(diag(U_ed) .- 1.0) .< 100 * eps())
     @test isa(U_ed, Hermitian)
     S_ed = project_to_S(A, W_root)
-    @test all(eigen(S_ed).values .> -100*eps())
+    @test all(eigen(S_ed).values .> -100 * eps())
 
 
     # Really non psd non diagonal version.
@@ -38,19 +38,19 @@ using Test
     W_root = Diagonal(rand(twister, size(A)[1]))
     invW = inv(W_root^2)
     U_ed = project_to_U(A, invW)
-    @test all( abs.(diag(U_ed) .- 1.0) .< 100*eps())
+    @test all(abs.(diag(U_ed) .- 1.0) .< 100 * eps())
     @test isa(U_ed, Hermitian)
     S_ed = project_to_S(A, W_root)
-    @test all(eigen(S_ed).values .> -100*eps())
+    @test all(eigen(S_ed).values .> -100 * eps())
 
     # hermitian weighting.
-    W_root = Hermitian(rand(twister, IW_dist(3)  ))
+    W_root = Hermitian(rand(twister, IW_dist(3)))
     invW = inv(W_root^2)
     U_ed = project_to_U(A, invW)
-    @test all( abs.(diag(U_ed) .- 1.0) .< 100*eps())
+    @test all(abs.(diag(U_ed) .- 1.0) .< 100 * eps())
     @test isa(U_ed, Hermitian)
     S_ed = project_to_S(A, W_root)
-    @test all(eigen(S_ed).values .> -100000*eps())
+    @test all(eigen(S_ed).values .> -100000 * eps())
 
     # Diagonal A
     A = Diagonal([1.02 0 0; 0 0.98 0; 0 0 1.05])
@@ -58,19 +58,19 @@ using Test
     W_root = Diagonal(rand(twister, size(A)[1]))
     invW = inv(W_root^2)
     U_ed = project_to_U(A, invW)
-    @test all( abs.(diag(U_ed) .- 1.0) .< 100*eps())
+    @test all(abs.(diag(U_ed) .- 1.0) .< 100 * eps())
     @test isa(U_ed, Diagonal)
     S_ed = project_to_S(A, W_root)
-    @test all(eigen(S_ed).values .> -100*eps())
+    @test all(eigen(S_ed).values .> -100 * eps())
 
     # hermitian weighting.
-    W_root = Hermitian(rand(twister, IW_dist(3)  ))
+    W_root = Hermitian(rand(twister, IW_dist(3)))
     invW = inv(W_root^2)
     U_ed = project_to_U(A, invW)
-    @test all( abs.(diag(U_ed) .- 1.0) .< 100*eps())
+    @test all(abs.(diag(U_ed) .- 1.0) .< 100 * eps())
     @test isa(U_ed, Hermitian)
     S_ed = project_to_S(A, W_root)
-    @test all(eigen(S_ed).values .> -100000*eps())
+    @test all(eigen(S_ed).values .> -100000 * eps())
 
 
 
@@ -90,93 +90,147 @@ using Test
     # A identify matrix case.
     N = 4
     A = Hermitian(I(N))
-    W_root = Hermitian(rand(twister, IW_dist(N)  ))
-    Dykstra = Hermitian(zeros(N,N))
+    W_root = Hermitian(rand(twister, IW_dist(N)))
+    Dykstra = Hermitian(zeros(N, N))
     W_inv = inv(W_root^2)
     W_inv_sqrt = sqrt_psd(W_inv)
     Y = A
 
     Y, Dykstra = iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt)
-    @test all(abs.(Y .- I(N)) .< 100*eps())
+    @test all(abs.(Y .- I(N)) .< 100 * eps())
     Y, Dykstra = iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt)
-    @test all(abs.(Y .- I(N)) .< 100*eps())
+    @test all(abs.(Y .- I(N)) .< 100 * eps())
 
     # If A were input as diagonal
     A = Diagonal(I(N))
-    Dykstra = Diagonal(zeros(N,N))
+    Dykstra = Diagonal(zeros(N, N))
     Y = A
     Y, Dykstra = iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt)
-    @test all(abs.(Y .- I(N)) .< 100*eps())
+    @test all(abs.(Y .- I(N)) .< 100 * eps())
     Y, Dykstra = iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt)
-    @test all(abs.(Y .- I(N)) .< 100*eps())
+    @test all(abs.(Y .- I(N)) .< 100 * eps())
 
     # If A and E_root were diagonal
     A = Diagonal(Float64.(I(N)))
     W_root = Diagonal(rand(twister, N))
-    Dykstra = Diagonal(zeros(N,N))
+    Dykstra = Diagonal(zeros(N, N))
     W_inv = inv(W_root^2)
     W_inv_sqrt = sqrt_psd(W_inv)
     Y = A
     Y, Dykstra = iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt)
-    @test all(abs.(Y .- I(N)) .< 100*eps())
+    @test all(abs.(Y .- I(N)) .< 100 * eps())
     Y, Dykstra = iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt)
-    @test all(abs.(Y .- I(N)) .< 100*eps())
+    @test all(abs.(Y .- I(N)) .< 100 * eps())
 
 
 
     # A valid correlation matrix case
     N = 3
-    A, _ = cov_to_cor(Hermitian(rand(twister, IW_dist(N)  )))
-    W_root = Hermitian(rand(twister, IW_dist(N)  ))
-    Dykstra = Hermitian(zeros(N,N))
+    A, _ = cov_to_cor(Hermitian(rand(twister, IW_dist(N))))
+    W_root = Hermitian(rand(twister, IW_dist(N)))
+    Dykstra = Hermitian(zeros(N, N))
     W_inv = inv(W_root^2)
     W_inv_sqrt = sqrt_psd(W_inv)
     Y = A
 
     Y, Dykstra = iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt)
-    @test all(abs.(Y .- A) .< 100*eps())
+    @test all(abs.(Y .- A) .< 100 * eps())
     Y, Dykstra = iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt)
-    @test all(abs.(Y .- A) .< 100*eps())
+    @test all(abs.(Y .- A) .< 100 * eps())
 
 
     # A Slightly non psd case
     N = 3
     A = Hermitian([1.02 0.5 0.9; 0.5 0.98 0.9; 0.9 0.9 1.01])
-    W = Hermitian(abs.(cov_to_cor(Hermitian(rand(twister, IW_dist(N)  )))[1]))
-    updated_matrix, counter, convergence = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
-    updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = false, max_iterates = 10000)
-    updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(A, W; doDykstra = false, stop_at_first_correlation_matrix = true, max_iterates = 10000)
-    @test all(abs.(updated_matrix .- updated_matrix2) .< 100*eps()) # These should be the same as once it is psd the matrix stops updating.
+    W = Hermitian(abs.(cov_to_cor(Hermitian(rand(twister, IW_dist(N))))[1]))
+    updated_matrix, counter, convergence = nearest_correlation_matrix(
+        A,
+        W;
+        doDykstra = true,
+        stop_at_first_correlation_matrix = true,
+        max_iterates = 1000,
+    )
+    updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(
+        A,
+        W;
+        doDykstra = true,
+        stop_at_first_correlation_matrix = false,
+        max_iterates = 10000,
+    )
+    updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(
+        A,
+        W;
+        doDykstra = false,
+        stop_at_first_correlation_matrix = true,
+        max_iterates = 10000,
+    )
+    @test all(abs.(updated_matrix .- updated_matrix2) .< 100 * eps()) # These should be the same as once it is psd the matrix stops updating.
     @test any(abs.(updated_matrix .- updated_matrix3) .> 0.0001) # These should be different as without Dykstra one is biased
     # Testing convergences.
-    @test minimum(eigen(updated_matrix).values) > -10*eps()
-    @test minimum(eigen(updated_matrix2).values) > -10*eps()
-    @test minimum(eigen(updated_matrix3).values) > -100000*eps()
+    @test minimum(eigen(updated_matrix).values) > -10 * eps()
+    @test minimum(eigen(updated_matrix2).values) > -10 * eps()
+    @test minimum(eigen(updated_matrix3).values) > -100000 * eps()
 
 
     # With diagonal weighting.
     N = 3
     A = Hermitian([1.02 0.5 0.9; 0.5 0.98 0.9; 0.9 0.9 1.01])
-    W = Diagonal(rand(twister,N))
-    updated_matrix, counter, convergence = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
-    updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = false, max_iterates = 10000)
-    updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(A, W; doDykstra = false, stop_at_first_correlation_matrix = true, max_iterates = 10000)
-    @test all(abs.(updated_matrix .- updated_matrix2) .< 100*eps()) # These should be the same as once it is psd the matrix stops updating.
+    W = Diagonal(rand(twister, N))
+    updated_matrix, counter, convergence = nearest_correlation_matrix(
+        A,
+        W;
+        doDykstra = true,
+        stop_at_first_correlation_matrix = true,
+        max_iterates = 1000,
+    )
+    updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(
+        A,
+        W;
+        doDykstra = true,
+        stop_at_first_correlation_matrix = false,
+        max_iterates = 10000,
+    )
+    updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(
+        A,
+        W;
+        doDykstra = false,
+        stop_at_first_correlation_matrix = true,
+        max_iterates = 10000,
+    )
+    @test all(abs.(updated_matrix .- updated_matrix2) .< 100 * eps()) # These should be the same as once it is psd the matrix stops updating.
     @test any(abs.(updated_matrix .- updated_matrix3) .> 0.0001) # These should be different as without Dykstra one is biased
     # Testing convergences.
-    @test minimum(eigen(updated_matrix2).values) > -10*eps()
-    @test minimum(eigen(updated_matrix).values) > -10*eps()
-    @test minimum(eigen(updated_matrix3).values) > -10*eps()
+    @test minimum(eigen(updated_matrix2).values) > -10 * eps()
+    @test minimum(eigen(updated_matrix).values) > -10 * eps()
+    @test minimum(eigen(updated_matrix3).values) > -10 * eps()
 
     # A really non psd case
     A = Hermitian([1.02 0.5 0.9; 0.5 0.98 -0.9; 0.9 -0.9 1.01])
-    W = Hermitian(abs.(cov_to_cor(Hermitian(rand(twister, IW_dist(N)  )))[1]))
-    updated_matrix, counter, convergence = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 100000)
-    updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(A, W; doDykstra = true, stop_at_first_correlation_matrix = false, max_iterates = 10000)
-    updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(A, W; doDykstra = false, stop_at_first_correlation_matrix = true, max_iterates = 10000)
-    @test all(abs.(updated_matrix .- updated_matrix2) .< 1000*eps()) # These should be the same as once it is psd the matrix stops updating.
+    W = Hermitian(abs.(cov_to_cor(Hermitian(rand(twister, IW_dist(N))))[1]))
+    updated_matrix, counter, convergence = nearest_correlation_matrix(
+        A,
+        W;
+        doDykstra = true,
+        stop_at_first_correlation_matrix = true,
+        max_iterates = 100000,
+    )
+    updated_matrix2, counter2, convergence2 = nearest_correlation_matrix(
+        A,
+        W;
+        doDykstra = true,
+        stop_at_first_correlation_matrix = false,
+        max_iterates = 10000,
+    )
+    updated_matrix3, counter3, convergence3 = nearest_correlation_matrix(
+        A,
+        W;
+        doDykstra = false,
+        stop_at_first_correlation_matrix = true,
+        max_iterates = 10000,
+    )
+    @test all(abs.(updated_matrix .- updated_matrix2) .< 1000 * eps()) # These should be the same as once it is psd the matrix stops updating.
     @test any(abs.(updated_matrix .- updated_matrix3) .> 0.0001) # These should be different as without Dykstra one is biased
     # Testing convergences.
-    @test minimum(eigen(updated_matrix).values) > -10*eps()
-    @test minimum(eigen(updated_matrix2).values) > -10*eps()
+    @test minimum(eigen(updated_matrix).values) > -10 * eps()
+    @test minimum(eigen(updated_matrix2).values) > -10 * eps()
 end

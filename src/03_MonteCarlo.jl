@@ -11,8 +11,10 @@ Make a random psd matrix from the inverse wishart distribution.
 ### Returns
 * A `Hermitian`
 """
-function make_random_psd_matrix_from_wishart(num_assets::Integer,
-                                             rng::Union{MersenneTwister,StableRNG} = MersenneTwister(1))
+function make_random_psd_matrix_from_wishart(
+    num_assets::Integer,
+    rng::Union{MersenneTwister,StableRNG} = MersenneTwister(1),
+)
     wish = InverseWishart(num_assets, Matrix(Float64.(I(num_assets))))
     newmat = Hermitian(rand(rng, wish))
     return newmat
@@ -56,49 +58,93 @@ Refreshed ticks every 0.5-5 seconds (in expectation).
 * A `Dict` of microstructure noise variances for each asset.
 * A `Dict` of update rates for each asset.
 """
-function generate_random_path(dimensions::Integer, ticks::Integer;
-                              syncronous::Bool = false,
-                              rng::Union{MersenneTwister,StableRNG} = MersenneTwister(1),
-                              vol_dist::Distribution = Uniform(0.1/sqrt(252 * 8 * 3600), 0.5/sqrt(252 * 8 * 3600)),
-                              refresh_rate_dist::Distribution    = Uniform(0.5, 5.0),
-                              time_period_per_unit::Dates.Period = Second(1),
-                              micro_noise_dist::Distribution     = Uniform(vol_dist.a * sqrt(time_period_ratio(Minute(5), time_period_per_unit)), vol_dist.b * sqrt(time_period_ratio(Minute(5), time_period_per_unit))),
-                              assets::Union{Vector,Missing}      = missing,
-                              brownian_corr_matrix::Union{Hermitian,Missing} = missing,
-                              vols::Union{Vector,Missing}        = missing,
-                              rng_timing::Union{MersenneTwister,StableRNG} = MersenneTwister(1))
+function generate_random_path(
+    dimensions::Integer,
+    ticks::Integer;
+    syncronous::Bool = false,
+    rng::Union{MersenneTwister,StableRNG} = MersenneTwister(1),
+    vol_dist::Distribution = Uniform(
+        0.1 / sqrt(252 * 8 * 3600),
+        0.5 / sqrt(252 * 8 * 3600),
+    ),
+    refresh_rate_dist::Distribution = Uniform(0.5, 5.0),
+    time_period_per_unit::Dates.Period = Second(1),
+    micro_noise_dist::Distribution = Uniform(
+        vol_dist.a * sqrt(time_period_ratio(Minute(5), time_period_per_unit)),
+        vol_dist.b * sqrt(time_period_ratio(Minute(5), time_period_per_unit)),
+    ),
+    assets::Union{Vector,Missing} = missing,
+    brownian_corr_matrix::Union{Hermitian,Missing} = missing,
+    vols::Union{Vector,Missing} = missing,
+    rng_timing::Union{MersenneTwister,StableRNG} = MersenneTwister(1),
+)
     if (ismissing(assets) == false) && (dimensions != length(assets))
         error("If you input asset names then the number of asset names must be of length equal to the dimensions input.")
     end
 
     if ismissing(brownian_corr_matrix)
-        brownian_corr_matrix, _ = cov_to_cor(make_random_psd_matrix_from_wishart(dimensions, rng))
+        brownian_corr_matrix, _ =
+            cov_to_cor(make_random_psd_matrix_from_wishart(dimensions, rng))
     end
 
     vols = ismissing(vols) ? rand(rng, vol_dist, dimensions) : vols
     assets = ismissing(assets) ? Symbol.(:asset_, 1:dimensions) : assets
 
-    ito_integrals = Dict(assets .=> map(i -> ItoIntegral(assets[i], PE_Function(vols[i], 0.0, 0.0, 0)  ), 1:dimensions))
+    ito_integrals = Dict(
+        assets .=> map(
+            i -> ItoIntegral(assets[i], PE_Function(vols[i], 0.0, 0.0, 0)),
+            1:dimensions,
+        ),
+    )
     ito_set_ = ItoSet(brownian_corr_matrix, assets, ito_integrals)
 
-    covar = StochasticIntegrals.SimpleCovariance(ito_set_, 0.0, 1.0; calculate_inverse = false, calculate_determinant = false)
-    stock_processes = Dict(assets .=> map(a -> ItoProcess(0.0, 0.0, PE_Function(0.00, 0.0, 0.0, 0), ito_integrals[a]), assets))
+    covar = StochasticIntegrals.SimpleCovariance(
+        ito_set_,
+        0.0,
+        1.0;
+        calculate_inverse = false,
+        calculate_determinant = false,
+    )
+    stock_processes = Dict(
+        assets .=> map(
+            a -> ItoProcess(0.0, 0.0, PE_Function(0.00, 0.0, 0.0, 0), ito_integrals[a]),
+            assets,
+        ),
+    )
     update_rates = Dict(assets .=> Exponential.(rand(rng, refresh_rate_dist, dimensions)))
     microstructure_noise = Dict(assets .=> rand(rng, micro_noise_dist, dimensions) .^ 2)
     rng_obj = convert_to_stochastic_integrals_type(rng, dimensions)
     ts = DataFrame()
     if syncronous
-        ts = StochasticIntegrals.make_ito_process_syncronous_time_series(stock_processes, covar, mean(a-> update_rates[a].θ, assets), Int(ceil(ticks/dimensions)); number_generator = rng_obj)
+        ts = StochasticIntegrals.make_ito_process_syncronous_time_series(
+            stock_processes,
+            covar,
+            mean(a -> update_rates[a].θ, assets),
+            Int(ceil(ticks / dimensions));
+            number_generator = rng_obj,
+        )
     else
-        ts = StochasticIntegrals.make_ito_process_non_syncronous_time_series(stock_processes, covar, update_rates, ticks; timing_twister = rng_timing, ito_number_generator = rng_obj)
+        ts = StochasticIntegrals.make_ito_process_non_syncronous_time_series(
+            stock_processes,
+            covar,
+            update_rates,
+            ticks;
+            timing_twister = rng_timing,
+            ito_number_generator = rng_obj,
+        )
     end
     ts = SortedDataFrame(ts, :Time, :Name, :Value, time_period_per_unit)
 
     standard_normal_draws = rand(rng, Normal(), nrow(ts.df))
 
-    normal_draws = standard_normal_draws .* map(a -> sqrt(microstructure_noise[a]), ts.df[:,ts.grouping])
-    ts.df[:,ts.value] += normal_draws
-    return ts, CovarianceMatrix(brownian_corr_matrix, vols, assets, time_period_per_unit), microstructure_noise, update_rates
+    normal_draws =
+        standard_normal_draws .*
+        map(a -> sqrt(microstructure_noise[a]), ts.df[:, ts.grouping])
+    ts.df[:, ts.value] += normal_draws
+    return ts,
+    CovarianceMatrix(brownian_corr_matrix, vols, assets, time_period_per_unit),
+    microstructure_noise,
+    update_rates
 end
 
 """
@@ -133,12 +179,16 @@ Gaussian corresponding to the covariance matrix and other things.
 """
 function StochasticIntegrals.ItoSet(covariance_matrix::CovarianceMatrix{<:Real})
     itos = Dict{Symbol,ItoIntegral}()
-    for i in 1:length(covariance_matrix.labels)
+    for i = 1:length(covariance_matrix.labels)
         lab = covariance_matrix.labels[i]
         voll = covariance_matrix.volatility[i]
-        itos[lab] =  ItoIntegral(lab, voll)
+        itos[lab] = ItoIntegral(lab, voll)
     end
-    ito_set_ = StochasticIntegrals.ItoSet(covariance_matrix.correlation , covariance_matrix.labels, itos)
+    ito_set_ = StochasticIntegrals.ItoSet(
+        covariance_matrix.correlation,
+        covariance_matrix.labels,
+        itos,
+    )
     return ito_set_
 end
 
@@ -155,12 +205,24 @@ If you want to do something like Sobol sampling you can change the number_genera
 ### Returns
 * A `Vector` of `Dict`s of draws. Note you can convert this to a dataframe or array with `StochasticIntegrals.to_dataframe` or `StochasticIntegrals.to_array`.
 """
-function StochasticIntegrals.get_draws(covariance_matrix::CovarianceMatrix{<:Real}, num::Integer;
-                                       number_generator::NumberGenerator = Mersenne(MersenneTwister(1234),
-                                       length(covariance_matrix.labels)), antithetic_variates = false)
+function StochasticIntegrals.get_draws(
+    covariance_matrix::CovarianceMatrix{<:Real},
+    num::Integer;
+    number_generator::NumberGenerator = Mersenne(
+        MersenneTwister(1234),
+        length(covariance_matrix.labels),
+    ),
+    antithetic_variates = false,
+)
     iset = ItoSet(covariance_matrix)
     # And below shows how this might be used to generate random draws.
-    scovar = StochasticIntegrals.SimpleCovariance(iset, 0.0, 1.0; calculate_inverse = false, calculate_determinant = false)
+    scovar = StochasticIntegrals.SimpleCovariance(
+        iset,
+        0.0,
+        1.0;
+        calculate_inverse = false,
+        calculate_determinant = false,
+    )
     draws = StochasticIntegrals.get_draws(scovar, num)
     return draws
 end

@@ -25,7 +25,8 @@ export relabel, plot, combine
 include("01_helpers.jl")
 export simple_differencing
 include("02_subsample_ticks.jl")
-export cov_to_cor, cor_to_cov, cov_to_cor_and_vol, covariance, construct_matrix_from_eigen, get_returns
+export cov_to_cor,
+    cor_to_cov, cov_to_cor_and_vol, covariance, construct_matrix_from_eigen, get_returns
 export combine_covariance_matrices, rearrange
 export squared_frobenius, squared_frobenius_distance
 export get_all_refresh_times, latest_value, time_between_refreshes, random_value_in_interval
@@ -58,7 +59,8 @@ export two_scales_covariance
 include("30_Regularisation_identity.jl")
 export identity_regularisation
 include("31_Regularisation_NearestCorrelationMatrix.jl")
-export project_to_U, project_to_S, iterate_higham, nearest_correlation_matrix, nearest_psd_matrix
+export project_to_U,
+    project_to_S, iterate_higham, nearest_correlation_matrix, nearest_psd_matrix
 include("32_Regularisation_RMT.jl")
 export eigenvalue_clean
 

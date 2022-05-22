@@ -1,4 +1,4 @@
-const NUMERICAL_TOL = 10*eps()
+const NUMERICAL_TOL = 10 * eps()
 
 """
     set_diagonal_to_one(A::Diagonal)
@@ -6,10 +6,10 @@ const NUMERICAL_TOL = 10*eps()
 This returns the matrix square root of an input matrix.
 """
 function set_diagonal_to_one!(A::Diagonal)
-      A[diagind(A)] .= 1
+    A[diagind(A)] .= 1
 end
 function set_diagonal_to_one!(A::Hermitian)
-      A[diagind(A)] .= 1
+    A[diagind(A)] .= 1
 end
 
 """
@@ -39,16 +39,16 @@ We use the W-norm (as defined by Higham 2001).
 Higham, N. J. 2001. Bottom of page 335.
 """
 function project_to_U(A::Union{Diagonal,Hermitian}, invW::Hermitian)
-      rhs = diag(A - Diagonal(I(size(A)[1])))
-      WmWm_hadamard = Hermitian(invW .^ 2)
-      theta = WmWm_hadamard \ rhs
-      diagtheta = Diagonal(theta)
-      newA = A - Hermitian(invW * diagtheta * invW)
+    rhs = diag(A - Diagonal(I(size(A)[1])))
+    WmWm_hadamard = Hermitian(invW .^ 2)
+    theta = WmWm_hadamard \ rhs
+    diagtheta = Diagonal(theta)
+    newA = A - Hermitian(invW * diagtheta * invW)
     return newA
 end
 function project_to_U(A::Union{Diagonal,Hermitian}, invW::Diagonal)
-      set_diagonal_to_one!(A)
-      return A
+    set_diagonal_to_one!(A)
+    return A
 end
 
 """
@@ -70,15 +70,28 @@ This maps a matrix to the nearest psd matrix. `W_root` should be the principal s
 ### References
 Higham, N. J. 2001. Theorem 3.2
 """
-function project_to_S(A::Hermitian, W_root::Union{Hermitian,Diagonal}; W_inv_sqrt::Union{Hermitian,Diagonal} = sqrt_psd(inv(W_root^2)))
-      Wroot_A_WRoot = Hermitian(W_root * A * W_root)
-      eigenvalues, eigenvectors = eigen(Wroot_A_WRoot)
-      if all(eigenvalues .> 0) return A end
-      positive_eigenvalues = map(x-> max(0,x), eigenvalues)
-      Wroot_A_WRoot_positiveEigen = W_inv_sqrt * construct_matrix_from_eigen(positive_eigenvalues, eigenvectors) * W_inv_sqrt
-      return Hermitian(Wroot_A_WRoot_positiveEigen)
+function project_to_S(
+    A::Hermitian,
+    W_root::Union{Hermitian,Diagonal};
+    W_inv_sqrt::Union{Hermitian,Diagonal} = sqrt_psd(inv(W_root^2)),
+)
+    Wroot_A_WRoot = Hermitian(W_root * A * W_root)
+    eigenvalues, eigenvectors = eigen(Wroot_A_WRoot)
+    if all(eigenvalues .> 0)
+        return A
+    end
+    positive_eigenvalues = map(x -> max(0, x), eigenvalues)
+    Wroot_A_WRoot_positiveEigen =
+        W_inv_sqrt *
+        construct_matrix_from_eigen(positive_eigenvalues, eigenvectors) *
+        W_inv_sqrt
+    return Hermitian(Wroot_A_WRoot_positiveEigen)
 end
-project_to_S(A::Diagonal, W_root::Union{Hermitian,Diagonal}; W_inv_sqrt::Union{Hermitian,Diagonal,Missing} = missing) = A
+project_to_S(
+    A::Diagonal,
+    W_root::Union{Hermitian,Diagonal};
+    W_inv_sqrt::Union{Hermitian,Diagonal,Missing} = missing,
+) = A
 
 
 """
@@ -101,9 +114,13 @@ Returns the updated matrix and the next iterate's Dykstra correction.
 ### References
 Higham, N. J. 2001. Algorithm 3.3
 """
-function iterate_higham(Y::Union{Hermitian,Diagonal}, Dykstra::Union{Hermitian,Diagonal},
-                        W_root::Union{Hermitian,Diagonal}, W_inv::Union{Hermitian,Diagonal},
-                        W_inv_sqrt::Union{Hermitian,Diagonal})
+function iterate_higham(
+    Y::Union{Hermitian,Diagonal},
+    Dykstra::Union{Hermitian,Diagonal},
+    W_root::Union{Hermitian,Diagonal},
+    W_inv::Union{Hermitian,Diagonal},
+    W_inv_sqrt::Union{Hermitian,Diagonal},
+)
     R = Y - Dykstra
     X = project_to_S(R, W_root; W_inv_sqrt = W_inv_sqrt)
     new_Dykstra = X - R
@@ -194,8 +211,13 @@ Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diag
 ### References
 Higham NJ (2002). "Computing the nearest correlation matrix - a problem from finance." IMA Journal of Numerical Analysis, 22, 329–343. doi:10.1002/nla.258.
 """
-function nearest_correlation_matrix(mat::AbstractMatrix, weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(mat)[1])));
-                                    doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
+function nearest_correlation_matrix(
+    mat::AbstractMatrix,
+    weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(mat)[1])));
+    doDykstra::Bool = true,
+    stop_at_first_correlation_matrix::Bool = true,
+    max_iterates::Integer = 1000,
+)
     @assert all(size(mat) .== size(weighting_matrix))
     W_root = sqrt_psd(weighting_matrix)
     W_inv = inv(weighting_matrix)
@@ -203,37 +225,89 @@ function nearest_correlation_matrix(mat::AbstractMatrix, weighting_matrix::Union
 
     N = size(mat)[1]
     Y = mat
-    ZeroDykstra = Hermitian(zeros(N,N))
+    ZeroDykstra = Hermitian(zeros(N, N))
     Dykstra = ZeroDykstra
     counter = 1
     while counter < max_iterates
-        Y, Dykstra = doDykstra ? iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt) : iterate_higham(Y, ZeroDykstra, W_root, W_inv, W_inv_sqrt)
+        Y, Dykstra = doDykstra ? iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt) :
+            iterate_higham(Y, ZeroDykstra, W_root, W_inv, W_inv_sqrt)
         if stop_at_first_correlation_matrix
-             spd = valid_correlation_matrix(Y)
-             if spd return Y, counter, :already_valid_correlation_matrix end
+            spd = valid_correlation_matrix(Y)
+            if spd
+                return Y, counter, :already_valid_correlation_matrix
+            end
         end
         counter += 1
     end
     return (updated_matrix = Y, counter = counter, convergence = :reached_maxiter)
 end
-function nearest_correlation_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
-                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
-    return nearest_correlation_matrix(covariance_matrix; weighting_matrix = weighting_matrix,
-                                 doDykstra = doDykstra, stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
+function nearest_correlation_matrix(
+    covariance_matrix::CovarianceMatrix,
+    ts::SortedDataFrame;
+    weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
+    doDykstra::Bool = true,
+    stop_at_first_correlation_matrix::Bool = true,
+    max_iterates::Integer = 1000,
+)
+    return nearest_correlation_matrix(
+        covariance_matrix;
+        weighting_matrix = weighting_matrix,
+        doDykstra = doDykstra,
+        stop_at_first_correlation_matrix = stop_at_first_correlation_matrix,
+        max_iterates = max_iterates,
+    )
 end
-function nearest_correlation_matrix(covariance_matrix::CovarianceMatrix; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
-                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
-    regularised_correl, counter, convergence = nearest_correlation_matrix(covariance_matrix.correlation, weighting_matrix; doDykstra = doDykstra, stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
-    return CovarianceMatrix(regularised_correl, covariance_matrix.volatility, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
+function nearest_correlation_matrix(
+    covariance_matrix::CovarianceMatrix;
+    weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
+    doDykstra::Bool = true,
+    stop_at_first_correlation_matrix::Bool = true,
+    max_iterates::Integer = 1000,
+)
+    regularised_correl, counter, convergence = nearest_correlation_matrix(
+        covariance_matrix.correlation,
+        weighting_matrix;
+        doDykstra = doDykstra,
+        stop_at_first_correlation_matrix = stop_at_first_correlation_matrix,
+        max_iterates = max_iterates,
+    )
+    return CovarianceMatrix(
+        regularised_correl,
+        covariance_matrix.volatility,
+        covariance_matrix.labels,
+        covariance_matrix.time_period_per_unit,
+    )
 end
-function nearest_correlation_matrix(mat::Hermitian, ts::SortedDataFrame; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(mat).(I(size(mat)[1]))),
-                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
-    return nearest_correlation_matrix(mat; weighting_matrix = weighting_matrix,
-                                 doDykstra = doDykstra, stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
+function nearest_correlation_matrix(
+    mat::Hermitian,
+    ts::SortedDataFrame;
+    weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(mat).(I(size(mat)[1]))),
+    doDykstra::Bool = true,
+    stop_at_first_correlation_matrix::Bool = true,
+    max_iterates::Integer = 1000,
+)
+    return nearest_correlation_matrix(
+        mat;
+        weighting_matrix = weighting_matrix,
+        doDykstra = doDykstra,
+        stop_at_first_correlation_matrix = stop_at_first_correlation_matrix,
+        max_iterates = max_iterates,
+    )
 end
-function nearest_correlation_matrix(mat::Hermitian; weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(mat).(I(size(mat)[1]))),
-                             doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
-    regularised_correl, counter, convergence = nearest_correlation_matrix(mat, weighting_matrix; doDykstra = doDykstra, stop_at_first_correlation_matrix = stop_at_first_correlation_matrix, max_iterates = max_iterates)
+function nearest_correlation_matrix(
+    mat::Hermitian;
+    weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(mat).(I(size(mat)[1]))),
+    doDykstra::Bool = true,
+    stop_at_first_correlation_matrix::Bool = true,
+    max_iterates::Integer = 1000,
+)
+    regularised_correl, counter, convergence = nearest_correlation_matrix(
+        mat,
+        weighting_matrix;
+        doDykstra = doDykstra,
+        stop_at_first_correlation_matrix = stop_at_first_correlation_matrix,
+        max_iterates = max_iterates,
+    )
     return Hermitian(regularised_correl)
 end
 
@@ -291,19 +365,36 @@ function nearest_psd_matrix(mat::Hermitian)
     # At this is s a numerical issue we adjust by a multiple of the machine epsilon. In tests 100 times was
     # a small miltiple of epsilon that prevented the issue.
     if !is_psd_matrix(projected)
-        projected = identity_regularisation(projected, 100*eps())
+        projected = identity_regularisation(projected, 100 * eps())
     end
     return projected
 end
-function nearest_psd_matrix(covariance_matrix::CovarianceMatrix; apply_to_covariance::Bool = true)
+function nearest_psd_matrix(
+    covariance_matrix::CovarianceMatrix;
+    apply_to_covariance::Bool = true,
+)
     if apply_to_covariance
         regularised_covariance = nearest_psd_matrix(covariance(covariance_matrix))
         corr, vols = cov_to_cor_and_vol(regularised_covariance, 1)
-        return CovarianceMatrix(corr, vols, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
+        return CovarianceMatrix(
+            corr,
+            vols,
+            covariance_matrix.labels,
+            covariance_matrix.time_period_per_unit,
+        )
     else
-        return CovarianceMatrix(Hermitian(nearest_psd_matrix(covariance_matrix.correlation)), covariance_matrix.volatility, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
+        return CovarianceMatrix(
+            Hermitian(nearest_psd_matrix(covariance_matrix.correlation)),
+            covariance_matrix.volatility,
+            covariance_matrix.labels,
+            covariance_matrix.time_period_per_unit,
+        )
     end
 end
-function nearest_psd_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame; apply_to_covariance::Bool = true)
+function nearest_psd_matrix(
+    covariance_matrix::CovarianceMatrix,
+    ts::SortedDataFrame;
+    apply_to_covariance::Bool = true,
+)
     return nearest_psd_matrix(covariance_matrix; apply_to_covariance = apply_to_covariance)
 end

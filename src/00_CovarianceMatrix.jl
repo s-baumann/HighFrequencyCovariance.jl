@@ -1,4 +1,4 @@
-const NUMERICAL_TOL = 10*eps()
+const NUMERICAL_TOL = 10 * eps()
 
 
 """
@@ -37,7 +37,7 @@ This shoes the `CovarianceMatrix` in a nice format.
 function Base.show(cm::CovarianceMatrix)
     println()
     println("Volatilities per time interval of ", cm.time_period_per_unit)
-    flat_labels = reshape(cm.labels ,(1, length(cm.labels)))
+    flat_labels = reshape(cm.labels, (1, length(cm.labels)))
     Base.print_matrix(stdout, vcat(flat_labels, cm.volatility'))
     println("\n")
     println("Correlations")
@@ -47,10 +47,15 @@ function Base.show(cm::CovarianceMatrix)
     Base.print_matrix(stdout, corr)
     println("\n")
 end
-function Base.show(cm::CovarianceMatrix, sig_figs_volatility::Integer, decimal_places_correlation::Integer)
+function Base.show(
+    cm::CovarianceMatrix,
+    sig_figs_volatility::Integer,
+    decimal_places_correlation::Integer,
+)
     cm2 = deepcopy(cm)
-    cm2.volatility  = round.(cm2.volatility , sigdigits = sig_figs_volatility)
-    cm2.correlation = Hermitian(round.(cm2.correlation, digits = decimal_places_correlation))
+    cm2.volatility = round.(cm2.volatility, sigdigits = sig_figs_volatility)
+    cm2.correlation =
+        Hermitian(round.(cm2.correlation, digits = decimal_places_correlation))
     show(cm2)
 end
 
@@ -62,8 +67,12 @@ end
 * `vol_period` - The period of the volatility you have.
 * `new_vol_period` - The period that you want to convert the volatility to.
 """
-function convert_vol(vol::Union{Vector{<:Real},Real}, vol_period::Dates.Period, new_vol_period::Dates.Period)
-    return vol .* sqrt( time_period_ratio(new_vol_period, vol_period) )
+function convert_vol(
+    vol::Union{Vector{<:Real},Real},
+    vol_period::Dates.Period,
+    new_vol_period::Dates.Period,
+)
+    return vol .* sqrt(time_period_ratio(new_vol_period, vol_period))
 end
 convert_vol(vol::Missing, vol_period::Dates.Period, new_vol_period::Dates.Period) = missing
 
@@ -77,9 +86,12 @@ This makes an empty `CovarianceMatrix` struct with all volatilities and correlat
 ### Returns
 * An (empty) `CovarianceMatrix`
 """
-function make_nan_covariance_matrix(labels::Vector{Symbol}, time_period_per_unit::Dates.Period)
+function make_nan_covariance_matrix(
+    labels::Vector{Symbol},
+    time_period_per_unit::Dates.Period,
+)
     d = length(labels)
-    correlation = ones(d,d)
+    correlation = ones(d, d)
     correlation .= NaN
     correlation[diagind(correlation)] .= 1
     vols = ones(d)
@@ -110,14 +122,25 @@ Calculates the mean absolute distance (elementwise in L1 norm) between two `Cova
 ### Returns
 * A scalar with the mean distance between matching elements.
 """
-function calculate_mean_abs_distance(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8; return_nans_if_symbols_dont_match::Bool = true)
-    if return_nans_if_symbols_dont_match && (length(symdiff(cov1.labels, cov2.labels)) != 0) return (Correlation_error = NaN, Volatility_error = NaN) end
+function calculate_mean_abs_distance(
+    cov1::CovarianceMatrix,
+    cov2::CovarianceMatrix,
+    decimal_places::Integer = 8;
+    return_nans_if_symbols_dont_match::Bool = true,
+)
+    if return_nans_if_symbols_dont_match && (length(symdiff(cov1.labels, cov2.labels)) != 0)
+        return (Correlation_error = NaN, Volatility_error = NaN)
+    end
     labels = intersect(cov1.labels, cov2.labels)
     N = length(labels)
     cov11 = rearrange(cov1, labels)
     cov22 = rearrange(cov2, labels)
-    cor_error = round(sum(abs, cov11.correlation .- cov22.correlation) / ((N^2-N)/2), digits = decimal_places)
-    vol_error = round(mean(abs, cov11.volatility  .- cov22.volatility), digits  = decimal_places)
+    cor_error = round(
+        sum(abs, cov11.correlation .- cov22.correlation) / ((N^2 - N) / 2),
+        digits = decimal_places,
+    )
+    vol_error =
+        round(mean(abs, cov11.volatility .- cov22.volatility), digits = decimal_places)
     return (Correlation_error = cor_error, Volatility_error = vol_error)
 end
 function calculate_mean_abs_distance(d1::Dict{Symbol,<:Real}, d2::Dict{Symbol,<:Real})
@@ -146,7 +169,12 @@ rather than a tuple showing the distances in terms of correlation and volatility
 ### Returns
 * A Real
 """
-function calculate_mean_abs_distance_covar(cov1::CovarianceMatrix, cov2::CovarianceMatrix, decimal_places::Integer = 8; return_nans_if_symbols_dont_match::Bool = true)
+function calculate_mean_abs_distance_covar(
+    cov1::CovarianceMatrix,
+    cov2::CovarianceMatrix,
+    decimal_places::Integer = 8;
+    return_nans_if_symbols_dont_match::Bool = true,
+)
     if return_nans_if_symbols_dont_match && (length(symdiff(cov1.labels, cov2.labels)) != 0)
         return (Correlation_error = NaN, Volatility_error = NaN)
     end
@@ -175,7 +203,9 @@ Extract the correlation between two assets stored in a CovarianceMatrix.
 function get_correlation(covar::CovarianceMatrix, asset1::Symbol, asset2::Symbol)
     index1 = findfirst(asset1 .== covar.labels)
     index2 = findfirst(asset2 .== covar.labels)
-    if isnothing(index1) || isnothing(index2) return missing end
+    if isnothing(index1) || isnothing(index2)
+        return missing
+    end
     return covar.correlation[index1, index2]
 end
 
@@ -190,10 +220,20 @@ Get the volatility for a stock from a `CovarianceMatrix`.
 ### Returns
 * A Scalar (the volatility).
 """
-function get_volatility(covar::CovarianceMatrix, asset1::Symbol, time_period_per_unit::Dates.Period = covar.time_period_per_unit)
+function get_volatility(
+    covar::CovarianceMatrix,
+    asset1::Symbol,
+    time_period_per_unit::Dates.Period = covar.time_period_per_unit,
+)
     index1 = findfirst(asset1 .== covar.labels)
-    if isnothing(index1) return missing end
-    return convert_vol(covar.volatility[index1], covar.time_period_per_unit, time_period_per_unit)
+    if isnothing(index1)
+        return missing
+    end
+    return convert_vol(
+        covar.volatility[index1],
+        covar.time_period_per_unit,
+        time_period_per_unit,
+    )
 end
 
 """
@@ -210,7 +250,9 @@ If a `Hermitian` is input then it will be tested. If a `CovarianceMatrix` is inp
 """
 function is_psd_matrix(mat::Hermitian, min_eigen_threshold::Real = 0.0)
     eig = eigen(mat).values
-    if length(eig) == 0 return false end # There is no eigenvalue decomposition.
+    if length(eig) == 0
+        return false
+    end # There is no eigenvalue decomposition.
     return minimum(eig) > min_eigen_threshold # is it PSD
 end
 is_psd_matrix(covar::CovarianceMatrix) = is_psd_matrix(covar.correlation)
@@ -228,15 +270,16 @@ If a `Hermitian` is input then it will be tested. If a `CovarianceMatrix` is inp
 * A `Bool` that is true if mat is a valid correlation matrix and false if not.
 """
 function valid_correlation_matrix(mat::Hermitian, min_eigen_threshold::Real = 0.0)
-    if sum(isnan.(mat)) +  sum(isinf.(mat)) > 0
+    if sum(isnan.(mat)) + sum(isinf.(mat)) > 0
         return false
     end
     A = is_psd_matrix(mat, min_eigen_threshold)
     B = all(abs.(diag(mat) .- 1) .< NUMERICAL_TOL) # does it have a unit diagonal
     C = all(abs.(mat) .<= 1 + NUMERICAL_TOL)       # all all off diagonals less than one in absolute value
-    return all([A,B,C])
+    return all([A, B, C])
 end
-valid_correlation_matrix(covar::CovarianceMatrix, min_eigen_threshold::Real = 0.0) = valid_correlation_matrix(covar.correlation, min_eigen_threshold)
+valid_correlation_matrix(covar::CovarianceMatrix, min_eigen_threshold::Real = 0.0) =
+    valid_correlation_matrix(covar.correlation, min_eigen_threshold)
 
 """
     ticks_per_asset(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts))
@@ -265,6 +308,10 @@ This relabels a CovarianceMatrix struct to give all the assets alternative names
 """
 function relabel(covar::CovarianceMatrix, mapping::Dict{Symbol,Symbol})
     new_labels = map(x -> mapping[x], covar.labels)
-    return CovarianceMatrix(covar.correlation, covar.volatility,
-                            new_labels, covar.time_period_per_unit)
+    return CovarianceMatrix(
+        covar.correlation,
+        covar.volatility,
+        new_labels,
+        covar.time_period_per_unit,
+    )
 end
