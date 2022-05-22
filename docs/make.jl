@@ -12,6 +12,9 @@ makedocs(
             "Writing Code"=>"3_WritingCode.md",
             "References"=>"9_references.md",
         ],
+        "Performance Comparison"=>Any[
+            "Performance Comparison"=>"4_performance_comparison.md",
+        ],
         "API"=>Any[
             "Types"=>"types.md",
             "Estimation Functions"=>"functions.md",
