@@ -39,5 +39,5 @@ using Test
     estimated = Hermitian(estimated)
     estimated2 = eigenvalue_clean(estimated, ts1)
     # As this cannot be regularised the input should be returned unchanged.
-    @test estimated2[1,2] == NaN
+    @test isnan(estimated2[1,2])
 end
