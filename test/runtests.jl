@@ -9,6 +9,9 @@ include("main_tests_combine.jl")
 println("Test finding nearest correlation matrix")
 include("test_31_Higham.jl")
 
+println("Test Additional unit testing")
+include("test_additional_unit_testing.jl")
+
 println("Test on syncronous observations")
 include("main_tests_syncronous.jl")
 

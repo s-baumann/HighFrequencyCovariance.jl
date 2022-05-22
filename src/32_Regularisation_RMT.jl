@@ -89,7 +89,7 @@ function eigenvalue_clean(
     )
     eigenvalues[eigenvalues.<eigenvalue_threshold] .= av_small_eigens
     regularised_mat = construct_matrix_from_eigen(eigenvalues, eigenvectors)
-    return regularised_mat
+    return Hermitian(regularised_mat)
 end
 function eigenvalue_clean(mat::Hermitian, eigenvalue_threshold::Real)
     if sum(isnan, mat) > 0

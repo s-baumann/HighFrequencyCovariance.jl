@@ -74,7 +74,6 @@ Regularisation of the correlation matrix by mixing with the identity matrix as p
 ### Returns
 * A `CovarianceMatrix`.
 
-
     identity_regularisation(covariance_matrix::CovarianceMatrix, identity_weight::Real;
                             apply_to_covariance = false)
 
