@@ -2,6 +2,10 @@
 """
     simple_volatility_given_returns(returns::Vector{R}) where R<:Real
 Calculates volatility using a vector of returns using the square root of squared returns.
+### Inputs
+* `returns` - A vector of returns
+### Returns
+* A `Real`
 """
 function simple_volatility_given_returns(returns::Vector{R}) where R<:Real
     return sqrt(mean(returns .^ 2))
@@ -9,7 +13,14 @@ end
 
 """
     simple_volatility_with_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid)
+
 Calculates volatility with the simple method with a specified time grid.
+### Inputs
+* `ts` - A `SortedDataFrame` containing the tick data
+* `assets` - A `Vector` of assets that you want to calculate volatilities for.
+* `time_grid` - A `Vector` of times at which to sample prices. These prices will be used in the volatility calculation.
+### Returns
+* A `Dict` with volatilities for each asset.
 """
 function simple_volatility_with_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid)
     voldict =
@@ -27,9 +38,14 @@ function simple_volatility_with_grid(ts::SortedDataFrame, assets::Vector{Symbol}
 end
 
 """
-    simple_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                      time_grid::Union{Missing,Dict} = missing , fixed_spacing::Union{Missing,Dict,<:Real} = missing,
-                      use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5)
+    simple_volatility(
+       ts::SortedDataFrame,
+       assets::Vector{Symbol} = get_assets(ts);
+       time_grid::Union{Missing,Dict} = missing,
+       fixed_spacing::Union{Missing,Dict,<:Real} = missing,
+       use_all_obs::Bool = false,
+       rough_guess_number_of_intervals::Integer = 5,
+    )
 
 Calculates volatility with the simple method.
 ### Inputs
@@ -82,8 +98,11 @@ function simple_volatility(
 end
 
 """
-    default_spacing(ts::SortedDataFrame; rough_guess_number_of_intervals::Integer = 5,
-                    T = duration(ts; in_dates_period = false))
+    default_spacing(
+        ts::SortedDataFrame;
+        rough_guess_number_of_intervals::Integer = 5,
+        T::Real = duration(ts; in_dates_period = false),
+    )
 
 Calculates a default spacing between returns to use.
 This comes from the equation at section 1.2.3 of Zhang, Mykland, Ait-Sahalia 2005.

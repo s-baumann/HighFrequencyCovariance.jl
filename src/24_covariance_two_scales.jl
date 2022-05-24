@@ -1,3 +1,23 @@
+"""
+    two_scales_correlation(
+        prices::DataFrame,
+        times::Vector{<:Real},
+        asseti::Symbol,
+        assetj::Symbol,
+        gamma::Real,
+        num_grids::Real,
+    )
+
+### Inputs
+* `prices` - The prices of the stocks.
+* `times` - The times corresponding to the prices.
+* `asseti` - A symbol for the first asset of the correlation pair you want to calculate for.
+* `assetj` -  A symbol for the second asset of the correlation pair you want to calculate for.
+* `gamma` - The mixing ratio between the two assets. See paper for details.
+* `num_grids` - Number of grids used in order in two scales estimation.
+### Returns
+* A `Real` for the calculated correlation.
+"""
 function two_scales_correlation(
     prices::DataFrame,
     times::Vector{<:Real},
@@ -45,10 +65,17 @@ function get_refresh_times_and_prices(ts::SortedDataFrame, asset1::Symbol, asset
 end
 
 """
-    two_scales_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                          regularisation::Union{Missing,Symbol} = :correlation_default,
-                          regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
-                          equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
+    two_scales_covariance(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol} = get_assets(ts);
+        regularisation::Union{Missing,Symbol} = :correlation_default,
+        regularisation_params::Dict = Dict(),
+        only_regulise_if_not_PSD::Bool = false,
+        equalweight::Bool = false,
+        num_grids::Real = default_num_grids(ts),
+        min_obs_for_estimation::Integer = 10,
+        if_dont_have_min_obs::Real = NaN,
+    )
 
 Estimation of a CovarianceMatrix using the two scale covariance method.
 ### Inputs

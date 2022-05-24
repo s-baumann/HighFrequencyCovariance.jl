@@ -1,6 +1,7 @@
 
 """
     mean_sqrt_of_positive_diagonals(x)
+
 This returns the mean square root of the positive elements on the diagonal.
 """
 function mean_sqrt_of_positive_diagonals(x)
@@ -9,6 +10,8 @@ function mean_sqrt_of_positive_diagonals(x)
 end
 
 """
+    _eigenvalue_clean(mat::Hermitian, obs::Real)
+
 Note that this is not exported with a different name to avoid confusion with
 eigenvalue_clean(mat::Hermitian, eigenvalue_threshold::Real).
 """
@@ -26,8 +29,11 @@ function _eigenvalue_clean(mat::Hermitian, obs::Real)
 end
 
 """
-    eigenvalue_clean(eigenvalues::Vector{<:Real}, eigenvectors::Matrix{<:Real},
-                     eigenvalue_threshold::Real)
+    eigenvalue_clean(
+        eigenvalues::Vector{<:Real},
+        eigenvectors::Matrix{<:Real},
+        eigenvalue_threshold::Real,
+    )
 
 This takes the small eigenvalues (with values below eigenvalue_threshold). It sets them to the
 greater of their average or eigenvalue_threshold/(4*number_of_small_eigens). Then the matrix is reconstructed and returned (as a `Hermitian`)
@@ -37,7 +43,6 @@ greater of their average or eigenvalue_threshold/(4*number_of_small_eigens). The
 * `eigenvalue_threshold` - The threshold for a eigenvalue to be altered.
 ### Returns
 * A `Hermitian`.
-
 
     eigenvalue_clean(mat::Hermitian, eigenvalue_threshold::Real)
 
@@ -49,7 +54,6 @@ greater of their average or `eigenvalue_threshold/(4*number_of_small_eigens)`. T
 ### Returns
 * A `Hermitian`.
 
-
     eigenvalue_clean(mat::Hermitian, ts::SortedDataFrame)
 
 Similarly to the above two methods these functions regularise a matrix by setting small eigenvalues to near zero.
@@ -60,16 +64,18 @@ The method of Laloux, Cizeau, Bouchaud & Potters 2000 is used to choose a thresh
 ### Returns
 * A `Hermitian`.
 
+    eigenvalue_clean(
+        covariance_matrix::CovarianceMatrix,
+        ts::SortedDataFrame;
+        apply_to_covariance::Bool = true,
+    )
 
-    eigenvalue_clean(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame;
-                     apply_to_covariance::Bool = true)
 ### Inputs
 * `mat` - A matrix that you want to regularise with eigenvalue regularisation.
 * `ts` - The tick data.
 * `apply_to_covariance` Should regularisation be applied to the covariance matrix or the correlation matrix.
 ### Returns
 * A `CovarianceMatrix`.
-
 
 Note that if the input matrices include any NaN terms then regularisation is not possible. The matrix will be silently returned (as these NaNs will generally be
 from upstream problems so it is useful to return the matrix rather than throw at this point).As a result outputs should be checked.

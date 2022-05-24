@@ -1,5 +1,7 @@
 
 """
+    simple_covariance_given_returns(returns::Array{R,2}) where R<:Real
+
 Estimation of the covariance matrix in the standard simple way given returns.
 https://en.wikipedia.org/wiki/Sample_mean_and_covariance
 """
@@ -19,6 +21,15 @@ function simple_covariance_given_returns(returns::Array{R,2}) where R<:Real
 end
 
 """
+    simple_covariance_given_time_grid(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol},
+        time_grid::Vector;
+        regularisation::Union{Missing,Symbol} = :covariance_default,
+        regularisation_params::Dict = Dict(),
+        only_regulise_if_not_PSD::Bool = false,
+    )
+
 Estimation of the covariance matrix in the standard simple way given a time grid.
 """
 function simple_covariance_given_time_grid(
@@ -58,11 +69,17 @@ function simple_covariance_given_time_grid(
 end
 
 """
-    simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                      regularisation::Union{Missing,Symbol} = :covariance_default,
-                      regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
-                      time_grid::Union{Missing,Vector} = missing, fixed_spacing::Union{Missing,<:Real} = missing,
-                      refresh_times::Bool = false, rough_guess_number_of_intervals::Integer = 5)
+    simple_covariance(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol} = get_assets(ts);
+        regularisation::Union{Missing,Symbol} = :covariance_default,
+        regularisation_params::Dict = Dict(),
+        only_regulise_if_not_PSD::Bool = false,
+        time_grid::Union{Missing,Vector} = missing,
+        fixed_spacing::Union{Missing,<:Real} = missing,
+        refresh_times::Bool = false,
+        rough_guess_number_of_intervals::Integer = 5,
+    )
 
 Estimation of the covariance matrix in the standard textbook way.
 ### Inputs
@@ -109,10 +126,23 @@ function simple_covariance(
 end
 
 """
-    get_timegrid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Missing , fixed_spacing::Union{Missing,<:Real},
-                      refresh_times::Bool, rough_guess_number_of_intervals::Integer)
-    get_timegrid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Vector, fixed_spacing::Union{Missing,<:Real},
-                      refresh_times::Bool, rough_guess_number_of_intervals::Integer)
+    get_timegrid(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol},
+        time_grid::Missing,
+        fixed_spacing::Union{Missing,<:Real},
+        refresh_times::Bool,
+        rough_guess_number_of_intervals::Integer,
+    )
+
+    get_timegrid(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol},
+        time_grid::Vector,
+        fixed_spacing::Union{Missing,<:Real},
+        refresh_times::Bool,
+        rough_guess_number_of_intervals::Integer,
+    )
 
 This returns a sequence of times at which the SortedDataFrame can be queried for prices. This is used in the simple_covariance method.
 ### Inputs

@@ -15,9 +15,17 @@ end
 
 
 """
-    spectral_lmm_array(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts); regularisation::Union{Missing,Symbol} = :covariance_default, regularisation_params::Dict = Dict(),
-                          only_regulise_if_not_PSD::Bool = false, numJ::Integer = 100, num_blocks::Integer = 10, block_width::Real = (maximum(ts.df[:,ts.time])) / num_blocks,
-                          microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2])
+    spectral_lmm_array(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol} = get_assets(ts);
+        regularisation::Union{Missing,Symbol} = :covariance_default,
+        regularisation_params::Dict = Dict(),
+        only_regulise_if_not_PSD::Bool = false,
+        numJ::Integer = 100,
+        num_blocks::Integer = 10,
+        block_width::Real = (maximum(ts.df[:, ts.time])) / num_blocks,
+        microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2],
+    )
 
 Estimation of a CovarianceMatrix using the spectral covariance method.
 ### Inputs
@@ -133,12 +141,18 @@ function spectral_lmm_array(
 end
 
 """
-    spectral_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                        regularisation::Union{Missing,Symbol} = :covariance_default,
-                        regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
-                        numJ::Integer = 100, num_blocks::Integer = 10,
-                        block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks,
-                        microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2])
+    spectral_covariance(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol} = get_assets(ts);
+        regularisation::Union{Missing,Symbol} = :covariance_default,
+        regularisation_params::Dict = Dict(),
+        only_regulise_if_not_PSD::Bool = false,
+        numJ::Integer = 100,
+        num_blocks::Integer = 10,
+        block_width::Real = (maximum(ts.df[:, ts.time]) - minimum(ts.df[:, ts.time])) /
+                            num_blocks,
+        microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2],
+    )
 
 Estimation of a CovarianceMatrix using the spectral covariance method.
 ### Inputs

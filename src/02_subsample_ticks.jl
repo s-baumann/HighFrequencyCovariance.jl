@@ -1,7 +1,10 @@
 
 """
-    latest_value(ts::SortedDataFrame, at_times::Vector{<:Real};
-                 assets::Vector{Symbol} = get_assets(ts))
+    latest_value(
+        ts::SortedDataFrame,
+        at_times::Vector{<:Real};
+        assets::Vector{Symbol} = get_assets(ts),
+    )
 
 Get the latest price at a each input time.
 ### Inputs
@@ -26,6 +29,7 @@ end
 
 """
     searchsortedlast_both(reference::Vector, indices::Vector)
+
 If you have two sorted vectors. You want to find the index of each "indices" in
 the vector "reference". then this is much faster than doing something like
 map( x -> searchsortedlast(reference, x), indices) as it only goes once through
@@ -55,9 +59,12 @@ function searchsortedlast_both(reference::Vector, indices::Vector)
 end
 
 """
-    random_value_in_interval(ts::SortedDataFrame, at_times::Vector{<:Real};
-                             assets::Vector{Symbol} = get_assets(ts),
-                             twister_arb_value_in_interval::MersenneTwister = MersenneTwister(2604))
+    random_value_in_interval(
+       ts::SortedDataFrame,
+       at_times::Vector{<:Real};
+       assets::Vector{Symbol} = get_assets(ts),
+       twister_arb_value_in_interval::MersenneTwister = MersenneTwister(2604),
+    )
 
 Get a random value in an interval. So if you input times 1,7,8 then for the second entry it will pick a random update (if any exist) between times 1 and 7.
 ### Inputs
@@ -92,10 +99,10 @@ end
 
 
 """
-    next_tick(ts::SortedDataFrame, from_index::I; assets::Vector{Symbol} = get_assets(ts)) where R<:Real where I<:Integer
+    next_tick(ts::SortedDataFrame, from_index::I;
+                       assets::Vector{Symbol} = get_assets(ts))  where R<:Real where I<:Integer
 
 This gets the next tick by which every asset has a refreshed price after a certain row index.
-
 ### Inputs
 * `ts` - The tick data.
 * `from_index` - The index in your ts.df to start looking from.
@@ -119,8 +126,11 @@ end
 
 
 """
-    get_all_refresh_times(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                          start_time::R = minimum(ts.df[:,ts.time])) where R<:Real
+    get_all_refresh_times(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol} = get_assets(ts);
+        start_time::R = minimum(ts.df[:, ts.time]),
+    ) where R<:Real
 
 Get a vector of all refresh times when all assets have an updated price.
 So if there are assets A and B that trade at times (1,5,6,7,10) and (2,5,7,9)

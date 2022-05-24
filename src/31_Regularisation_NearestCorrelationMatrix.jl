@@ -2,7 +2,9 @@ const NUMERICAL_TOL = 10 * eps()
 
 """
     set_diagonal_to_one(A::Diagonal)
+
     set_diagonal_to_one(A::Hermitian)
+
 This returns the matrix square root of an input matrix.
 """
 function set_diagonal_to_one!(A::Diagonal)
@@ -14,7 +16,9 @@ end
 
 """
     sqrt_psd(A::Hermitian)
+
     sqrt_psd(A::Diagonal)
+
 This returns the matrix square root of an input matrix.
 """
 function sqrt_psd(A::Hermitian)
@@ -25,6 +29,8 @@ sqrt_psd(A::Diagonal) = sqrt(A)
 
 """
     project_to_U(A::Union{Diagonal,Hermitian}, invW::Hermitian)
+
+    project_to_U(A::Union{Diagonal,Hermitian}, invW::Diagonal)
 
 This maps the Hermitian/Hermitian matrix `A` to the nearest matrix in the U space (the space of all unit diagonal matrices as defined by Higham 2001). The inverse weight matrix `invW` determines how much to adjust
 each element to get it to be unit diagonal. In other words it is used to determine what is the nearest correlation matrix. The weight matrix must be Hermitian positive definite.
@@ -52,10 +58,17 @@ function project_to_U(A::Union{Diagonal,Hermitian}, invW::Diagonal)
 end
 
 """
-    project_to_S(A::Hermitian, W_root::Union{Hermitian,Diagonal};
-                 W_inv_sqrt::Union{Hermitian,Diagonal} = sqrt_psd(inv(W_root^2)))
-    project_to_S(A::Diagonal, W_root::Union{Hermitian,Diagonal};
-                 W_inv_sqrt::Union{Hermitian,Diagonal,Missing} = missing)
+    project_to_S(
+        A::Hermitian,
+        W_root::Union{Hermitian,Diagonal};
+        W_inv_sqrt::Union{Hermitian,Diagonal} = sqrt_psd(inv(W_root^2)),
+    )
+
+    project_to_S(
+        A::Diagonal,
+        W_root::Union{Hermitian,Diagonal};
+        W_inv_sqrt::Union{Hermitian,Diagonal,Missing} = missing,
+    )
 
 This maps a matrix to the nearest psd matrix. `W_root` should be the principal square root of a psd Hermitian weighting matrix, `W`.
 `W_inv_sqrt` should be the corresponding square root of the inverse of `W`.
@@ -95,9 +108,13 @@ project_to_S(
 
 
 """
-    iterate_higham(Y::Union{Hermitian,Diagonal}, Dykstra::Union{Hermitian,Diagonal},
-                   W_root::Union{Hermitian,Diagonal}, W_inv::Union{Hermitian,Diagonal},
-                   W_inv_sqrt::Union{Hermitian,Diagonal})
+    iterate_higham(
+       Y::Union{Hermitian,Diagonal},
+       Dykstra::Union{Hermitian,Diagonal},
+       W_root::Union{Hermitian,Diagonal},
+       W_inv::Union{Hermitian,Diagonal},
+       W_inv_sqrt::Union{Hermitian,Diagonal},
+    )
 
 Do one iterate mapping the input matrix to the S space (of psd matrices) and then to the U space (unit diagonal and all other entries below 1 in absolute value).
 Returns the updated matrix and the next iterate's Dykstra correction.
@@ -129,8 +146,14 @@ function iterate_higham(
 end
 
 """
-    nearest_correlation_matrix(mat::AbstractMatrix, weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(mat)[1])));
-                               doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true, max_iterates::Integer = 1000)
+    nearest_correlation_matrix(
+        mat::AbstractMatrix,
+        weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(Float64.(I(size(mat)[1])));
+        doDykstra::Bool = true,
+        stop_at_first_correlation_matrix::Bool = true,
+        max_iterates::Integer = 1000,
+    )
+
 Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
 ### Inputs
 * `mat` - A matrix you want to regularise.
@@ -144,11 +167,14 @@ Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diag
 * An integer saying how many iterates were done
 * A Symbol with a convergence message.
 
-
-    nearest_correlation_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame;
-                               weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
-                               doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true,
-                               max_iterates::Integer = 1000)
+    nearest_correlation_matrix(
+        covariance_matrix::CovarianceMatrix,
+        ts::SortedDataFrame;
+        weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
+        doDykstra::Bool = true,
+        stop_at_first_correlation_matrix::Bool = true,
+        max_iterates::Integer = 1000,
+    )
 
 Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
 ### Inputs
@@ -161,11 +187,13 @@ Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diag
 ### Returns
 * A `CovarianceMatrix`
 
-
-    nearest_correlation_matrix(covariance_matrix::CovarianceMatrix;
-                               weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
-                               doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true,
-                               max_iterates::Integer = 1000)
+    nearest_correlation_matrix(
+        covariance_matrix::CovarianceMatrix;
+        weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
+        doDykstra::Bool = true,
+        stop_at_first_correlation_matrix::Bool = true,
+        max_iterates::Integer = 1000,
+    )
 
 Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
 ### Inputs
@@ -177,11 +205,15 @@ Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diag
 ### Returns
 * A `CovarianceMatrix`
 
+    nearest_correlation_matrix(
+        mat::Hermitian,
+        ts::SortedDataFrame;
+        weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(mat).(I(size(mat)[1]))),
+        doDykstra::Bool = true,
+        stop_at_first_correlation_matrix::Bool = true,
+        max_iterates::Integer = 1000,
+    )
 
-    nearest_correlation_matrix(mat::Hermitian;
-                               weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(mat).(I(size(mat)[1]))),
-                               doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true,
-                               max_iterates::Integer = 1000)
 Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
 ### Inputs
 * `mat` - The matrix you want to regularise.
@@ -192,11 +224,14 @@ Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diag
 ### Returns
 * A `Hermitian`
 
+    nearest_correlation_matrix(
+       mat::Hermitian;
+       weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(mat).(I(size(mat)[1]))),
+       doDykstra::Bool = true,
+       stop_at_first_correlation_matrix::Bool = true,
+       max_iterates::Integer = 1000,
+    )
 
-    nearest_correlation_matrix(mat::Hermitian, ts::SortedDataFrame;
-                               weighting_matrix::Union{Diagonal,Hermitian} = Diagonal(eltype(mat).(I(size(mat)[1]))),
-                               doDykstra::Bool = true, stop_at_first_correlation_matrix::Bool = true,
-                               max_iterates::Integer = 1000)
 Maps a matrix to the nearest valid correlation matrix (pdf matrix with unit diagonal and all other entries below 1 in absolute value).
 ### Inputs
 * `covariance_matrix` - The matrix you want to regularise.
@@ -324,9 +359,10 @@ order to decide what the `closest` pds matrix.
 ### Results
 * A `Hermitian`
 
-
-    nearest_psd_matrix(covariance_matrix::CovarianceMatrix;
-                       apply_to_covariance::Bool = true)
+    nearest_psd_matrix(
+        covariance_matrix::CovarianceMatrix;
+        apply_to_covariance::Bool = true,
+    )
 
 This function maps a Hermitian matrix to the nearest psd matrix. This uses the `project_to_S`
 method in Higham (2001; Theorem 3.2). No special weighting is applied in this case.
@@ -338,9 +374,11 @@ order to decide what the `closest` pds matrix.
 ### Results
 * A `CovarianceMatrix`
 
-
-    nearest_psd_matrix(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame;
-                       apply_to_covariance::Bool = true)
+    nearest_psd_matrix(
+        covariance_matrix::CovarianceMatrix,
+        ts::SortedDataFrame;
+        apply_to_covariance::Bool = true,
+    )
 
 This function maps a Hermitian matrix to the nearest psd matrix. This uses the `project_to_S`
 method in Higham (2001; Theorem 3.2). No special weighting is applied in this case.
@@ -352,7 +390,6 @@ order to decide what the `closest` pds matrix.
 * `apply_to_covariance` - Should regularisation be applied to the correlation or covariance matrix.
 ### Results
 * A `CovarianceMatrix`
-
 
 ### References
 Higham NJ (2002). "Computing the nearest correlation matrix - a problem from finance." IMA Journal of Numerical Analysis, 22, 329–343. doi:10.1002/nla.258.

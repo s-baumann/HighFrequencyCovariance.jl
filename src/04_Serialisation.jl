@@ -1,6 +1,9 @@
 """
-    DataFrame(covar::CovarianceMatrix, othercols::Dict = Dict{Symbol,Any}();
-                 delete_duplicate_correlations::Bool = true)
+    DataFrames.DataFrame(
+        covar::CovarianceMatrix,
+        othercols::Dict = Dict{Symbol,Any}();
+        delete_duplicate_correlations::Bool = true,
+    )
 
 Convert a CovarianceMatrix to a `DataFrame` format.
 ### Inputs
@@ -54,7 +57,7 @@ end
 
 
 """
-    CovarianceMatrix(dd::DataFrame)
+    CovarianceMatrix(dd::DataFrame, error_if_incomplete::Bool = false)
 
 Converts `DataFrame` containing a serialised `CovarianceMatrix` into an actual CovarianceMatrix object.
 ### Inputs

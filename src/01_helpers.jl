@@ -19,8 +19,17 @@ end
 
 
 """
-    cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Dates.Period, duration_for_desired_vols::Dates.Period)
-    cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Real, duration_for_desired_vols::Real)
+    cov_to_cor_and_vol(
+        mat::AbstractMatrix,
+        duration_of_covariance_matrix::Dates.Period,
+        duration_for_desired_vols::Dates.Period,
+    )
+
+    cov_to_cor_and_vol(
+        mat::AbstractMatrix,
+        duration_of_covariance_matrix::Real,
+        duration_for_desired_vols::Real,
+    )
 
 Converts a matrix (representing a covariance matrix) into a `Hermitian` correlation matrix and a vector of volatilities.
 ### Inputs
@@ -31,8 +40,10 @@ Converts a matrix (representing a covariance matrix) into a `Hermitian` correlat
 * A `Hermitian`.
 * A `Vector` of volatilities.
 
-
-    cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix_in_nanoseconds::Real, duration_for_desired_vols::Dates.Period)
+    cov_to_cor_and_vol(
+        mat::AbstractMatrix,
+        duration_of_covariance_matrix_in_natural_units::Real,
+    )
 
 ### Inputs
 * `cor` - A correlation matrix.
@@ -88,7 +99,11 @@ function cor_to_cov(cor::AbstractMatrix, sdevs::Vector{<:Real})
 end
 
 """
-    covariance(cm::CovarianceMatrix, period::Dates.Period = cm.time_period_per_unit, assets::Vector{Symbol} = cm.labels)
+    covariance(
+        cm::CovarianceMatrix,
+        period::Dates.Period = cm.time_period_per_unit,
+        assets::Vector{Symbol} = cm.labels,
+    )
 
 This makes a `Hermitian` matrix for the covariance matrix over some duration.
 ### Inputs
@@ -109,8 +124,10 @@ function covariance(
 end
 
 """
-    construct_matrix_from_eigen(eigenvalues::Vector{<:Real},
-                                eigenvectors::Matrix{<:Real})
+    construct_matrix_from_eigen(
+        eigenvalues::Vector{<:Real},
+        eigenvectors::Matrix{<:Real},
+    )
 
 Constructs a matrix from its eigenvalue decomposition.
 ### Inputs
@@ -212,10 +229,12 @@ This tests if a value is missing, nan or inf and returns true if one of these th
 is_missing_nan_inf(x) = (ismissing(x) || isnan(x)) || isinf(x)
 
 """
-    combine_covariance_matrices(vect::Vector{CovarianceMatrix{T}},
-                                cor_weights::Vector{<:Real} = repeat([1.0], length(vect)),
-                                vol_weights::Vector{<:Real} = cor_weights,
-                                time_period_per_unit::Union{Missing,Dates.Period} = vect[1].time_period_per_unit) where T<:Real
+    combine_covariance_matrices(
+        vect::Vector{CovarianceMatrix{T}},
+        cor_weights::Vector{<:Real} = repeat([1.0], length(vect)),
+        vol_weights::Vector{<:Real} = cor_weights,
+        time_period_per_unit::Union{Missing,Dates.Period} = vect[1].time_period_per_unit,
+    ) where T<:Real
 
 Combines a vector of `CovarianceMatrix` structs into one `CovarianceMatrix` struct.
 ### Inputs
@@ -269,7 +288,11 @@ function combine_covariance_matrices(
 end
 
 """
-    rearrange(cm::CovarianceMatrix, labels::Vector{Symbol})
+    rearrange(
+        cm::CovarianceMatrix,
+        labels::Vector{Symbol},
+        time_period_per_unit::Union{Missing,Dates.Period} = cm.time_period_per_unit,
+    )
 
 Rearrange the order of labels in a `CovarianceMatrix`.
 ### Takes
@@ -334,8 +357,10 @@ end
 
 
 """
-    time_between_refreshes(ts::SortedDataFrame;
-                           assets::Vector{Symbol} = get_assets(ts))
+    time_between_refreshes(
+       ts::SortedDataFrame;
+       assets::Vector{Symbol} = get_assets(ts),
+    )
 
 Get a `DataFrame` showing how many time is between each refresh and how many ticks in total.
 ### Inputs

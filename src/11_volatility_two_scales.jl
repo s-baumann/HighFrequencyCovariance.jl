@@ -31,7 +31,7 @@ function default_num_grids(ts::SortedDataFrame)
 end
 
 """
-    two_scales_volatility(vals::Vector, times::Vector, asset::Symbol, num_grids::Real)
+    two_scales_volatility(vals::Vector, times::Vector, num_grids::Real)
 
 Calculates volatility with the two scales method of Zhang, Mykland, Ait-Sahalia 2005. The amount of time for the grid spacing is by default this is a tenth of the total duration
 by default. If this doesn't make sense for your use of it then choose a spacing at which you expect the effect of microstructure noise will be small.
@@ -43,9 +43,11 @@ by default. If this doesn't make sense for your use of it then choose a spacing 
 * A scalar for the estimated volatility of the asset.
 * A scalar for the estimated microstructure noise variance.
 
-
-    two_scales_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                          num_grids::Real = default_num_grids(ts))
+    two_scales_volatility(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol} = get_assets(ts);
+        num_grids::Real = default_num_grids(ts),
+    )
 
 Calculates volatility with the two scales method of Zhang, Mykland, Ait-Sahalia 2005. The amount of time for the grid spacing is by default this is a tenth of the total duration
 by default. If this doesn't make sense for your use of it then choose a spacing at which you expect the effect of microstructure noise will be small.

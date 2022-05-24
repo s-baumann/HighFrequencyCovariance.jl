@@ -1,10 +1,14 @@
 """
-    estimate_volatility(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts),
-                        method::Symbol = :two_scales_volatility;
-                        time_grid::Union{Missing,Dict} = missing ,
-                        fixed_spacing::Union{Missing,Dict,<:Real} = missing,
-                        use_all_obs::Bool = false, rough_guess_number_of_intervals::Integer = 5,
-                        num_grids::Real = default_num_grids(ts))
+    estimate_volatility(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol} = get_assets(ts),
+        method::Symbol = :two_scales_volatility;
+        time_grid::Union{Missing,Dict} = missing,
+        fixed_spacing::Union{Missing,Dict,<:Real} = missing,
+        use_all_obs::Bool = false,
+        rough_guess_number_of_intervals::Integer = 5,
+        num_grids::Real = default_num_grids(ts),
+    )
 
 This is a convenience wrapper for the two volatility estimation techniques included in this package.
 ### General Inputs
@@ -48,8 +52,11 @@ function estimate_volatility(
 end
 
 """
-    estimate_microstructure_noise(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                                  num_grids::Real = default_num_grids(ts))
+    estimate_microstructure_noise(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol} = get_assets(ts);
+        num_grids::Real = default_num_grids(ts),
+    )
 
 This estimates microstructure noise with the two_scales_volatility method.
 ### Inputs
@@ -68,20 +75,33 @@ function estimate_microstructure_noise(
 end
 
 """
-    estimate_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts),
-                        method::Symbol = :preaveraged_covariance;
-                        regularisation::Union{Missing,Symbol} = :default, regularisation_params::Dict = Dict(),
-                        only_regulise_if_not_PSD::Bool = false,
-                        time_grid::Union{Missing,Vector} = missing,
-                        fixed_spacing::Union{Missing,<:Real} = missing, refresh_times::Bool = false,
-                        rough_guess_number_of_intervals::Integer = 5,
-                        kernel::HFC_Kernel{<:Real} = parzen,
-                        H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6,
-                        m::Integer = 2, # BNHLS parameters, numJ::Integer = 100, num_blocks::Integer = 10,
-                        block_width::Real = (maximum(ts.df[:,ts.time]) - minimum(ts.df[:,ts.time])) / num_blocks,
-                        microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2],
-                        theta::Real = 0.15, g::NamedTuple = g,
-                        equalweight::Bool = false, num_grids::Real = default_num_grids(ts))
+    estimate_covariance(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol} = get_assets(ts),
+        method::Symbol = :preaveraged_covariance;
+        regularisation::Union{Missing,Symbol} = :default,
+        regularisation_params::Dict = Dict(),
+        only_regulise_if_not_PSD::Bool = false,
+        time_grid::Union{Missing,Vector} = missing,
+        fixed_spacing::Union{Missing,<:Real} = missing,
+        refresh_times::Bool = false,
+        rough_guess_number_of_intervals::Integer = 5, # General Inputs
+        kernel::HFC_Kernel{<:Real} = parzen,
+        H::Real = kernel.c_star * mean(a -> length(ts.groupingrows[a]), assets)^0.6,
+        m::Integer = 2, # BNHLS parameters
+        numJ::Integer = 100,
+        num_blocks::Integer = 10,
+        block_width::Real = (maximum(ts.df[:, ts.time]) - minimum(ts.df[:, ts.time])) /
+                            num_blocks,
+        microstructure_noise_var::Dict{Symbol,<:Real} = two_scales_volatility(ts, assets)[2], # Spectral Covariance parameters
+        drop_assets_if_not_enough_data::Bool = false,
+        theta::Real = 0.15,
+        g::NamedTuple = g, # Preaveraging
+        equalweight::Bool = false,
+        num_grids::Real = default_num_grids(ts),
+        min_obs_for_estimation::Integer = 10,
+        if_dont_have_min_obs::Real = NaN,
+    )
 
 This is a convenience wrapper for the regularisation techniques.
 ### General Inputs
@@ -209,10 +229,17 @@ end
 
 # The Hermitian version
 """
-    regularise(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector, method::Symbol = :correlation_default;
-               spacing::Union{Missing,<:Real} = missing,
-               weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
-               doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
+    regularise(
+        mat::Hermitian,
+        ts::SortedDataFrame,
+        mat_labels::Vector,
+        method::Symbol = :correlation_default;
+        spacing::Union{Missing,<:Real} = missing,
+        weighting_matrix = Diagonal(eltype(mat).(I(size(mat)[1]))),
+        doDykstra = true,
+        stop_at_first_correlation_matrix = true,
+        max_iterates = 1000,
+    )
 
 This is a convenience wrapper for the regularisation techniques.
 ### General Inputs
@@ -230,12 +257,17 @@ This is a convenience wrapper for the regularisation techniques.
 ### Returns
 * A `Hermitian`
 
-
-    regularise(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame, method::Symbol = :nearest_correlation_matrix;
-               apply_to_covariance::Bool = true,
-               spacing::Union{Missing,<:Real} = missing,
-               weighting_matrix = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
-               doDykstra = true, stop_at_first_correlation_matrix = true, max_iterates = 1000)
+    regularise(
+       covariance_matrix::CovarianceMatrix,
+       ts::SortedDataFrame,
+       method::Symbol = :nearest_correlation_matrix;
+       apply_to_covariance::Bool = true,
+       spacing::Union{Missing,<:Real} = missing,
+       weighting_matrix = Diagonal(eltype(covariance_matrix.correlation).(I(size(covariance_matrix.correlation)[1]))),
+       doDykstra = true,
+       stop_at_first_correlation_matrix = true,
+       max_iterates = 1000,
+    )
 
 This is a convenience wrapper for the regularisation techniques.
 ### General Inputs

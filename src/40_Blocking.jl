@@ -70,9 +70,12 @@ function make_sorted_adjacent_block_sequence(blocks::Vector{Vector{Symbol}})
 end
 
 """
-    put_assets_into_blocks_by_trading_frequency(ts::SortedDataFrame,
-                                                obs_multiple_for_new_block::Real, func::Symbol,
-                                                optional_parameters::NamedTuple = NamedTuple())
+    put_assets_into_blocks_by_trading_frequency(
+       ts::SortedDataFrame,
+       obs_multiple_for_new_block::Real,
+       func::Symbol,
+       optional_parameters::NamedTuple = NamedTuple(),
+    )
 
 This makes a DataFrame that describes how to estimate the covariance matrix blockwise.
 ### Inputs

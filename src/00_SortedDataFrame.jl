@@ -1,5 +1,28 @@
 """
-    SortedDataFrame(df::DataFrame, time::Symbol = :Time, grouping::Symbol = :Name, value::Symbol = :Value, time_period_per_unit::Dates.Period)
+    function SortedDataFrame(
+        df::DataFrame,
+        time::Symbol,
+        grouping::Symbol,
+        value::Symbol,
+        time_period_per_unit::Dates.Period,
+    )
+
+    SortedDataFrame(
+        df::DataFrame,
+        timevar::Symbol,
+        groupingvar::Symbol,
+        valuevar::Symbol,
+        dic::Dict{Symbol,Vector{I}},
+        vol_unit::Dates.Period,
+    ) where I<:Integer
+
+    SortedDataFrame(
+        ts::SortedDataFrame{I},
+        timevar::Symbol,
+        groupingvar::Symbol,
+        valuevar::Symbol,
+        vol_unit::Dates.Period,
+    ) where I<:Integer
 
 This struct wraps a `DataFrame`. In the constructor function for the dataframe
 we presort the data and create a mapping dict so that it is fast to subset the
@@ -110,8 +133,14 @@ function safe_multiply_period(scalar::Real, period::Dates.Period)
 end
 
 """
-    DataFrames.combine(dfs::Vector{SortedDataFrame}; timevar::Symbol = dfs[1].time, groupingvar::Symbol = dfs[1].grouping,
-                 valuevar::Symbol = dfs[1].value, period::Dates.Period = dfs[1].time_period_per_unit)
+    DataFrames.combine(
+        dfs::Vector{SortedDataFrame{<:Integer}};
+        timevar::Symbol = dfs[1].time,
+        groupingvar::Symbol = dfs[1].grouping,
+        valuevar::Symbol = dfs[1].value,
+        period::Dates.Period = dfs[1].time_period_per_unit,
+    )
+
 Combine a vector of data frames
 ### Inputs
 * `dfs` - A vector of SortedDataFrames
@@ -134,6 +163,7 @@ end
 
 """
     Base.show(sdf::SortedDataFrame, number_of_rows = 10)
+
 Show a SortedDataFrame with a set number of rows.
 ### Inputs
 * `sdf` - The `SortedDataFrame` to show.
@@ -150,6 +180,7 @@ end
 using Gadfly
 """
     Gadfly.plot(ts::SortedDataFrame)
+
 This makes a basic plot of the assets in a `SortedDataFrame`.
 ### Inputs
 * `ts` - The `SortedDataFrame` to plot.
@@ -245,7 +276,7 @@ function subset_to_time(ts::SortedDataFrame, totime::Real)
 end
 
 """
-    duration(ts::SortedDataFrame)
+    duration(ts::SortedDataFrame; in_dates_period::Bool = true)
 
 The time elapsed between the first and the last tick in a `SortedDataFrame`.
 ### Inputs

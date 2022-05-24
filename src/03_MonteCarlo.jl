@@ -1,7 +1,10 @@
 using StochasticIntegrals
 
 """
-    make_random_psd_matrix_from_wishart(num_assets::Integer, rng::Union{MersenneTwister,StableRNG} = MersenneTwister(1))
+    make_random_psd_matrix_from_wishart(
+        num_assets::Integer,
+        rng::Union{MersenneTwister,StableRNG} = MersenneTwister(1),
+    )
 
 Make a random psd matrix from the inverse wishart distribution.
 
@@ -21,16 +24,26 @@ function make_random_psd_matrix_from_wishart(
 end
 
 """
-    generate_random_path(dimensions::Integer, ticks::Integer;
-                         syncronous::Bool = false,
-                         rng::Union{MersenneTwister,StableRNG} = MersenneTwister(1),
-                         vol_dist::Distribution = Uniform(0.1/sqrt(252 * 8 * 3600), 0.5/sqrt(252 * 8 * 3600)),
-                         refresh_rate_dist::Distribution    = Uniform(0.5, 5.0),
-                         time_period_per_unit::Dates.Period = Second(1),
-                         micro_noise_dist::Distribution     = Uniform(vol_dist.a * sqrt(time_period_ratio(Minute(5), time_period_per_unit)), vol_dist.b * sqrt(time_period_ratio(Minute(5), time_period_per_unit))),
-                         assets::Union{Vector,Missing}      = missing,
-                         brownian_corr_matrix::Union{Hermitian,Missing} = missing,
-                         vols::Union{Vector,Missing}        = missing)
+    generate_random_path(
+       dimensions::Integer,
+       ticks::Integer;
+       syncronous::Bool = false,
+       rng::Union{MersenneTwister,StableRNG} = MersenneTwister(1),
+       vol_dist::Distribution = Uniform(
+           0.1 / sqrt(252 * 8 * 3600),
+           0.5 / sqrt(252 * 8 * 3600),
+       ),
+       refresh_rate_dist::Distribution = Uniform(0.5, 5.0),
+       time_period_per_unit::Dates.Period = Second(1),
+       micro_noise_dist::Distribution = Uniform(
+           vol_dist.a * sqrt(time_period_ratio(Minute(5), time_period_per_unit)),
+           vol_dist.b * sqrt(time_period_ratio(Minute(5), time_period_per_unit)),
+       ),
+       assets::Union{Vector,Missing} = missing,
+       brownian_corr_matrix::Union{Hermitian,Missing} = missing,
+       vols::Union{Vector,Missing} = missing,
+       rng_timing::Union{MersenneTwister,StableRNG} = MersenneTwister(1),
+    )
 
 Generate a random path of price updates with a specified number of dimensions and ticks. There are options for whether the data is syncronous or asyncronous, the volatility of the price
 processes, the refresh rate on the (exponential) arrival times of price updates, the minimum and the maximum microstructure noises.
@@ -149,6 +162,7 @@ end
 
 """
     convert_to_stochastic_integrals_type(x::MersenneTwister, num::Integer)
+
     convert_to_stochastic_integrals_type(x::StableRNG, num::Integer)
 
 This makes either a StochasticIntegrals.Mersenne or StochasticIntegrals.Stable_RNG
@@ -193,7 +207,16 @@ function StochasticIntegrals.ItoSet(covariance_matrix::CovarianceMatrix{<:Real})
 end
 
 """
-    StochasticIntegrals.get_draws(covariance_matrix::CovarianceMatrix{<:Real}, num::Integer; number_generator::NumberGenerator = Mersenne(MersenneTwister(1234), length(covar.covariance_labels_)), antithetic_variates = false)
+    StochasticIntegrals.get_draws(
+        covariance_matrix::CovarianceMatrix{<:Real},
+        num::Integer;
+        number_generator::NumberGenerator = Mersenne(
+            MersenneTwister(1234),
+            length(covariance_matrix.labels),
+        ),
+        antithetic_variates = false,
+    )
+
 get pseudorandom draws from a `CovarianceMatrix` struct. This is basically a convenience wrapper over StochasticIntegrals.get_draws which does the necessary constructing of the structs of that package.
 If the `antithetic_variates` control is set to true then every second set of draws will be antithetic to the previous.
 If you want to do something like Sobol sampling you can change the number_generator. See StochasticIntegrals to see what is available (and feel free to make new ones and put in Pull Requests)

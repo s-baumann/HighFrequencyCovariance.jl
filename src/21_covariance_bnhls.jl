@@ -56,6 +56,8 @@ A bnhls_2008 kernel used in the bnhls covariance method.
 const bnhls_2008 = HFC_Kernel(f_bnhls, 1.0, 5 / 4, 0.96, 1.09)
 
 """
+    realised_autocovariance(returns::Array{R,2}, h::Integer) where R<:Real
+
 Realised autocovariance.
 """
 function realised_autocovariance(returns::Array{R,2}, h::Integer) where R<:Real
@@ -71,6 +73,8 @@ function realised_autocovariance(returns::Array{R,2}, h::Integer) where R<:Real
 end
 
 """
+    preaveraging_end_returns(returns::Array{R,2}, m::Integer) where R<:Real
+
 This averages the first few and last few returns. We do this to returns rather than
 prices (as suggested in BNHLS 2011).
 
@@ -102,6 +106,13 @@ function preaveraging_end_returns(returns::Array{R,2}, m::Integer) where R<:Real
 end
 
 """
+    bnhls_covariance_estimate_given_returns(
+        returns::Array{R,2};
+        kernel::HFC_Kernel{T},
+        H::Real,
+        m::Integer,
+    ) where R<:Real where T<:Real
+
 This calculates covariance with the multivariate realised kernel of BNHLS(2011).
 """
 function bnhls_covariance_estimate_given_returns(
@@ -123,12 +134,16 @@ function bnhls_covariance_estimate_given_returns(
 end
 
 """
-    bnhls_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                     regularisation::Union{Missing,Symbol} = :covariance_default,
-                     regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
-                     kernel::HFC_Kernel{<:Real} = parzen,
-                     H::Real = kernel.c_star * ( mean(map(a -> length(ts.groupingrows[a]), assets))   )^0.6,
-                     m::Integer = 2)
+    bnhls_covariance(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol} = get_assets(ts);
+        regularisation::Union{Missing,Symbol} = :covariance_default,
+        regularisation_params::Dict = Dict(),
+        only_regulise_if_not_PSD::Bool = false,
+        kernel::HFC_Kernel{<:Real} = parzen,
+        H::Real = kernel.c_star * (mean(map(a -> length(ts.groupingrows[a]), assets)))^0.6,
+        m::Integer = 2,
+    )
 
 This calculates covariance with the Multivariate realised kernel oof BNHLS(2011).
 ### Inputs

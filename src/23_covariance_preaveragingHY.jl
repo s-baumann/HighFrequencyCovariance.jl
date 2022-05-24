@@ -1,5 +1,6 @@
 """
     get_preaveraged_prices(ts::SortedDataFrame, asset::Symbol, k_n::Real, gs::Vector)
+
 This returns the prices that have been preaveraged as per the paper.
 ### References
 Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for multivariate continuous Itô semimartingales with noise in non-synchronous observation schemes.” Journal of Multivariate Analysis, 120, 59–84. doi:10.1016/j.jmva.2013.05.002.
@@ -23,6 +24,7 @@ end
 
 """
     HY_n(A::Tuple{Vector{<:Real},Vector{<:Real}}, B::Tuple{Vector{<:Real},Vector{<:Real}}, k_n::Integer, psi::Real)
+
 See top of page 62 of Christensen et al.
 ### References
 Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for multivariate continuous Itô semimartingales with noise in non-synchronous observation schemes.” Journal of Multivariate Analysis, 120, 59–84. doi:10.1016/j.jmva.2013.05.002.
@@ -51,6 +53,7 @@ end
 
 """
     univariate_HYn(vect::Vector, k_n::Real, psi::Real)
+
 This is the 3rd equation in the aymptotic theory section of the paper.
 
 ### References
@@ -65,6 +68,7 @@ univariate_HYn(vect::Vector, k_n::Real, psi::Real) =
 
 """
     const g = (f = x-> min(x, 1-x), psi = 0.25)
+
 This named tuple gives the preaveraging kernel function and integral over the unit interval
    that was used in the paper. It is used by default in the preaveraged_covariance method
    but can be overwritten with alternative kernels.
@@ -75,10 +79,16 @@ Christensen K, Podolskij M, Vetter M (2013). “On covariation estimation for mu
 const g = (f = x -> min(x, 1 - x), psi = 0.25)
 
 """
-    preaveraged_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                           regularisation::Union{Missing,Symbol} = :covariance_default,
-                           regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
-                           theta::Real = 0.15, g::NamedTuple = g)
+    preaveraged_covariance(
+        ts::SortedDataFrame,
+        assets::Vector{Symbol} = get_assets(ts);
+        regularisation::Union{Missing,Symbol} = :covariance_default,
+        drop_assets_if_not_enough_data::Bool = false,
+        regularisation_params::Dict = Dict(),
+        only_regulise_if_not_PSD::Bool = false,
+        theta::Real = 0.15,
+        g::NamedTuple = g,
+    )
 
 Estimation of the CovarianceMatrix using preaveraging method.
 ### Inputs
