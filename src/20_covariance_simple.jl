@@ -5,13 +5,13 @@ https://en.wikipedia.org/wiki/Sample_mean_and_covariance
 """
 function simple_covariance_given_returns(returns::Array{R,2}) where R<:Real
     N = size(returns)[2]
-    mat = zeros(N,N)
-    for i in 1:N
-        for j in i:N
+    mat = zeros(N, N)
+    for i = 1:N
+        for j = i:N
             if i == j
-                mat[i,i] = var(returns[:,i])
+                mat[i, i] = var(returns[:, i])
             else
-                mat[i,j] = cov(returns[:,i], returns[:,j])
+                mat[i, j] = cov(returns[:, i], returns[:, j])
             end
         end
     end
@@ -21,23 +21,36 @@ end
 """
 Estimation of the covariance matrix in the standard simple way given a time grid.
 """
-function simple_covariance_given_time_grid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Vector; regularisation::Union{Missing,Symbol} = :covariance_default,
-                                           regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false)
+function simple_covariance_given_time_grid(
+    ts::SortedDataFrame,
+    assets::Vector{Symbol},
+    time_grid::Vector;
+    regularisation::Union{Missing,Symbol} = :covariance_default,
+    regularisation_params::Dict = Dict(),
+    only_regulise_if_not_PSD::Bool = false,
+)
     dd_compiled = latest_value(ts, time_grid; assets = assets)
     dd = get_returns(dd_compiled; rescale_for_duration = false)
 
-    if nrow(dd) < 1 return make_nan_covariance_matrix(assets, ts.time_period_per_unit) end
+    if nrow(dd) < 1
+        return make_nan_covariance_matrix(assets, ts.time_period_per_unit)
+    end
 
     returns = Matrix(dd[:, assets])
     covariance = simple_covariance_given_returns(returns)
 
     # Regularisation
-    dont_regulise = ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(covariance))
-    covariance = dont_regulise ? covariance : regularise(covariance, ts, assets, regularisation; regularisation_params... )
+    dont_regulise =
+        ismissing(regularisation) || (only_regulise_if_not_PSD && is_psd_matrix(covariance))
+    covariance = dont_regulise ? covariance :
+        regularise(covariance, ts, assets, regularisation; regularisation_params...)
 
     # av_spacing
     N = length(time_grid)
-    spacing = safe_multiply_period(mean(time_grid[2:N] .- time_grid[1:(N-1)]), ts.time_period_per_unit)
+    spacing = safe_multiply_period(
+        mean(time_grid[2:N] .- time_grid[1:(N-1)]),
+        ts.time_period_per_unit,
+    )
 
     # Packing into a CovarianceMatrix and returning.
     cor, vols = cov_to_cor_and_vol(covariance, spacing, ts.time_period_per_unit)
@@ -66,13 +79,33 @@ Estimation of the covariance matrix in the standard textbook way.
 * A `CovarianceMatrix`.
 
 """
-function simple_covariance(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                           regularisation::Union{Missing,Symbol} = :covariance_default,
-                           regularisation_params::Dict = Dict(), only_regulise_if_not_PSD::Bool = false,
-                           time_grid::Union{Missing,Vector} = missing, fixed_spacing::Union{Missing,<:Real} = missing,
-                           refresh_times::Bool = false, rough_guess_number_of_intervals::Integer = 5)
-    time_grid = get_timegrid(ts, assets, time_grid , fixed_spacing, refresh_times, rough_guess_number_of_intervals)
-    return simple_covariance_given_time_grid(ts, assets, time_grid; regularisation = regularisation, regularisation_params = regularisation_params, only_regulise_if_not_PSD = only_regulise_if_not_PSD)
+function simple_covariance(
+    ts::SortedDataFrame,
+    assets::Vector{Symbol} = get_assets(ts);
+    regularisation::Union{Missing,Symbol} = :covariance_default,
+    regularisation_params::Dict = Dict(),
+    only_regulise_if_not_PSD::Bool = false,
+    time_grid::Union{Missing,Vector} = missing,
+    fixed_spacing::Union{Missing,<:Real} = missing,
+    refresh_times::Bool = false,
+    rough_guess_number_of_intervals::Integer = 5,
+)
+    time_grid = get_timegrid(
+        ts,
+        assets,
+        time_grid,
+        fixed_spacing,
+        refresh_times,
+        rough_guess_number_of_intervals,
+    )
+    return simple_covariance_given_time_grid(
+        ts,
+        assets,
+        time_grid;
+        regularisation = regularisation,
+        regularisation_params = regularisation_params,
+        only_regulise_if_not_PSD = only_regulise_if_not_PSD,
+    )
 end
 
 """
@@ -91,25 +124,43 @@ This returns a sequence of times at which the SortedDataFrame can be queried for
 ### Returns
 * A `Vector{<:Real}`.
 """
-function get_timegrid(ts::SortedDataFrame, assets::Vector{Symbol}, time_grid::Missing , fixed_spacing::Union{Missing,<:Real},
-                      refresh_times::Bool, rough_guess_number_of_intervals::Integer)
-    time_grid = Vector{eltype(ts.df[:,ts.time])}()
+function get_timegrid(
+    ts::SortedDataFrame,
+    assets::Vector{Symbol},
+    time_grid::Missing,
+    fixed_spacing::Union{Missing,<:Real},
+    refresh_times::Bool,
+    rough_guess_number_of_intervals::Integer,
+)
+    time_grid = Vector{eltype(ts.df[:, ts.time])}()
     if !ismissing(fixed_spacing)
-        minn, maxx = extrema(ts.df[:,ts.time])
+        minn, maxx = extrema(ts.df[:, ts.time])
         time_grid = collect(minn:fixed_spacing:maxx)
     elseif refresh_times
         time_grid = get_all_refresh_times(ts, assets)
     else
-        n_grid = default_spacing(ts; rough_guess_number_of_intervals = rough_guess_number_of_intervals)
+        n_grid = default_spacing(
+            ts;
+            rough_guess_number_of_intervals = rough_guess_number_of_intervals,
+        )
         vals = collect(values(n_grid))
-        spacing = min( mean(vals[is_missing_nan_inf.(vals) .== false]), duration(ts; in_dates_period = false)/20   )
-        spacing = isnan(spacing) ? duration(ts; in_dates_period = false)/20 : spacing
-        minn, maxx = extrema(ts.df[:,ts.time])
+        spacing = min(
+            mean(vals[is_missing_nan_inf.(vals).==false]),
+            duration(ts; in_dates_period = false) / 20,
+        )
+        spacing = isnan(spacing) ? duration(ts; in_dates_period = false) / 20 : spacing
+        minn, maxx = extrema(ts.df[:, ts.time])
         time_grid = collect(minn:spacing:maxx)
     end
     return time_grid
 end
-function get_timegrid(ts::SortedDataFrame,  assets::Vector{Symbol}, time_grid::Vector, fixed_spacing::Union{Missing,<:Real},
-                      refresh_times::Bool, rough_guess_number_of_intervals::Integer)
+function get_timegrid(
+    ts::SortedDataFrame,
+    assets::Vector{Symbol},
+    time_grid::Vector,
+    fixed_spacing::Union{Missing,<:Real},
+    refresh_times::Bool,
+    rough_guess_number_of_intervals::Integer,
+)
     return time_grid
 end

@@ -41,17 +41,30 @@ Converts a matrix (representing a covariance matrix) into a `Hermitian` correlat
 * A `Hermitian`.
 * A `Vector` of volatilities.
 """
-function cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Dates.Period, duration_for_desired_vols::Dates.Period)
+function cov_to_cor_and_vol(
+    mat::AbstractMatrix,
+    duration_of_covariance_matrix::Dates.Period,
+    duration_for_desired_vols::Dates.Period,
+)
     cor, sdevs = cov_to_cor(mat)
-    vols = sdevs / sqrt(time_period_ratio(duration_of_covariance_matrix, duration_for_desired_vols))
+    vols =
+        sdevs /
+        sqrt(time_period_ratio(duration_of_covariance_matrix, duration_for_desired_vols))
     return Hermitian(cor), vols
 end
-function cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix::Real, duration_for_desired_vols::Real)
+function cov_to_cor_and_vol(
+    mat::AbstractMatrix,
+    duration_of_covariance_matrix::Real,
+    duration_for_desired_vols::Real,
+)
     cor, sdevs = cov_to_cor(mat)
     vols = sdevs / sqrt(duration_of_covariance_matrix / duration_for_desired_vols)
     return Hermitian(cor), vols
 end
-function cov_to_cor_and_vol(mat::AbstractMatrix, duration_of_covariance_matrix_in_natural_units::Real)
+function cov_to_cor_and_vol(
+    mat::AbstractMatrix,
+    duration_of_covariance_matrix_in_natural_units::Real,
+)
     cor, sdevs = cov_to_cor(mat)
     vols = sdevs / sqrt(duration_of_covariance_matrix_in_natural_units)
     return Hermitian(cor), vols
@@ -85,7 +98,11 @@ This makes a `Hermitian` matrix for the covariance matrix over some duration.
 ### Returns
 * A `Hermitian`. The labelling of assets for each row/column is as per the input `assets` vector.
 """
-function covariance(cm::CovarianceMatrix, period::Dates.Period = cm.time_period_per_unit, assets::Vector{Symbol} = cm.labels)
+function covariance(
+    cm::CovarianceMatrix,
+    period::Dates.Period = cm.time_period_per_unit,
+    assets::Vector{Symbol} = cm.labels,
+)
     cm2 = rearrange(cm, assets)
     sds = convert_vol(cm2.volatility, cm2.time_period_per_unit, period)
     return cor_to_cov(cm2.correlation, sds)
@@ -102,7 +119,10 @@ Constructs a matrix from its eigenvalue decomposition.
 ### Returns
 * A `Matrix`.
 """
-function construct_matrix_from_eigen(eigenvalues::Vector{<:Real}, eigenvectors::Matrix{<:Real})
+function construct_matrix_from_eigen(
+    eigenvalues::Vector{<:Real},
+    eigenvectors::Matrix{<:Real},
+)
     value_matrix = zeros(length(eigenvalues), length(eigenvalues))
     value_matrix[diagind(value_matrix)] = eigenvalues
     final_mat = eigenvectors * value_matrix * transpose(eigenvectors)
@@ -119,7 +139,7 @@ Does simple differencing of two vectors.
 ### Returns
 * A `Vector` of `Real`s
 """
-simple_differencing(new::Vector,old::Vector) =  (new .- old)
+simple_differencing(new::Vector, old::Vector) = (new .- old)
 
 """
     get_returns(dd::DataFrame; rescale_for_duration::Bool = false)
@@ -134,12 +154,18 @@ Converts a long format `DataFrame` of prices into a `DataFrame` of returns.
 function get_returns(dd::DataFrame; rescale_for_duration::Bool = false)
     N = nrow(dd)
     assets = setdiff(Symbol.(collect(names(dd))), [:Time])
-    dd_mat = Array{Float64,2}(dd[1:N,assets])
-    diffs  = reduce(hcat, map(i -> simple_differencing(dd_mat[2:end,i] , dd_mat[1:(end-1),i]) , 1:length(assets)))
+    dd_mat = Array{Float64,2}(dd[1:N, assets])
+    diffs = reduce(
+        hcat,
+        map(
+            i -> simple_differencing(dd_mat[2:end, i], dd_mat[1:(end-1), i]),
+            1:length(assets),
+        ),
+    )
     dd_returns = diffs
     if rescale_for_duration
-        time_diffs = dd[2:N,:Time] - dd[1:(N-1),:Time]
-        dd_returns = (1 ./ sqrt.(time_diffs)) .*  diffs
+        time_diffs = dd[2:N, :Time] - dd[1:(N-1), :Time]
+        dd_returns = (1 ./ sqrt.(time_diffs)) .* diffs
     end
     dd2 = DataFrame(dd_returns, assets)
     return dd2
@@ -158,12 +184,18 @@ This calculates a weighted mean given vectors for values and for weights.
 * A `Real` number for the weighted mean.
 """
 function weighted_mean(x::Vector, w::Vector)
-    if length(x) == 0 return NaN end
-    if length(x) == 1 return x[1] end
+    if length(x) == 0
+        return NaN
+    end
+    if length(x) == 1
+        return x[1]
+    end
     # We revert to calculating a simple mean in cases where the sum of absolute
     # values of weights is less than 100 epsilons. This is to avoid issues with
     # dividing a number that is close to zero.
-    if sum(abs.(w)) < 100*eps() return mean(x) end
+    if sum(abs.(w)) < 100 * eps()
+        return mean(x)
+    end
     return sum(x .* w) / sum(w)
 end
 
@@ -194,25 +226,39 @@ Combines a vector of `CovarianceMatrix` structs into one `CovarianceMatrix` stru
 ### Returns
 * A matrix and a vector of labels for each row/column of the matrix.
 """
-function combine_covariance_matrices(vect::Vector{CovarianceMatrix{T}}, cor_weights::Vector{<:Real} = repeat([1.0], length(vect)), vol_weights::Vector{<:Real} = cor_weights,
-                                     time_period_per_unit::Union{Missing,Dates.Period} = vect[1].time_period_per_unit) where T<:Real
+function combine_covariance_matrices(
+    vect::Vector{CovarianceMatrix{T}},
+    cor_weights::Vector{<:Real} = repeat([1.0], length(vect)),
+    vol_weights::Vector{<:Real} = cor_weights,
+    time_period_per_unit::Union{Missing,Dates.Period} = vect[1].time_period_per_unit,
+) where T<:Real
     if length(vect) < 1
         error("An empty vector of covariance matrices was input. So not possible to combine.")
     end
     all_labels = union(map(x -> x.labels, vect)...)
     dims = length(all_labels)
     R = promote_type(map(x -> eltype(x.correlation), vect)...)
-    new_mat  = Array{R,2}(undef, dims, dims)
+    new_mat = Array{R,2}(undef, dims, dims)
     new_vols = Array{R,1}(undef, dims)
-    for row in 1:dims
+    for row = 1:dims
         row_label = all_labels[row]
-        for col in (row+1):dims
+        for col = (row+1):dims
             col_label = all_labels[col]
-            correls = map(i -> get_correlation(vect[i], row_label, col_label),  1:length(vect))
-            valid_entries = setdiff(1:length(correls), findall(is_missing_nan_inf.(correls)))
-            new_mat[row,col] = weighted_mean(correls[valid_entries], cor_weights[valid_entries])
+            correls =
+                map(i -> get_correlation(vect[i], row_label, col_label), 1:length(vect))
+            valid_entries =
+                setdiff(1:length(correls), findall(is_missing_nan_inf.(correls)))
+            new_mat[row, col] =
+                weighted_mean(correls[valid_entries], cor_weights[valid_entries])
         end
-        vols = map(i -> convert_vol(get_volatility(vect[i], row_label), vect[i].time_period_per_unit, time_period_per_unit ),  1:length(vect))
+        vols = map(
+            i -> convert_vol(
+                get_volatility(vect[i], row_label),
+                vect[i].time_period_per_unit,
+                time_period_per_unit,
+            ),
+            1:length(vect),
+        )
 
         valid_entries = setdiff(1:length(vols), findall(is_missing_nan_inf.(vols)))
         new_vols[row] = weighted_mean(vols[valid_entries], vol_weights[valid_entries])
@@ -233,16 +279,29 @@ Rearrange the order of labels in a `CovarianceMatrix`.
 ### Returns
 * A `CovarianceMatrix`.
 """
-function rearrange(cm::CovarianceMatrix, labels::Vector{Symbol},
-                   time_period_per_unit::Union{Missing,Dates.Period} = cm.time_period_per_unit)
-  if length(setdiff(labels, cm.labels)) > 0 error("You put in labels that are not in the CovarianceMatrix") end
-  same_assets = (length(cm.labels) == length(labels)) && (all(cm.labels .== labels))
-  same_vol = (time_period_per_unit == cm.time_period_per_unit)
-  if (same_assets && same_vol) return cm end
-  reordering = map(x -> findfirst(x .== cm.labels)[1], labels)
-  Acor = same_assets ? cm.correlation[reordering,reordering] : Hermitian(cm.correlation[reordering,reordering])
-  Avol = same_vol ? cm.volatility[reordering] : convert_vol(cm.volatility[reordering], cm.time_period_per_unit, time_period_per_unit)
-  return CovarianceMatrix(Acor, Avol, labels, time_period_per_unit)
+function rearrange(
+    cm::CovarianceMatrix,
+    labels::Vector{Symbol},
+    time_period_per_unit::Union{Missing,Dates.Period} = cm.time_period_per_unit,
+)
+    if length(setdiff(labels, cm.labels)) > 0
+        error("You put in labels that are not in the CovarianceMatrix")
+    end
+    same_assets = (length(cm.labels) == length(labels)) && (all(cm.labels .== labels))
+    same_vol = (time_period_per_unit == cm.time_period_per_unit)
+    if (same_assets && same_vol)
+        return cm
+    end
+    reordering = map(x -> findfirst(x .== cm.labels)[1], labels)
+    Acor = same_assets ? cm.correlation[reordering, reordering] :
+        Hermitian(cm.correlation[reordering, reordering])
+    Avol = same_vol ? cm.volatility[reordering] :
+        convert_vol(
+        cm.volatility[reordering],
+        cm.time_period_per_unit,
+        time_period_per_unit,
+    )
+    return CovarianceMatrix(Acor, Avol, labels, time_period_per_unit)
 end
 
 """
@@ -269,7 +328,7 @@ Returns the squared frobenius norm of a matrix. This is a real.
 """
 function squared_frobenius(x1::AbstractMatrix)
     p = size(x1)[1]
-    return tr(x1 * transpose(x1))/p
+    return tr(x1 * transpose(x1)) / p
 end
 
 
@@ -285,17 +344,31 @@ Get a `DataFrame` showing how many time is between each refresh and how many tic
 ### Returns
 * A `DataFrame` summarising the average number of time between ticks for each asset.
 """
-function time_between_refreshes(ts::SortedDataFrame; assets::Vector{Symbol} = get_assets(ts))
-    minn, maxx = extrema(ts.df[:,ts.time])
+function time_between_refreshes(
+    ts::SortedDataFrame;
+    assets::Vector{Symbol} = get_assets(ts),
+)
+    minn, maxx = extrema(ts.df[:, ts.time])
     total_secs = maxx - minn
-    R = eltype(ts.df[:,ts.value])
+    R = eltype(ts.df[:, ts.value])
     N = nrow(ts.df)
-    dd = DataFrame(Asset = Array{Symbol,1}([]), time_between_ticks = Array{R,1}([]), number_of_ticks = Array{Int64,1}([]))
+    dd = DataFrame(
+        Asset = Array{Symbol,1}([]),
+        time_between_ticks = Array{R,1}([]),
+        number_of_ticks = Array{Int64,1}([]),
+    )
     for a in assets
         asset_rows = ts.groupingrows[a]
-        dff = ts.df[asset_rows,:]
+        dff = ts.df[asset_rows, :]
         number_of_ticks = length(asset_rows)
-        push!(dd, Dict(:Asset => a, :time_between_ticks => number_of_ticks/total_secs, :number_of_ticks => number_of_ticks))
+        push!(
+            dd,
+            Dict(
+                :Asset => a,
+                :time_between_ticks => number_of_ticks / total_secs,
+                :number_of_ticks => number_of_ticks,
+            ),
+        )
     end
     sort!(dd, :time_between_ticks)
     return dd

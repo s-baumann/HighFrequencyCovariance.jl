@@ -1,3 +1,4 @@
+
 """
     latest_value(ts::SortedDataFrame, at_times::Vector{<:Real};
                  assets::Vector{Symbol} = get_assets(ts))
@@ -10,12 +11,15 @@ Get the latest price at a each input time.
 ### Returns
 * A `DataFrame`. Rows are for each time specified in at_times. Columns are for each asset.
 """
-function latest_value(ts::SortedDataFrame, at_times::Vector{<:Real};
-                      assets::Vector{Symbol} = get_assets(ts))
+function latest_value(
+    ts::SortedDataFrame,
+    at_times::Vector{<:Real};
+    assets::Vector{Symbol} = get_assets(ts),
+)
     dd = DataFrame(Time = at_times)
     for a in assets
-        indx = searchsortedlast_both(ts.df[ts.groupingrows[a],ts.time], at_times)
-        dd[!,a] = ts.df[ts.groupingrows[a][indx]  , ts.value]
+        indx = searchsortedlast_both(ts.df[ts.groupingrows[a], ts.time], at_times)
+        dd[!, a] = ts.df[ts.groupingrows[a][indx], ts.value]
     end
     return dd
 end
@@ -31,8 +35,10 @@ function searchsortedlast_both(reference::Vector, indices::Vector)
     len = length(indices)
     lenj = length(reference)
     inds = Array{Int64,1}(repeat([lenj], len))
-    inds[1] = max(1,searchsortedlast(reference, indices[1]))
-    if len == 1 return inds end
+    inds[1] = max(1, searchsortedlast(reference, indices[1]))
+    if len == 1
+        return inds
+    end
     j = inds[1]
     i = 2
     while true
@@ -42,7 +48,9 @@ function searchsortedlast_both(reference::Vector, indices::Vector)
         else
             j += 1
         end
-        if (i > len) || (j == lenj) return inds end
+        if (i > len) || (j == lenj)
+            return inds
+        end
     end
 end
 
@@ -60,17 +68,28 @@ Get a random value in an interval. So if you input times 1,7,8 then for the seco
 ### Returns
 * A `DataFrame` with prices for each asset from random ticks in each interval.
 """
-function random_value_in_interval(ts::SortedDataFrame, at_times::Vector{<:Real};
-                                  assets::Vector{Symbol} = get_assets(ts),
-                                  twister_arb_value_in_interval::MersenneTwister = MersenneTwister(2604))
+function random_value_in_interval(
+    ts::SortedDataFrame,
+    at_times::Vector{<:Real};
+    assets::Vector{Symbol} = get_assets(ts),
+    twister_arb_value_in_interval::MersenneTwister = MersenneTwister(2604),
+)
     dd = DataFrame(Time = at_times)
     for a in assets
-        indx = [1, searchsortedlast_both(ts.df[ts.groupingrows[a],ts.time], at_times)...]
-        rand_indx = map(i -> rand(twister_arb_value_in_interval, min(indx[i+1],indx[i]+1):indx[i+1],1)[1]  ,1:(length(indx)-1))
-        dd[!,a] = ts.df[ts.groupingrows[a][rand_indx]  , ts.value]
+        indx = [1, searchsortedlast_both(ts.df[ts.groupingrows[a], ts.time], at_times)...]
+        rand_indx = map(
+            i -> rand(
+                twister_arb_value_in_interval,
+                min(indx[i+1], indx[i] + 1):indx[i+1],
+                1,
+            )[1],
+            1:(length(indx)-1),
+        )
+        dd[!, a] = ts.df[ts.groupingrows[a][rand_indx], ts.value]
     end
     return dd
 end
+
 
 """
     next_tick(ts::SortedDataFrame, from_index::I; assets::Vector{Symbol} = get_assets(ts)) where R<:Real where I<:Integer
@@ -86,7 +105,7 @@ This gets the next tick by which every asset has a refreshed price after a certa
 * An `Integer` or `Missing` for the refresh tick. for what index in your data the refresh happened by. If one asset did not refresh this will be a missing.
 """
 function next_tick(ts::SortedDataFrame, from_index::I;
-                   assets::Vector{Symbol} = get_assets(ts)) where R<:Real where I<:Integer
+                   assets::Vector{Symbol} = get_assets(ts))  where R<:Real where I<:Integer
     inds = Array{I,1}()
     for a in assets
         ind = searchsortedfirst(ts.groupingrows[a], from_index)
@@ -97,6 +116,7 @@ function next_tick(ts::SortedDataFrame, from_index::I;
     refresh_time = ts.df[refresh_index, ts.time]
     return refresh_time, refresh_index
 end
+
 
 """
     get_all_refresh_times(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
@@ -113,13 +133,18 @@ prices for all assets that have happened since the previous refresh time.
 ### Returns
 * A `Vector` of refresh times.
 """
-function get_all_refresh_times(ts::SortedDataFrame, assets::Vector{Symbol} = get_assets(ts);
-                               start_time::R = minimum(ts.df[:,ts.time])) where R<:Real
+function get_all_refresh_times(
+    ts::SortedDataFrame,
+    assets::Vector{Symbol} = get_assets(ts);
+    start_time::R = minimum(ts.df[:, ts.time]),
+) where R<:Real
     ticks = Vector{R}()
-    start_ind = searchsortedfirst(ts.df[:,ts.time], start_time) - 1
+    start_ind = searchsortedfirst(ts.df[:, ts.time], start_time) - 1
     while true
         new_tick, start_ind = next_tick(ts, start_ind + 1; assets = assets)
-        if ismissing(new_tick) return ticks end
+        if ismissing(new_tick)
+            return ticks
+        end
         push!(ticks, new_tick)
     end
 end

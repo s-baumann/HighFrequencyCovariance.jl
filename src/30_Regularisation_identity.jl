@@ -9,8 +9,8 @@ This multiplies row i of dataframe dd by its inverse. Then returns that as a Her
 ### Returns
 * A `Hermitian`.
 """
-function row_row_prime(dd, i, type::Type = eltype(dd[1,1]))
-    r = Array{type}(dd[i,:])
+function row_row_prime(dd, i, type::Type = eltype(dd[1, 1]))
+    r = Array{type}(dd[i, :])
     return Hermitian(r * r')
 end
 
@@ -18,11 +18,11 @@ end
     b_bar(dd,S)
 This calculates the \bar{b} expression for the Ledoit-Wolf paper
 """
-function b_bar(dd,S)
-    etype = eltype(dd[1,1])
+function b_bar(dd, S)
+    etype = eltype(dd[1, 1])
     N = nrow(dd)
     total = 0.0
-    for k in 1:N
+    for k = 1:N
         total += sqrt(squared_frobenius_distance(row_row_prime.(Ref(dd), k, etype), S))
     end
     return total / (N^2)
@@ -39,7 +39,7 @@ Regularisation of the correlation matrix by mixing with the identity matrix.
 * A `Hermitian`.
 
 
-    identity_regularisation(mat::Hermitian, asset_returns::DataFrame) where R<:Real
+    identity_regularisation(mat::Hermitian, asset_returns::DataFrame)
 
 Regularisation of the correlation matrix by mixing with the identity matrix as per Ledoit & Wolf 2003.
 ### Inputs
@@ -94,41 +94,85 @@ function identity_regularisation(mat::Hermitian, identity_weight::Real)
     mat_prime = (identity_weight .* II) + (1 - identity_weight) .* mat
     return Hermitian(mat_prime)
 end
-function identity_regularisation(mat::Hermitian, asset_returns::DataFrame) where R<:Real
-    II   = I(size(mat)[1])
-    m    = squared_frobenius_distance(mat, II) # Lemma 3.2
-    d    = sqrt(squared_frobenius_distance(mat, m*II))      # Lemma 3.3
+function identity_regularisation(mat::Hermitian, asset_returns::DataFrame)
+    II = I(size(mat)[1])
+    m = squared_frobenius_distance(mat, II) # Lemma 3.2
+    d = sqrt(squared_frobenius_distance(mat, m * II))      # Lemma 3.3
     bbar = b_bar(asset_returns, mat)
-    b    = min(bbar, d)
-    return identity_regularisation(mat, b/d)
+    b = min(bbar, d)
+    return identity_regularisation(mat, b / d)
 end
-function identity_regularisation(mat::Hermitian, ts::SortedDataFrame,  mat_labels::Vector;
-                                 spacing::Union{Missing,<:Real} = missing)
-    at_times = ismissing(spacing) ? get_all_refresh_times(ts, mat_labels) : collect(0:spacing:maximum(ts.df[:,ts.time]))
+function identity_regularisation(
+    mat::Hermitian,
+    ts::SortedDataFrame,
+    mat_labels::Vector;
+    spacing::Union{Missing,<:Real} = missing,
+)
+    at_times = ismissing(spacing) ? get_all_refresh_times(ts, mat_labels) :
+        collect(0:spacing:maximum(ts.df[:, ts.time]))
     dd_compiled = latest_value(ts, at_times; assets = mat_labels)
     asset_returns = get_returns(dd_compiled; rescale_for_duration = true)
     return identity_regularisation(mat, asset_returns)
 end
-function identity_regularisation(covariance_matrix::CovarianceMatrix, ts::SortedDataFrame;
-                                 spacing::Union{Missing,<:Real} = missing, apply_to_covariance::Bool = true)
-     if apply_to_covariance
-         actual_covariance = covariance(covariance_matrix)
-         regularised_covariance = identity_regularisation(actual_covariance,
-                                           ts, covariance_matrix.labels; spacing = spacing)
-         corr, vols = cov_to_cor_and_vol(regularised_covariance, 1)
-         return CovarianceMatrix(corr, vols, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
-     else
-         return CovarianceMatrix(Hermitian(identity_regularisation(covariance_matrix.correlation, ts, covariance_matrix.labels; spacing = spacing)),
-                     covariance_matrix.volatility, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
-     end
+function identity_regularisation(
+    covariance_matrix::CovarianceMatrix,
+    ts::SortedDataFrame;
+    spacing::Union{Missing,<:Real} = missing,
+    apply_to_covariance::Bool = true,
+)
+    if apply_to_covariance
+        actual_covariance = covariance(covariance_matrix)
+        regularised_covariance = identity_regularisation(
+            actual_covariance,
+            ts,
+            covariance_matrix.labels;
+            spacing = spacing,
+        )
+        corr, vols = cov_to_cor_and_vol(regularised_covariance, 1)
+        return CovarianceMatrix(
+            corr,
+            vols,
+            covariance_matrix.labels,
+            covariance_matrix.time_period_per_unit,
+        )
+    else
+        return CovarianceMatrix(
+            Hermitian(identity_regularisation(
+                covariance_matrix.correlation,
+                ts,
+                covariance_matrix.labels;
+                spacing = spacing,
+            )),
+            covariance_matrix.volatility,
+            covariance_matrix.labels,
+            covariance_matrix.time_period_per_unit,
+        )
+    end
 end
-function identity_regularisation(covariance_matrix::CovarianceMatrix, identity_weight::Real; apply_to_covariance = false)
-     if apply_to_covariance
-         regularised_covariance = identity_regularisation(covariance(covariance_matrix,1),identity_weight)
-         corr, vols = cov_to_cor_and_vol(regularised_covariance, 1)
-         return CovarianceMatrix(corr, vols, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
-     else
-         return CovarianceMatrix(Hermitian(identity_regularisation(covariance_matrix.correlation, identity_weight)),
-                       covariance_matrix.volatility, covariance_matrix.labels, covariance_matrix.time_period_per_unit)
-     end
+function identity_regularisation(
+    covariance_matrix::CovarianceMatrix,
+    identity_weight::Real;
+    apply_to_covariance = false,
+)
+    if apply_to_covariance
+        regularised_covariance =
+            identity_regularisation(covariance(covariance_matrix, 1), identity_weight)
+        corr, vols = cov_to_cor_and_vol(regularised_covariance, 1)
+        return CovarianceMatrix(
+            corr,
+            vols,
+            covariance_matrix.labels,
+            covariance_matrix.time_period_per_unit,
+        )
+    else
+        return CovarianceMatrix(
+            Hermitian(identity_regularisation(
+                covariance_matrix.correlation,
+                identity_weight,
+            )),
+            covariance_matrix.volatility,
+            covariance_matrix.labels,
+            covariance_matrix.time_period_per_unit,
+        )
+    end
 end
