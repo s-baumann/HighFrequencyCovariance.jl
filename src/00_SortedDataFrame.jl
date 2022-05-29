@@ -162,17 +162,20 @@ function DataFrames.combine(
 end
 
 """
-    Base.show(sdf::SortedDataFrame, number_of_rows = 10)
+    Base.show(sdf::SortedDataFrame, number_of_rows = 6, maximum_display_width = 50)
 
 Show a SortedDataFrame with a set number of rows.
 ### Inputs
 * `sdf` - The `SortedDataFrame` to show.
 * `number_of_rows` - The number of rows to show.
+* `maximum_display_width` - The width of the printable area (in characters)
 """
-function Base.show(sdf::SortedDataFrame, number_of_rows = 10)
+function Base.show(sdf::SortedDataFrame, number_of_rows = 6, maximum_display_width = 50)
     println()
     println("SortedDataFrame with ", nrow(sdf.df), " rows.")
-    show(sdf.df[:, [sdf.time, sdf.grouping, sdf.value]])
+    show(sdf.df[:, [sdf.time, sdf.grouping, sdf.value]],
+         display_size = (number_of_rows + 8, maximum_display_width),
+         summary = false)
     println()
 end
 
