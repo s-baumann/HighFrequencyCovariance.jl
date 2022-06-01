@@ -18,7 +18,7 @@ The default constructor is used.
 ### Returns
 * A `CovarianceMatrix`.
 """
-mutable struct CovarianceMatrix{R<:Real}
+struct CovarianceMatrix{R<:Real}
     correlation::Hermitian{R}
     volatility::Vector{R}
     labels::Vector{Symbol}
@@ -58,11 +58,10 @@ function Base.show(
     sig_figs_volatility::Integer,
     decimal_places_correlation::Integer,
 )
-    cm2 = deepcopy(cm)
-    cm2.volatility = round.(cm2.volatility, sigdigits = sig_figs_volatility)
-    cm2.correlation =
-        Hermitian(round.(cm2.correlation, digits = decimal_places_correlation))
-    show(cm2)
+    rounded_vols = round.(cm.volatility, sigdigits = sig_figs_volatility)
+    rounded_correl =
+        Hermitian(round.(cm.correlation, digits = decimal_places_correlation))
+    show(CovarianceMatrix(rounded_correl, rounded_vols, cm.labels, cm.time_period_per_unit))
 end
 
 """

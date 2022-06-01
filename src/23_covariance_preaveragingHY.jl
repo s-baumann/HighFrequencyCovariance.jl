@@ -171,13 +171,13 @@ function preaveraged_covariance(
     covar = make_nan_covariance_matrix(assets, ts.time_period_per_unit)
     if length(non_positive_diagonals) == 0
         corr, _ = cov_to_cor_and_vol(HYn, ts.time_period_per_unit, ts.time_period_per_unit)
-        covar.correlation = corr
+        copy!(covar.correlation, corr)
     end
 
     # We can use this to get the correlation matrix but the variances are too low - as a result of preveraging.
     # We will instead use the two scales vol of Zhang, mykland, Ait-Sahalia 2005.
     voldict = two_scales_volatility(ts, assets)[1]
     vols = map(a -> voldict[a], assets)
-    covar.volatility = vols
+    copy!(covar.volatility, vols)
     return covar
 end

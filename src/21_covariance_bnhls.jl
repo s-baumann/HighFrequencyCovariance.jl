@@ -199,8 +199,8 @@ function bnhls_covariance(
     covar = make_nan_covariance_matrix(assets, ts.time_period_per_unit)
     if length(non_positive_diagonals) == 0
         cor, vols = cov_to_cor_and_vol(cov_mat, duration(ts; in_dates_period = false))
-        covar.correlation = cor
-        covar.volatility = vols
+        copy!(covar.correlation, cor)
+        copy!(covar.volatility, vols)
     end
     return covar
 end
