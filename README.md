@@ -8,4 +8,4 @@ This package offers a number of algorithms for the calculations of volatilities,
 
 A number of regularisation algorithms are also implemented including eigenvalue cleaning, mixing with the identity matrix, mapping to the nearest PSD (Positive Semi Definite) matrix and mapping to the nearest valid covariance matrix.
 
-For a paper describing the capabilities of this package see [here](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3786912). For a JuliaCon 2021 talk giving an overview of the package click [here](https://www.youtube.com/watch?v=X_TCI02rgu0)
+For a paper describing the capabilities of this package see this paper in the [Journal of Statistical Software](https://www.jstatsoft.org/article/view/v103i14). For a JuliaCon 2021 talk giving an overview of the package click [here](https://www.youtube.com/watch?v=X_TCI02rgu0)
