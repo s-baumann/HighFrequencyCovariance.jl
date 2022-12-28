@@ -399,3 +399,52 @@ function rearrange(
     Amean = cm.means[reordering]
     return CovarianceModel(newmat, Amean, Adrift)
 end
+
+"""
+    get_conditional_distribution(covar::CovarianceModel,
+        conditioning_assets::Vector{Symbol},
+        conditioning_asset_returns::Vector{<:Real},
+        data_return_interval = covar.cm.time_period_per_unit)
+
+Calculates the conditional gaussian distribution after conditioning on a few assets.
+Note that the conditional mean is baked into the .mean attribute of the CovarianceModel. Thus this mean
+is as of the end point of the return interval you are conditioning on.
+### Takes
+* `covar` - A `CovarianceMatrix`.
+* `conditioning_assets` - A `Vector` of labels for the assets to condition on.
+* `conditioning_asset_returns` - A `Vector` of the returns for each of these assets.
+* `data_return_interval` - The time period the returns is for.
+### Returns
+* A `CovarianceModel`.
+"""
+function get_conditional_distribution(covar::CovarianceModel,
+                                      conditioning_assets::Vector{Symbol},
+                                      conditioning_asset_returns::Vector{<:Real},
+                                      data_return_interval = covar.cm.time_period_per_unit)
+    non_covariance_moves = [get_drift(covar, x, data_return_interval) + get_mean(covar, x) for x in conditioning_assets]
+    resid_returns = conditioning_asset_returns .- non_covariance_moves
+
+    covar_matrix = covariance(covar.cm, data_return_interval)
+    non_conditioning_assets = setdiff(covar.cm.labels, conditioning_assets)
+    asset_indices = [findfirst(asset .== covar.cm.labels) for asset in non_conditioning_assets]
+    conditioning_indices = [findfirst(asset .== covar.cm.labels) for asset in conditioning_assets]
+    # Segmenting the covariance matrix.
+    sigma11 = covar_matrix[asset_indices,asset_indices]   
+    sigma12 = covar_matrix[asset_indices,conditioning_indices]
+    sigma21 = covar_matrix[conditioning_indices,asset_indices]
+    sigma22 = covar_matrix[conditioning_indices,conditioning_indices]
+    mu1 = zeros(length(asset_indices))
+    mu2 = zeros(length(conditioning_indices))
+    weights = sigma12 / sigma22
+    conditional_mu = mu1 + weights * (resid_returns - mu2)
+    conditional_sigma = sigma11 - weights * sigma21
+    corr, vol = cov_to_cor_and_vol(conditional_sigma, data_return_interval, data_return_interval)
+
+    new_covar = CovarianceMatrix(corr,vol, non_conditioning_assets,data_return_interval)
+
+    # drift and means
+    newdrift = [get_drift(covar,x, data_return_interval) for x in non_conditioning_assets] 
+    newmean  = [get_mean(covar,x) for x in non_conditioning_assets] + conditional_mu
+
+    return CovarianceModel(new_covar, newmean, newdrift)
+end

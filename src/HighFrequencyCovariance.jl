@@ -25,6 +25,7 @@ export relabel, plot, combine
 include("00_CovarianceModel.jl")
 export CovarianceModel, make_nan_covariance_model, get_drift, get_mean
 export covariance_and_mean, combine_covariance_models
+export get_conditional_distribution
 include("01_helpers.jl")
 export simple_differencing
 include("02_subsample_ticks.jl")
