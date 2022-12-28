@@ -108,8 +108,7 @@ function make_nan_covariance_matrix(
     correlation = ones(d, d)
     correlation .= NaN
     correlation[diagind(correlation)] .= 1
-    vols = ones(d)
-    vols .= NaN
+    vols = repeat([NaN],length(labels))
     return CovarianceMatrix(Hermitian(correlation), vols, labels, time_period_per_unit)
 end
 
@@ -200,7 +199,7 @@ function calculate_mean_abs_distance_covar(
     return_nans_if_symbols_dont_match::Bool = true,
 )
     if return_nans_if_symbols_dont_match && (length(symdiff(cov1.labels, cov2.labels)) != 0)
-        return (Correlation_error = NaN, Volatility_error = NaN)
+        return NaN
     end
     labels = intersect(cov1.labels, cov2.labels)
     N = length(labels)

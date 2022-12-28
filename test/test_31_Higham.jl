@@ -1,6 +1,14 @@
 using Test
+using LinearAlgebra
 
-@testset "Test Higham regularisation" begin
+# Copypasting this here to avoid exporting it
+function sqrt_psd(A::Hermitian)
+    eigenvalues, eigenvectors = eigen(A)
+    return Hermitian(construct_matrix_from_eigen(sqrt.(eigenvalues), eigenvectors))
+end
+sqrt_psd(A::Diagonal) = sqrt(A)
+
+@testset "Test Higham regularisation - slightly non psd" begin
 
     using LinearAlgebra
     using Distributions: InverseWishart
@@ -30,7 +38,17 @@ using Test
     @test isa(U_ed, Hermitian)
     S_ed = project_to_S(A, W_root)
     @test all(eigen(S_ed).values .> -100 * eps())
+end
 
+
+@testset "Test Higham regularisation - really non psd" begin
+
+    using LinearAlgebra
+    using Distributions: InverseWishart
+    using Random
+    using HighFrequencyCovariance
+    twister = MersenneTwister(10)
+    IW_dist(n) = InverseWishart(n, Matrix(Float64.(I(n))))
 
     # Really non psd non diagonal version.
     A = Hermitian([1.02 0.5 0.9; 0.5 0.98 -0.9; 0.9 -0.9 1.01])
@@ -72,20 +90,16 @@ using Test
     S_ed = project_to_S(A, W_root)
     @test all(eigen(S_ed).values .> -100000 * eps())
 
+end
 
+@testset "Test Higham regularisation - internals" begin
 
-
-
-
-    # Copypasting this here to avoid exporting it
-    function sqrt_psd(A::Hermitian)
-        eigenvalues, eigenvectors = eigen(A)
-        return Hermitian(construct_matrix_from_eigen(sqrt.(eigenvalues), eigenvectors))
-    end
-    sqrt_psd(A::Diagonal) = sqrt(A)
-
-
-
+    using LinearAlgebra
+    using Distributions: InverseWishart
+    using Random
+    using HighFrequencyCovariance
+    twister = MersenneTwister(10)
+    IW_dist(n) = InverseWishart(n, Matrix(Float64.(I(n))))
 
     # A identify matrix case.
     N = 4
@@ -121,9 +135,16 @@ using Test
     @test all(abs.(Y .- I(N)) .< 100 * eps())
     Y, Dykstra = iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt)
     @test all(abs.(Y .- I(N)) .< 100 * eps())
+end
 
-
-
+@testset "Test Higham regularisation - valid psd case" begin
+    using LinearAlgebra
+    using Distributions: InverseWishart
+    using Random
+    using HighFrequencyCovariance
+    twister = MersenneTwister(10)
+    IW_dist(n) = InverseWishart(n, Matrix(Float64.(I(n))))
+        
     # A valid correlation matrix case
     N = 3
     A, _ = cov_to_cor(Hermitian(rand(twister, IW_dist(N))))
@@ -137,7 +158,15 @@ using Test
     @test all(abs.(Y .- A) .< 100 * eps())
     Y, Dykstra = iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt)
     @test all(abs.(Y .- A) .< 100 * eps())
+end
 
+@testset "Test Higham regularisation - another non psd case" begin
+    using LinearAlgebra
+    using Distributions: InverseWishart
+    using Random
+    using HighFrequencyCovariance
+    twister = MersenneTwister(10)
+    IW_dist(n) = InverseWishart(n, Matrix(Float64.(I(n))))
 
     # A Slightly non psd case
     N = 3
@@ -171,7 +200,6 @@ using Test
     @test minimum(eigen(updated_matrix2).values) > -10 * eps()
     @test minimum(eigen(updated_matrix3).values) > -100000 * eps()
 
-
     # With diagonal weighting.
     N = 3
     A = Hermitian([1.02 0.5 0.9; 0.5 0.98 0.9; 0.9 0.9 1.01])
@@ -203,6 +231,16 @@ using Test
     @test minimum(eigen(updated_matrix2).values) > -10 * eps()
     @test minimum(eigen(updated_matrix).values) > -10 * eps()
     @test minimum(eigen(updated_matrix3).values) > -10 * eps()
+end
+
+@testset "Test Higham regularisation - another really non psd case" begin
+    using LinearAlgebra
+    using Distributions: InverseWishart
+    using Random
+    using HighFrequencyCovariance
+    twister = MersenneTwister(10)
+    IW_dist(n) = InverseWishart(n, Matrix(Float64.(I(n))))
+    N = 3
 
     # A really non psd case
     A = Hermitian([1.02 0.5 0.9; 0.5 0.98 -0.9; 0.9 -0.9 1.01])

@@ -59,7 +59,7 @@ Refreshed ticks every 0.5-5 seconds (in expectation).
 * `syncronous` - Should ticks be syncronous (for each asset) or asyncronous.
 * `rng` - The Random.MersenneTwister or StableRNGs.Stable used for RNG.
 * `vol_dist` - The distribution to draw volatilities from (only used if vols is missing).
-* `refresh_rate_dist` - The distribution to draw refresh rates (exponential distribution rates) from.
+* `refresh_rate_dist` - The distribution to draw refresh rates (exponential distribution rates) from. Note if you want all intervals to be evenly spaced you can do something like DiscreteUniform(1,1).
 * `time_period_per_unit` - What time period should the time column correspond to.
 * `micro_noise_dist`  - The distribution to draw assetwise microstructure noise standard deviations are drawn from.
 * `assets` - The names of the assets that you want to use. The length of this must be equal to the `dimensions` input.

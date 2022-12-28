@@ -22,6 +22,9 @@ export calculate_mean_abs_distance_covar
 export valid_correlation_matrix, is_psd_matrix
 export ticks_per_asset, get_assets
 export relabel, plot, combine
+include("00_CovarianceModel.jl")
+export CovarianceModel, make_nan_covariance_model, get_drift, get_mean
+export covariance_and_mean, combine_covariance_models
 include("01_helpers.jl")
 export simple_differencing
 include("02_subsample_ticks.jl")
