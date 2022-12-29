@@ -246,6 +246,63 @@ function StochasticIntegrals.get_draws(
         calculate_inverse = false,
         calculate_determinant = false,
     )
-    draws = StochasticIntegrals.get_draws(scovar, num)
+    draws = StochasticIntegrals.get_draws(scovar, num; number_generator = number_generator,
+                                          antithetic_variates = antithetic_variates)
     return draws
 end
+
+
+
+
+
+
+
+"""
+    StochasticIntegrals.get_draws(
+        covariance_model::CovarianceModel{<:Real},
+        num::Integer;
+        number_generator::NumberGenerator = Mersenne(
+            MersenneTwister(1234),
+            length(covariance_matrix.labels),
+        ),
+        antithetic_variates = false,
+    )
+
+get pseudorandom draws from a `CovarianceModel` struct. This is basically a convenience wrapper over StochasticIntegrals.get_draws which does the necessary constructing of the structs of that package.
+If the `antithetic_variates` control is set to true then every second set of draws will be antithetic to the previous.
+If you want to do something like Sobol sampling you can change the number_generator. See StochasticIntegrals to see what is available (and feel free to make new ones and put in Pull Requests)
+### Inputs
+* `covariance_model` - An `CovarianceModel` struct that you want to draw from.
+* `num`- The number of draws you want
+* `number_generator`  - A `NumberGenerator` struct that can be queried for a series of unit interval vectors that are then transformed by the covariance matrix into draws.
+* `antithetic_variates` - A boolean indicating if antithetic variates should be used (every second draw is made from 1 - uniformdraw of previous)
+### Returns
+* A `Vector` of `Dict`s of draws. Note you can convert this to a dataframe or array with `StochasticIntegrals.to_dataframe` or `StochasticIntegrals.to_array`.
+"""
+function StochasticIntegrals.get_draws(
+    covariance_model::CovarianceModel{<:Real},
+    num::Integer;
+    number_generator::NumberGenerator = Mersenne(
+        MersenneTwister(1234),
+        length(covariance_model.cm.labels),
+    ),
+    antithetic_variates = false,
+)
+    iset = ItoSet(covariance_model.cm)
+    # And below shows how this might be used to generate random draws.
+    scovar = StochasticIntegrals.SimpleCovariance(
+        iset,
+        0.0,
+        1.0;
+        calculate_inverse = false,
+        calculate_determinant = false,
+    )
+    draws = StochasticIntegrals.get_draws(scovar, num; number_generator = number_generator,
+                                          antithetic_variates = antithetic_variates)
+    meanbit = Dict(covariance_model.cm.labels .=> covariance_model.means)
+    driftbit = Dict(covariance_model.cm.labels .=> [get_drift(covariance_model, x, covariance_model.cm.time_period_per_unit) for x in covariance_model.cm.labels])
+    all_mean = merge(+, meanbit, driftbit)
+    final_draws = [merge(+, all_mean, x) for x in draws]
+    return final_draws
+end
+
