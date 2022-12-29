@@ -15,7 +15,7 @@ function Base.show(cm::CovarianceModel)
     show(cm.cm)
 end
 function Base.show(
-    cm::CovarianceMatrix,
+    cm::CovarianceModel,
     sig_figs_volatility::Integer,
     decimal_places_correlation::Integer,
 )
@@ -23,8 +23,8 @@ function Base.show(
     rounded_correl =
         Hermitian(round.(cm.cm.correlation, digits = decimal_places_correlation))
     cm_rounded = CovarianceMatrix(rounded_correl, rounded_vols, cm.cm.labels, cm.cm.time_period_per_unit)
-    rounded_drifts = round.(cm.drift, sigdigits = sig_figs_volatility)
-    rounded_means = round.(cm.mean, sigdigits = sig_figs_volatility)
+    rounded_drifts = round.(cm.drifts, sigdigits = sig_figs_volatility)
+    rounded_means = round.(cm.means, sigdigits = sig_figs_volatility)
     show(CovarianceModel(cm_rounded, rounded_means, rounded_drifts))
 end
 
@@ -283,10 +283,10 @@ This makes a `Hermitian` matrix for the covariance matrix over some duration.
 """
 function covariance_and_mean(
     cm::CovarianceModel,
-    period::Dates.Period = cm.time_period_per_unit,
-    assets::Vector{Symbol} = cm.labels,
+    period::Dates.Period = cm.cm.time_period_per_unit,
+    assets::Vector{Symbol} = cm.cm.labels,
 )
-    cm2 = rearrange(cm.cm, assets)
+    cm2 = rearrange(cm, assets)
     sds = convert_vol(cm2.cm.volatility, cm2.cm.time_period_per_unit, period)
     drifts_to_time = convert_drift(cm2.drifts, cm2.cm.time_period_per_unit, period)
     newcor = cor_to_cov(cm2.cm.correlation, sds)

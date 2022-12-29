@@ -55,6 +55,13 @@ end
     cm_boring = make_covariance_model(:boring)
     # Testing showing.
     show(cm)
+    show(cm, 3, 2)
+    # Testing is valid stuff
+    @test is_psd_matrix(cm)
+    @test valid_correlation_matrix(cm)
+    # Test relabelling
+    cm_relab = relabel(cm, Dict([:BARC] .=> [:Barclays]))
+    @test sum([isnan(x) for x in calculate_mean_abs_distance(cm, cm_relab; return_nans_if_symbols_dont_match = true)]) == 4
     # Testing basic accessor functions
     @test is_close(get_mean(cm, :BARC), 0.05)
     @test is_close(get_mean(cm, :VODL), 0.01)
@@ -68,8 +75,12 @@ end
     # Testing Serialisation
     cm_as_df = DataFrames.DataFrame(cm)
     cm_as_df_as_cm = CovarianceModel(cm_as_df)
+    cm_as_df2 = DataFrames.DataFrame(cm, Dict(["col1", "col2"] .=> ['A', 'B']))
+    cm_as_df_as_cm2 = CovarianceModel(cm_as_df2)
     # Testing distance metrics
     dist = calculate_mean_abs_distance(cm, cm_as_df_as_cm)
+    @test all([is_close(dist[x], 0.0) for x in  keys(dist)])
+    dist = calculate_mean_abs_distance(cm, cm_as_df_as_cm2)
     @test all([is_close(dist[x], 0.0) for x in  keys(dist)])
     dist2 = calculate_mean_abs_distance(cm, cm_boring)
     @test all([!is_close(dist2[x], 0.0) for x in  keys(dist)])
@@ -77,7 +88,13 @@ end
     @test !is_close(calculate_mean_abs_distance_covar(cm, cm_boring), 0.0)
     # Testing making a make_nan_covariance_model
     make_nan_covariance_model([:BARC, :VODL], Dates.Day(2))
+    # Testing getting covariance and mean
+    covv, meann = covariance_and_mean(cm)
+    @test sum([abs(x) > 0.001 for x in meann]) == 4
+    covv, meann = covariance_and_mean(cm_boring)
+    @test sum([abs(x) > 0.001 for x in meann]) == 0
 end
+
 
 function each_dist(a,b, target)
     dist = calculate_mean_abs_distance(a, b)

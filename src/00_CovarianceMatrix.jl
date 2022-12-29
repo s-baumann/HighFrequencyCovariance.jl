@@ -336,7 +336,9 @@ This relabels a CovarianceMatrix struct to give all the assets alternative names
 * A `CovarianceMatrix` the same as the one you input but with new labels.
 """
 function relabel(covar::CovarianceMatrix, mapping::Dict{Symbol,Symbol})
-    new_labels = map(x -> mapping[x], covar.labels)
+    missing_symbols = setdiff(covar.labels, collect(keys(mapping)))
+    mapping2 = length(missing_symbols) == 0 ? mapping : merge(+, Dict(missing_symbols .=> missing_symbols), mapping)
+    new_labels = map(x -> mapping2[x], covar.labels)
     return CovarianceMatrix(
         covar.correlation,
         covar.volatility,
