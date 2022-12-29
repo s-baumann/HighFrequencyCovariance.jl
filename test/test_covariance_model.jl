@@ -142,4 +142,32 @@ end
     draws[!, :zz] = (draws[:,:BARC] .- draws[:,:BARC_cond_exp]) ./ draws[:, :BARC_cond_vol]
     @test abs(mean(draws[:,:zz])) < 0.01
     @test abs(std(draws[:,:zz]) - 1.0) < 0.01
+
+
+    cm = make_covariance_model(:simple)
+    draws = DataFrame(get_draws(cm, 100000))
+    draws[!,:BARC_cond_exp] = repeat([NaN], nrow(draws))
+    draws[!,:BARC_cond_vol] = repeat([NaN], nrow(draws))
+    for i in 1:nrow(draws)
+        cond = get_conditional_distribution(cm, [:VODL, :HSBC, :RYAL], Vector(draws[i,  [:VODL, :HSBC, :RYAL]]), cm.cm.time_period_per_unit)
+        draws[i, :BARC_cond_exp] = get_drift(cond, :BARC, cond.cm.time_period_per_unit) + get_mean(cond, :BARC)
+        draws[i, :BARC_cond_vol] = get_volatility(cond, :BARC, cond.cm.time_period_per_unit)
+    end
+    draws[!, :zz] = (draws[:,:BARC] .- draws[:,:BARC_cond_exp]) ./ draws[:, :BARC_cond_vol]
+    @test abs(mean(draws[:,:zz])) < 0.01
+    @test abs(std(draws[:,:zz]) - 1.0) < 0.01
+
+    cm = make_covariance_model(:boring)
+    draws = DataFrame(get_draws(cm, 100000))
+    draws[!,:BARC_cond_exp] = repeat([NaN], nrow(draws))
+    draws[!,:BARC_cond_vol] = repeat([NaN], nrow(draws))
+    for i in 1:nrow(draws)
+        cond = get_conditional_distribution(cm, [:VODL, :HSBC, :RYAL], Vector(draws[i,  [:VODL, :HSBC, :RYAL]]), cm.cm.time_period_per_unit)
+        draws[i, :BARC_cond_exp] = get_drift(cond, :BARC, cond.cm.time_period_per_unit) + get_mean(cond, :BARC)
+        draws[i, :BARC_cond_vol] = get_volatility(cond, :BARC, cond.cm.time_period_per_unit)
+    end
+    draws[!, :zz] = (draws[:,:BARC] .- draws[:,:BARC_cond_exp]) ./ draws[:, :BARC_cond_vol]
+    @test abs(mean(draws[:,:zz])) < 0.01
+    @test abs(std(draws[:,:zz]) - 1.0) < 0.01
+
 end
