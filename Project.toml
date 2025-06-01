@@ -1,7 +1,7 @@
 name = "HighFrequencyCovariance"
 uuid = "c79ce38c-73ba-4c3d-834c-fb94999fb590"
 authors = ["Stuart Baumann <stuart@stuartbaumann.com>"]
-version = "0.6.0"
+version = "0.5.0"
 
 [deps]
 Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
