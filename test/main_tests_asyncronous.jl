@@ -53,9 +53,9 @@ using Test
     ts2 = subset_to_tick(ts2, 49000)
 
     # Checking that it does not throw
-    using Gadfly
-    plt = plot(ts1)
-    @test isa(plt, Gadfly.Plot)
+    using VegaLite
+    plt = HighFrequencyCovariance.plot(ts1)
+    @test isa(plt, VegaLite.VLSpec)
 
     # Testing combining of SortedDataFrames
     ts4 = combine(Vector{SortedDataFrame}([ts1, ts2]))
@@ -220,3 +220,5 @@ using Test
     show(true_covar)
     show(preav_estimate2, 3, 6)
 end
+
+

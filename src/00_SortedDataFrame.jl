@@ -180,19 +180,19 @@ function Base.show(sdf::SortedDataFrame, number_of_rows = 6, maximum_display_wid
 end
 
 
-using Gadfly
-"""
-    Gadfly.plot(ts::SortedDataFrame)
-
-This makes a basic plot of the assets in a `SortedDataFrame`.
-### Inputs
-* `ts` - The `SortedDataFrame` to plot.
-"""
-function Gadfly.plot(ts::SortedDataFrame)
-    plt = Gadfly.plot(ts.df, x = ts.time, y = ts.value, Geom.line, color = ts.grouping)
+function plot(ts::SortedDataFrame, width = 600, height = 400, title = "")
+    plt = VegaLite.@vlplot(
+        :line,
+        data = ts.df,
+        x = ts.time,
+        y = ts.value,
+        color = ts.grouping,
+        width = width,
+        height = height,
+        title = title,
+    )
     return plt
 end
-
 
 
 const MEANINGFUL_PRICE_DIFFERENCE = 1000 * eps()

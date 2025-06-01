@@ -264,8 +264,7 @@ function nearest_correlation_matrix(
     Dykstra = ZeroDykstra
     counter = 1
     while counter < max_iterates
-        Y, Dykstra = doDykstra ? iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt) :
-            iterate_higham(Y, ZeroDykstra, W_root, W_inv, W_inv_sqrt)
+        Y, Dykstra = doDykstra ? iterate_higham(Y, Dykstra, W_root, W_inv, W_inv_sqrt) : iterate_higham(Y, ZeroDykstra, W_root, W_inv, W_inv_sqrt)
         if stop_at_first_correlation_matrix
             spd = valid_correlation_matrix(Y)
             if spd

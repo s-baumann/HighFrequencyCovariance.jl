@@ -49,7 +49,6 @@ function convert_drift(
 )
     return drift .* time_period_ratio(new_drift_period, drift_period)
 end
-convert_vol(drift::Missing, drift_period::Dates.Period, new_drift_period::Dates.Period) = missing
 
 """
     make_nan_covariance_model(
