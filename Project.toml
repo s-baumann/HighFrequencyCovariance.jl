@@ -1,7 +1,7 @@
 name = "HighFrequencyCovariance"
 uuid = "c79ce38c-73ba-4c3d-834c-fb94999fb590"
 authors = ["Stuart Baumann <stuart@stuartbaumann.com>"]
-version = "0.5.0"
+version = "0.5.1"
 
 [deps]
 Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
@@ -26,7 +26,7 @@ Distances = "0.10.12"
 Distributions = "^0.25"
 PlotlyJS = "0.18.16"
 StableRNGs = "^1.0"
-StochasticIntegrals = "^0.6"
-UnivariateFunctions = "^0.3"
+StochasticIntegrals = "0.6"
+UnivariateFunctions = "0.4"
 VegaLite = "3.3.0"
 julia = "1.5"

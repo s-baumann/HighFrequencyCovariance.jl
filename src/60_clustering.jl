@@ -13,3 +13,9 @@ function reorder_according_to_clustering(covar::CovarianceMatrix; linkage::Symbo
     reordered_covar = rearrange(covar, reordered_labels) 
     return reordered_covar
 end
+
+function reorder_according_to_alphabetical(covar::CovarianceMatrix)
+    reordered_labels = sort(covar.labels)
+    reordered_covar = rearrange(covar, reordered_labels) 
+    return reordered_covar
+end

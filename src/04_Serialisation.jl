@@ -29,6 +29,9 @@ function DataFrames.DataFrame(
         Array{Union{String,Missing}}(repeat([missing], nrow(corrs)))
     corrs[!, :vol_period] = Array{Union{Integer,Missing}}(repeat([missing], nrow(corrs)))
     if delete_duplicate_correlations
+        # We have the the logic here that we used the ordering of covar.labels to determine what to drop.
+        # Note you can sort the labels if you are doing something that requires asset1 always alphabetically before asset2.
+        # See reorder_according_to_alphabetical.
         corrs = corrs[
             findall(
                 map(a -> findfirst(covar.labels .== a), corrs[:, :asset1]) .<

@@ -78,7 +78,7 @@ module HighFrequencyCovariance
     export estimate_microstructure_noise
 
     include("60_clustering.jl")
-    export cluster_based_on_correlation_matrix, reorder_according_to_clustering
+    export cluster_based_on_correlation_matrix, reorder_according_to_clustering, reorder_according_to_alphabetical
 
     include("70_plotting.jl")
     export plot, plot_heatmap, plot_dendrogram
