@@ -165,7 +165,6 @@ function get_timegrid(
     time_grid = Vector{eltype(ts.df[:, ts.time])}()
     if !ismissing(fixed_spacing)
         minn, maxx = extrema(ts.df[:, ts.time])
-        time_grid = collect(minn:fixed_spacing:maxx)
     elseif refresh_times
         time_grid = get_all_refresh_times(ts, assets)
     else
